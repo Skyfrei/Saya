@@ -1,4 +1,4 @@
-# Simplified Warcraft 3 version with DeepRL implemented.
+# Simplified Warcraft 3 version with DeepRL
 Sandbox warcraft 3 without any graphics. Trying to code a way to use reinforcement learning and MTCS in Real time strategy games.
 
 Game **will** not have any graphics for a long time if ever because the point of the project is to create an RTS game which can be deeplearned with different
