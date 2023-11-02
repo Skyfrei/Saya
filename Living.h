@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+#include "Tools/Vec2.h"
 
 namespace Warcraft
 {   
@@ -47,6 +48,8 @@ namespace Warcraft
 
             Side belongs;
             ProducedAt buildsAt;
+
+            Vec2 coordinate;
 
             
     };

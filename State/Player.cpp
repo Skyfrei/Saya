@@ -36,7 +36,7 @@ void Player::UpdateGold(int g)
 
 void Player::Move(std::vector<Unit*> uns)
 {
-
+    
 }
 
 void Player::IncreaseFoodCapac(Farm& f)

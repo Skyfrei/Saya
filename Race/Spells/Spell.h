@@ -21,6 +21,8 @@ namespace Warcraft::Spells
         public:
             virtual void GetDescription() = 0;
 
+            virtual void CastSpell() = 0;
+
         public:
             float cooldown;
             float manaCost;
