@@ -27,7 +27,23 @@ namespace Warcraft
         public:
             void RegenHealth()
             {
+                if (health + healthRegen >= maxHealth )
+                    return;
                 health += healthRegen;
+            }
+
+            bool IsDead()
+            {
+                if (health <= 0)
+                {
+                    return true;
+                }
+                return false;
+            }
+
+            void Die()
+            {
+                
             }
             
         public:
@@ -39,6 +55,8 @@ namespace Warcraft
             
             float healthRegen = 0.25;
             float mana = 0;
+            float maxMana;
+            float maxHealth;
             float manaRegen = 1.15;
 
             int goldCold;

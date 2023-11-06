@@ -76,22 +76,10 @@ namespace Warcraft::Units
                     break;
                 }
             }
-            bool IsDead()
-            {
-                if (health <= 0)
-                {
-                    return true;
-                }
-                return false;
-            }
+
             void Attack(Living& un)
             {
                 un.health -= attack;
-            }
-
-            void RegenMana()
-            {
-                mana += manaRegen;
             }
 
         public:
