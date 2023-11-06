@@ -1,0 +1,12 @@
+Living.h:
+
+    // Choosing what to build or recruit validation
+    bool IsEnoughGold(int playerGold, int cost);
+
+
+
+If player wants to recruit or build structure
+there needs to be gold validation before recruit/ building anything.
+Seperate logic from structures or unit class. 
+
+Either handle by manager or player class.
