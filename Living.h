@@ -25,9 +25,10 @@ namespace Warcraft
         virtual std::string GetDescription() = 0;
 
         public:
-            void RegenHealth();
             bool IsDead();
             void Die();
+            // Choosing what to build or recruit validation
+            bool IsEnoughGold(int playerGold, int cost);
             
         public:
             std::string name;
@@ -42,7 +43,7 @@ namespace Warcraft
             float maxHealth;
             float manaRegen = 1.15;
 
-            int goldCold;
+            int goldCost;
             int foodCost = 0;
             
             int buildTime;

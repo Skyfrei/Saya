@@ -9,6 +9,7 @@
 #include "../Living.h"
 
 using Warcraft::Units;
+using Warcraft::Structures;
 
 namespace Warcraft::State
 {
@@ -32,8 +33,9 @@ namespace Warcraft::State
             void ValidateFood();
             void ValidateUpkeep();
             void UpdateGold(int g);
-            void Move();
-            void IncreaseFoodCapac();
+            void Move(std::vector<Unit*> uns);
+            void IncreaseFoodCapac(Farm& f);
+            void ChooseToBuild();
 
         public:
             int gold;

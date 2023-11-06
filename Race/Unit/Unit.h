@@ -40,6 +40,7 @@ namespace Warcraft::Units
             void Move(Move dir);
             void Attack(Living& un);
             void GoTo(Vec2 coord);
+            void RegenHealth();
 
         public:
         

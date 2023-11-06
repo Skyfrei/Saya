@@ -1,10 +1,11 @@
 #include "Living.h"
 
-void Living::RegenHealth()
+bool Living::IsEnoughGold(int playerGold, int cost);
 {
-    if (health + healthRegen >= maxHealth )
-        return;
-    health += healthRegen;
+    if (playerGold >= cost)
+        return true;
+    
+    return false;
 }
 
 bool Living::IsDead()

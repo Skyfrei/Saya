@@ -1,8 +1,15 @@
 #include "Unit.h"
 
+void Unit::RegenHealth()
+{
+    if (health + healthRegen >= maxHealth)
+        return;
+    health += healthRegen;
+}
+
 void Unit::GoTo(Vec2 coord)
 {
-    
+
 }
 
 void Unit::Attack(Living& un)
