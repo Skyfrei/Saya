@@ -3,6 +3,7 @@
 #include "../Spells/Spell.h"
 #include "../../Living.h"
 #include <string>
+#include "../Tools/Vec2.h"
 
 using namespace Warcraft::Spells;
 using Warcraft::Living;
@@ -38,6 +39,7 @@ namespace Warcraft::Units
         public:
             void Move(Move dir);
             void Attack(Living& un);
+            void GoTo(Vec2 coord);
 
         public:
         

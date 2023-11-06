@@ -12,6 +12,7 @@ class Farm : public Structure
             name = "Farm";
             description = "Gives 6 food.";
             health = 500;
+            maxHealth = health;
 
             goldCold = 100;
 
@@ -19,7 +20,6 @@ class Farm : public Structure
         }
     public:
         std::string GetDescription() override {return description;}
-        int GetHealth() override {return health;}
 
     public: 
         int GetFood() { return 5;}

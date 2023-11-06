@@ -12,6 +12,7 @@ namespace Warcraft::Structures
                 name = "Town Hall";
                 description = "Can recruit peasants.";
                 health = 1500;
+                maxHealth = health;
                 
                 goldCold = 590;
                 type = HALL;

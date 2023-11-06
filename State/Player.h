@@ -4,6 +4,7 @@
 #include "../Unit/Footman.h"
 #include "../Unit/Sorceress.h"
 #include "../Structure/Farm.h"
+#include "../Structure/TownHall.h"
 #include "../Unit/Unit.h"
 #include "../Living.h"
 
@@ -24,6 +25,7 @@ namespace Warcraft::State
             Player()
             {
                 food.y = 10;
+                gold = 300;
             }
 
             void Initialize();

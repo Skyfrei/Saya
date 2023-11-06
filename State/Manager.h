@@ -14,8 +14,8 @@ namespace Warcraft::State
             {
                 // game start
                 map.InitializeTerrain();
-                player.Initialize();
-                enemy.Initialize();
+                player.Initialize(); // Done 
+                enemy.Initialize(); // Done
                 MainLoop();
             }
         public:

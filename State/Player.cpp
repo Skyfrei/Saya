@@ -7,7 +7,9 @@ void Player::Initialize()
     units.push_back(new Peasant());
     units.push_back(new Peasant());
     units.push_back(new Peasant());
-    units.push_back(new Peasant());
+
+    structures.push_back(new TownHall());
+    
 }
 
 void Player::ValidateFood()

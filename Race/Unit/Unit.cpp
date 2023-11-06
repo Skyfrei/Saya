@@ -1,5 +1,10 @@
 #include "Unit.h"
 
+void Unit::GoTo(Vec2 coord)
+{
+    
+}
+
 void Unit::Attack(Living& un)
 {
     un.health -= attack;

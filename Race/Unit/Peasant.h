@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Unit.h"
-#include "../Spells/Spell.h"
+#include "../Structure/Structure.h"
 #include <vector>
 
-using namespace Warcraft::Spells;
+using namespace Warcraft::Structures;
+
 
 namespace Warcraft::Units
 {
@@ -31,8 +32,13 @@ namespace Warcraft::Units
             }
 
         public:
-            void Build();
+            void Build(Structure& stru);
+            void FarmGold();
+            void TransferGold();
         
             std::string GetDescription() override{};
+
+        public:
+            int goldInventory = 0;
     };
 }

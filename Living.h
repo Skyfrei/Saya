@@ -26,9 +26,7 @@ namespace Warcraft
 
         public:
             void RegenHealth();
-
             bool IsDead();
-
             void Die();
             
         public:

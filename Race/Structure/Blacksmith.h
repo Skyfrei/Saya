@@ -19,6 +19,7 @@ namespace Warcraft::Structures
                 name = "Blacksmith";
                 description = "Can build unit upgrades.";
                 health = 1200;
+                maxHealth = health;
 
                 goldCold = 200;
 

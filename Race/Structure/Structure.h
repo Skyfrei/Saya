@@ -21,7 +21,6 @@ namespace Warcraft::Structures
             }
 
         public:
-            virtual int GetHealth() = 0;
             virtual void FinishBuilding() = 0;
 
         public:
