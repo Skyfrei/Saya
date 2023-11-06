@@ -21,9 +21,7 @@ namespace Warcraft::Units
                 buildTime = 20;
 
                 is = OTHER;
-
             }
-        
             std::string GetDescription() override{};
     };
 }

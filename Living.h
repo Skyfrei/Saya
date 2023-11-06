@@ -25,26 +25,11 @@ namespace Warcraft
         virtual std::string GetDescription() = 0;
 
         public:
-            void RegenHealth()
-            {
-                if (health + healthRegen >= maxHealth )
-                    return;
-                health += healthRegen;
-            }
+            void RegenHealth();
 
-            bool IsDead()
-            {
-                if (health <= 0)
-                {
-                    return true;
-                }
-                return false;
-            }
+            bool IsDead();
 
-            void Die()
-            {
-                
-            }
+            void Die();
             
         public:
             std::string name;

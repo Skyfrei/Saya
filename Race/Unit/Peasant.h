@@ -29,6 +29,9 @@ namespace Warcraft::Units
 
                 is = PEASANT;
             }
+
+        public:
+            void Build();
         
             std::string GetDescription() override{};
     };

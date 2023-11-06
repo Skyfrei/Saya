@@ -21,17 +21,14 @@ namespace Warcraft::State
         public:
             void CheckForMovement();
             void MainLoop();
+            float GetTime();
+            
         public:
             Player player;
             Player enemy;
             Map map;
 
-            float GetTime()
-            {
-                //return end - start;
-                float time = std::chrono::steady_clock::now() - start;
-                return time;
-            }
+            
         
         private:
             auto start = std::chrono::steady_clock::now();
