@@ -29,7 +29,6 @@ namespace Warcraft::Structures
                 name = "Barrack";
                 description = "Can create units.";
                 health = 1500;
-                armor = 20;
 
                 goldCold = 220;
 

@@ -12,7 +12,6 @@ class Farm : public Structure
             name = "Farm";
             description = "Gives 6 food.";
             health = 500;
-            armor = 20;
 
             goldCold = 100;
 

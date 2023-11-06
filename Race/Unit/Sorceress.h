@@ -14,7 +14,6 @@ namespace Warcraft::Units
                 name = "Sorceress";
                 description = "Queen of magic.";
                 health = 325;
-                armor = 2;
                 attack = 11;
                 mana = 200;
                 manaRegen = 0.67f;
@@ -29,7 +28,6 @@ namespace Warcraft::Units
             }
         
             std::string GetDescription() override{};
-            void RegenHealth() override {};
             void Attack(Living& un) override {};
     };
 }

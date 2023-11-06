@@ -13,11 +13,6 @@ namespace Warcraft
         ENEMY
     };
 
-    enum ProducedAt
-    {
-        
-    };
-
     class Living
     {
         public:
@@ -30,16 +25,21 @@ namespace Warcraft
         virtual std::string GetDescription() = 0;
 
         public:
+            void RegenHealth()
+            {
+                health += healthRegen;
+            }
+            
+        public:
             std::string name;
             std::string description;
             int health;
-            int armor;
             static int objNumber;
             int id;
             
-            float hpRegen = 0;
+            float healthRegen = 0.25;
             float mana = 0;
-            float manaRegen = 0;
+            float manaRegen = 1.15;
 
             int goldCold;
             int foodCost = 0;
@@ -47,7 +47,6 @@ namespace Warcraft
             int buildTime;
 
             Side belongs;
-            ProducedAt buildsAt;
 
             Vec2 coordinate;
 

@@ -12,7 +12,6 @@ namespace Warcraft::Units
                 name = "Footman";
                 description = "A normal foot soldier.";
                 health = 420;
-                armor = 2;
                 attack = 12.5;
 
                 goldCold = 135;
@@ -26,7 +25,5 @@ namespace Warcraft::Units
             }
         
             std::string GetDescription() override{};
-            void RegenHealth() override {};
-            void Attack(Living& un) override {};
     };
 }

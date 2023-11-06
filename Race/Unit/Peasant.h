@@ -16,7 +16,6 @@ namespace Warcraft::Units
                 name = "Peasant";
                 description = "God damn farm workers.";
                 health = 240;
-                armor = 2;
                 attack = 5.5;
                 
                 mana = 200;
@@ -32,7 +31,5 @@ namespace Warcraft::Units
             }
         
             std::string GetDescription() override{};
-            void RegenHealth() override {};
-            void Attack(Living& un) override {};
     };
 }

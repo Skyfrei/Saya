@@ -32,12 +32,8 @@ namespace Warcraft::Units
         public:
             Unit()
             {
-
+                
             }
-
-        public:
-            virtual void Attack(Living& un) = 0;
-            virtual void RegenHealth() = 0;
         
         public:
             void Move(Move dir)
@@ -88,7 +84,16 @@ namespace Warcraft::Units
                 }
                 return false;
             }
-            
+            void Attack(Living& un)
+            {
+                un.health -= attack;
+            }
+
+            void RegenMana()
+            {
+                mana += manaRegen;
+            }
+
         public:
         
             bool isInvisible = false;

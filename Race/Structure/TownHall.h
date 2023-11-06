@@ -7,23 +7,17 @@ namespace Warcraft::Structures
     class TownHall : public Structure
     {
         public:
-            Blacksmith()
+            TownHall()
             {
-                name = "Blacksmith";
-                description = "Can build unit upgrades.";
-                health = 1200;
-                armor = 20;
-
-                goldCold = 200;
-
-                buildTime = 50;
+                name = "Town Hall";
+                description = "Can recruit peasants.";
+                health = 1500;
+                
+                goldCold = 590;
+                type = HALL;
+                buildTime = 180;
             }
         public:
-            Upgrade currentUpgrade = WOOD;
-            void UpgradeEquipment(Upgrade& curr)
-            {
-                
-            };
             
     }
 }
