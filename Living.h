@@ -25,10 +25,25 @@ namespace Warcraft
         virtual std::string GetDescription() = 0;
 
         public:
-            bool IsDead();
-            void Die();
-            // Choosing what to build or recruit validation
-            bool IsEnoughGold(int playerGold, int cost);
+            bool IsEnoughGold(int playerGold, int cost)
+            {
+                if (playerGold >= cost)
+                    return true;
+                
+                return false;
+            }
+
+            bool IsDead()
+            {
+                if (health <= 0)
+                    return true;
+                return false;
+            }
+
+            void Die()
+            {
+                
+            }
             
         public:
             std::string name;

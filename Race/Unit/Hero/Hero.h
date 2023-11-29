@@ -4,7 +4,7 @@
 #include "../../Spells/Spell.h"
 #include <vector>
 #include <chrono>
-#include <cstdin>
+
 
 using namespace Warcraft::Spells;
 
@@ -31,15 +31,15 @@ namespace Warcraft::Units::Heroes
                 switch(s)
                 {
                     case 0:
-                        spells[0].CastEffect();
+                        spells[0]->ProcEffect();
                         break;
 
                     case 1:
-                        spells[1].CastEffect();
+                        spells[1]->ProcEffect();
                         break;
 
                     case 2:
-                        spells[2].CastEffect();
+                        spells[2]->ProcEffect();
                         break;
                 }
             }

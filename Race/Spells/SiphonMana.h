@@ -25,6 +25,7 @@ class SiphonMana : public Spell
         
     public:
         virtual void GetDescription(){}
+        void ProcEffect() override {}
     
     public:
         float delay = 0.9f;

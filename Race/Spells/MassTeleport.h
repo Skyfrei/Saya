@@ -26,6 +26,7 @@ class MassTeleport : public Spell
         
     public:
         virtual void GetDescription(){}
+        void ProcEffect() override {}
     
     public:
         float delay = 3.0f;

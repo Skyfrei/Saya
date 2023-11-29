@@ -29,7 +29,7 @@ namespace Warcraft::Units::Heroes
                 manaRegen = 0.96f;
                 maxMana += 285;
 
-                goldCold = 535;
+                goldCost = 535;
                 foodCost = 5;
                 buildTime = 55;
                 attack = 24;

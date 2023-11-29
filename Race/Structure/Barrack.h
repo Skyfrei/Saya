@@ -30,7 +30,7 @@ namespace Warcraft::Structures
                 description = "Can create units.";
                 health = 1500;
                 maxHealth = health;
-                goldCold = 220;
+                goldCost = 220;
 
                 buildTime = 70;
             }

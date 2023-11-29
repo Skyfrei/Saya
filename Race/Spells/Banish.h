@@ -24,7 +24,8 @@ class Banish : public Spell
         }
         
     public:
-        virtual void GetDescription(){}
+        void GetDescription() override{}
+        void ProcEffect() override {}
     
     public:
         float delay = 0.9f;

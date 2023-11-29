@@ -1,6 +1,6 @@
 #pragma once
 #include "../../Tools/Vec2.h"
-#include "../Living.h"
+#include "../../Living.h"
 
 using Warcraft::Living;
 

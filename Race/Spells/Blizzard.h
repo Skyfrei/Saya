@@ -26,8 +26,6 @@ class Blizzard : public Spell
 
         }
     public:
-        virtual void GetDescription() override
-        {
-            return;
-        }
+        void GetDescription() override{}
+        void ProcEffect() override {}
 };

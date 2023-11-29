@@ -14,7 +14,7 @@ class Farm : public Structure
             health = 500;
             maxHealth = health;
 
-            goldCold = 100;
+            goldCost = 100;
 
             buildTime = 10;
         }
@@ -25,4 +25,4 @@ class Farm : public Structure
         int GetFood() { return 5;}
 
 
-}
+};

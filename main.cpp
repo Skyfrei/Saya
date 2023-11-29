@@ -1,12 +1,15 @@
 #include <iostream>
 #include "Race/Unit/Hero/Archmage.h"
-#include "Race/Unit/Sorceress.h"
-#include "Game.h"
+#include "State/Manager.h"
+#include "Map/Map.h"
 
 using namespace Warcraft::Units::Heroes;
 using namespace Warcraft::Units;
+using namespace Warcraft::Environment;
+using namespace Warcraft::State;
 
 int main()
 {
-    Sorceress arch;
+
+    Map map;
 }

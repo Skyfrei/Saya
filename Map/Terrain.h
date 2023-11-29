@@ -22,9 +22,12 @@ namespace Warcraft::Environment
             }
 
         public:
-            virtual int GetResourceLeft() = 0;
+            int GetResourceLeft()
+            {
+                return 0;
+            }
             
-        private: 
+        public: 
             int resourceLeft;
             Vec2 coord;
             TerrainType type = GROUND;

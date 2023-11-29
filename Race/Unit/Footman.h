@@ -14,7 +14,7 @@ namespace Warcraft::Units
                 health = 420;
                 attack = 12.5;
 
-                goldCold = 135;
+                goldCost = 135;
                 foodCost = 2;
 
                 attackCooldown = 1.35;

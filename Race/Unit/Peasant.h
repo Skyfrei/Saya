@@ -22,7 +22,7 @@ namespace Warcraft::Units
                 mana = 200;
                 manaRegen = 0.67f;
 
-                goldCold = 75;
+                goldCost = 75;
                 foodCost = 1;
 
                 attackCooldown = 2.0f;
@@ -32,10 +32,26 @@ namespace Warcraft::Units
             }
 
         public:
-            void Build(Structure& stru);
-            void FarmGold();
-            void TransferGold();
-        
+           void Build(Structure& stru)
+            {
+                
+            }
+            void FarmGold(int upkeep)
+            {
+                // based on upkeep of player
+                if (goldInventory >= 100)
+                    // cant farm gold anymore
+                    TransferGold();
+
+                goldInventory++;
+
+            }
+            void TransferGold()
+            {
+                // start walking back
+                // once it reaches town hall
+                goldInventory = 0;
+            }
             std::string GetDescription() override{};
 
         public:

@@ -1,25 +1,19 @@
 #include "../Tools/Vec2.h"
 #include <vector>
-#include "../Unit/Unit.h"
-#include "../Unit/Footman.h"
-#include "../Unit/Sorceress.h"
-#include "../Structure/Farm.h"
-#include "../Structure/TownHall.h"
-#include "../Unit/Unit.h"
+#include "../Race/Unit/Footman.h"
+#include "../Race/Unit/Peasant.h"
+#include "../Race/Structure/Farm.h"
+#include "../Race/Structure/TownHall.h"
+#include "../Race/Structure/TownHall.h"
+#include "../Race/Unit/Unit.h"
 #include "../Living.h"
 
-using Warcraft::Units;
-using Warcraft::Structures;
+using namespace Warcraft::Units;
+using namespace Warcraft::Structures;
+using namespace Warcraft;
 
 namespace Warcraft::State
 {
-    enum Upkeep
-    {
-        NIE,
-        LOW,
-        HIGH
-    };
-
     class Player
     {
         public: 
@@ -28,19 +22,51 @@ namespace Warcraft::State
                 food.y = 10;
                 gold = 300;
             }
+            void Initialize()
+            {
+                units.push_back(new Peasant());
+                units.push_back(new Peasant());
+                units.push_back(new Peasant());
+                units.push_back(new Peasant());
+                units.push_back(new Peasant());
 
-            void Initialize();
-            void ValidateFood();
-            void ValidateUpkeep();
-            void UpdateGold(int g);
-            void Move(std::vector<Unit*> uns);
-            void IncreaseFoodCapac(Farm& f);
-            void ChooseToBuild();
+                structures.push_back(new TownHall());
+                
+            }
+
+            void ValidateFood()
+            {
+                for(int i = 0; i < units.size(); i++)
+                {
+                    food.x += units[i]->foodCost;
+                }
+            }
+
+            void UpdateGold(int g)
+            {
+                gold += g;
+            }
+
+            void Move(std::vector<Unit*> uns)
+            {
+                
+            }
+
+            void IncreaseFoodCapac(Farm& f)
+            {
+                if (food.y + f.GetFood() >= 60 )
+                    return;
+                    
+                food.y += f.GetFood();
+            }
+            void ChooseToBuild()
+            {
+
+            }
 
         public:
             int gold;
             Vec2 food;
-            Upkeep upkeep = NIE;
 
             std::vector<Unit*> units;
             std::vector<Structure*> structures;

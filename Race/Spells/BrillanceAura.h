@@ -26,6 +26,10 @@ class BrillanceAura : public Spell
         {
             return;
         }
+        void ProcEffect() override
+        {
+            
+        }
         float ManaRegen(Unit& unit)
         {
             unit.mana += manaRegen;
