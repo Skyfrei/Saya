@@ -22,7 +22,10 @@ namespace Warcraft::State
         public:
             void MainLoop()
             {   
-                
+                while((player.HasPeasant() && player.HasTownHall()) && (enemy.HasPeasant() && enemy.HasTownHall()))
+                {
+                    
+                }
             }
 
             void CheckForMovement()

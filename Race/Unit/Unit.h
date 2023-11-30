@@ -2,11 +2,16 @@
 #include <vector>
 #include "../Spells/Spell.h"
 #include "../../Living.h"
+#include "../../Map/Terrain.h"
 #include <string>
+#include <queue>
 #include "../../Tools/Vec2.h"
+
+#define n 15
 
 using namespace Warcraft::Spells;
 using Warcraft::Living;
+using namespace Warcraft::Environment;
 
 namespace Warcraft::Units
 {
@@ -25,7 +30,8 @@ namespace Warcraft::Units
         E,
         SE,
         S,
-        SW
+        SW,
+        STAY
     };
 
     class Unit : public Living
@@ -33,10 +39,124 @@ namespace Warcraft::Units
         public:
             Unit()
             {
-                
+                is = OTHER;
             }
         
         public:
+            std::vector<Vec2> GetAdjacentEdges(int maxSize, Vec2& currentPlace)
+            {
+                std::vector<Vec2> adEdges;
+                int y = currentPlace.y;
+                int x = currentPlace.x;
+                
+                if (x < maxSize - 1 && x > 0)
+                {
+                    if (y < maxSize - 1 && y > 0)
+                    {
+                        adEdges.push_back(Vec2(x - 1, y - 1));
+                        adEdges.push_back(Vec2(x - 1, y));
+                        adEdges.push_back(Vec2(x - 1, y + 1));
+                        adEdges.push_back(Vec2(x, y - 1));
+                        adEdges.push_back(Vec2(x, y + 1));
+                        adEdges.push_back(Vec2(x + 1, y - 1));
+                        adEdges.push_back(Vec2(x + 1, y));
+                        adEdges.push_back(Vec2(x + 1, y + 1));
+                    }
+                    else if (y == 0)
+                    {
+                        adEdges.push_back(Vec2(x - 1, y + 1));
+                        adEdges.push_back(Vec2(x - 1, y));
+                        adEdges.push_back(Vec2(x , y + 1));
+                        adEdges.push_back(Vec2(x + 1, y));
+                        adEdges.push_back(Vec2(x + 1, y + 1));
+                    }
+                    else
+                    {
+                         adEdges.push_back(Vec2(x - 1, y));
+                        adEdges.push_back(Vec2(x - 1, y - 1));
+                        adEdges.push_back(Vec2(x , y - 1));
+                        adEdges.push_back(Vec2(x + 1, y - 1));
+                        adEdges.push_back(Vec2(x + 1, y));
+                    }
+                }
+                else if (x == 0)
+                {
+                    if ( y == 0)
+                    {
+                        adEdges.push_back(Vec2(x, y + 1));
+                        adEdges.push_back(Vec2(x + 1, y));
+                        adEdges.push_back(Vec2(x + 1, y + 1));
+                    }
+                    else if (y == maxSize - 1)
+                    {
+                        adEdges.push_back(Vec2(x, y - 1));
+                        adEdges.push_back(Vec2(x + 1, y));
+                        adEdges.push_back(Vec2(x + 1, y - 1));
+                    }
+                    else
+                    {
+                        adEdges.push_back(Vec2(x, y + 1));
+                        adEdges.push_back(Vec2(x, y - 1));
+                        adEdges.push_back(Vec2(x + 1, y));
+                        adEdges.push_back(Vec2(x + 1, y + 1));
+                        adEdges.push_back(Vec2(x + 1, y - 1));
+                    }
+                }
+                else 
+                {
+                    if ( y == 0)
+                    {
+                        adEdges.push_back(Vec2(x - 1, y));
+                        adEdges.push_back(Vec2(x - 1, y + 1));
+                        adEdges.push_back(Vec2(x, y + 1));
+                    }
+                    else if (y == maxSize - 1)
+                    {
+                        adEdges.push_back(Vec2(x - 1, y));
+                        adEdges.push_back(Vec2(x - 1, y - 1));
+                        adEdges.push_back(Vec2(x, y - 1));
+                    }
+                    else
+                    {
+                        adEdges.push_back(Vec2(x, y + 1));
+                        adEdges.push_back(Vec2(x, y - 1));
+                        adEdges.push_back(Vec2(x - 1, y));
+                        adEdges.push_back(Vec2(x - 1, y + 1));
+                        adEdges.push_back(Vec2(x - 1, y - 1));
+                    }
+                }
+
+
+            }
+            void FindShortestPath(Terrain& terr)
+            {
+
+                std::queue<Vec2> queue;
+                std::vector<Vec2> tempExplo;
+                
+                queue.push(coordinate);
+                tempExplo.push_back(coordinate);
+
+                while(!queue.empty())
+                {
+                    Vec2 v = queue.front();
+                    queue.pop();
+
+                    if (v.x == terr.coord.x && v.y == terr.coord.y)
+                        Move(STAY);
+
+                    for (auto adjacCoord : GetAdjacentEdges(n, v))
+                    {
+                        if (std::find(tempExplo.begin(), tempExplo.end(), adjacCoord) != tempExplo.end())
+                        {
+                            tempExplo.push_back(adjacCoord);
+                            queue.push(adjacCoord);
+                        }
+                    }
+                }
+
+            }
+
             void Move(Move dir)
             {
                 switch (dir)
@@ -68,6 +188,8 @@ namespace Warcraft::Units
                     case SW:
                         coordinate.x -= 1;
                         coordinate.y -= 1;
+                        break;
+                    default:
                         break;
                 }
             }

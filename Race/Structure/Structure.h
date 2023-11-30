@@ -17,14 +17,14 @@ namespace Warcraft::Structures
         public:
             Structure()
             {
-
+                
             }
 
         public:
             virtual void FinishBuilding() = 0;
 
         public:
-            StructureType type = OTHER;
+            StructureType is = OTHER;
 
             
             // std::vector<> building contained within building

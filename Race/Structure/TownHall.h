@@ -24,7 +24,7 @@ namespace Warcraft::Structures
                 maxHealth = health;
                 
                 goldCost = 590;
-                type = HALL;
+                is = HALL;
                 buildTime = 180;
 
                 description = "Can build unit upgrades.";

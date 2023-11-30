@@ -2,10 +2,11 @@
 
 #include "Unit.h"
 #include "../Structure/Structure.h"
+#include "../../Map/Map.h"
 #include <vector>
 
 using namespace Warcraft::Structures;
-
+using namespace Warcraft::Environment;
 
 namespace Warcraft::Units
 {
@@ -36,15 +37,21 @@ namespace Warcraft::Units
             {
                 
             }
-            void FarmGold(int upkeep)
+            void FarmGold(Terrain ter)
             {
-                // based on upkeep of player
-                if (goldInventory >= 100)
-                    // cant farm gold anymore
-                    TransferGold();
+                if (coordinate.x == ter.coord.x && coordinate.y == ter.coord.y)
+                {
+                    if (goldInventory >= 20)
+                        // cant farm gold anymore
+                        TransferGold();
 
-                goldInventory++;
-
+                    goldInventory++;
+                }
+                else
+                {
+                    // add coords here
+                    //Move();
+                }
             }
             void TransferGold()
             {

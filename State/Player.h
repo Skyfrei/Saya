@@ -33,6 +33,29 @@ namespace Warcraft::State
                 structures.push_back(new TownHall());
                 
             }
+            bool HasTownHall()
+            {
+                for (int i = 0; i < structures.size(); i++)
+                {
+                    if (structures[i]->is == HALL)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            bool HasPeasant()
+            {
+                for (int i = 0; i < units.size(); i++)
+                {
+                    if (units[i]->is == PEASANT)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
 
             void ValidateFood()
             {
