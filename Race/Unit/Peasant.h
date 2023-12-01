@@ -3,6 +3,7 @@
 #include "Unit.h"
 #include "../Structure/Structure.h"
 #include "../../Map/Map.h"
+#include "../../Map/Terrain.h"
 #include <vector>
 
 using namespace Warcraft::Structures;
@@ -33,30 +34,42 @@ namespace Warcraft::Units
             }
 
         public:
-           void Build(Structure& stru)
+           void Build(Structure& stru, Terrain& terr)
             {
-                
-            }
-            void FarmGold(Terrain ter)
-            {
-                if (coordinate.x == ter.coord.x && coordinate.y == ter.coord.y)
+                if (coordinate.x + 1 <= terr.coord.x && coordinate.y + 1 <= terr.coord.y)
                 {
-                    if (goldInventory >= 20)
-                        // cant farm gold anymore
-                        TransferGold();
+                    if (terr.type == GROUND)
+                    {
 
-                    goldInventory++;
+                    }
                 }
                 else
                 {
-                    // add coords here
-                    //Move();
+                    FindShortestPath(terr.coord);
+                }
+            }
+            void FarmGold(Terrain& terr)
+            {
+                if (coordinate.x == terr.coord.x && coordinate.y == terr.coord.y)
+                {
+                    if (terr.type == GOLD)
+                    {
+                        if (goldInventory >= 20)
+                        // cant farm gold anymore
+                        TransferGold();
+
+                        goldInventory++;
+                    }
+                }
+                else
+                {
+                    FindShortestPath(tert.coord);
                 }
             }
             void TransferGold()
             {
+                // Find closest town hall
                 // start walking back
-                // once it reaches town hall
                 goldInventory = 0;
             }
             std::string GetDescription() override{};

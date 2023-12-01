@@ -128,14 +128,15 @@ namespace Warcraft::Units
 
 
             }
-            void FindShortestPath(Terrain& terr)
+            void FindShortestPath(Vec2 terr)
             {
 
                 std::queue<Vec2> queue;
-                std::vector<Vec2> tempExplo;
+                bool visited[n][n] = {false};
+
                 
                 queue.push(coordinate);
-                tempExplo.push_back(coordinate);
+                visited[coordinate.x][coordinate.y] = true;
 
                 while(!queue.empty())
                 {
@@ -147,14 +148,13 @@ namespace Warcraft::Units
 
                     for (auto adjacCoord : GetAdjacentEdges(n, v))
                     {
-                        if (std::find(tempExplo.begin(), tempExplo.end(), adjacCoord) != tempExplo.end())
+                        if (!visited[adjacCoord.x][adjacCoord.y])
                         {
-                            tempExplo.push_back(adjacCoord);
+                            visited[adjacCoord.x][adjacCoord.y] = true;
                             queue.push(adjacCoord);
                         }
                     }
                 }
-
             }
 
             void Move(Move dir)
@@ -195,12 +195,19 @@ namespace Warcraft::Units
             }
             void Attack(Living& un)
             {
-                un.health -= attack;
+                if (coordinate.x + 1 <= un.coordinate.x && coordinate.y + 1 <= un.coordinate.y)
+                    un.health -= attack;
+                else
+                {
+                    FindShortestPath(un.coordinate);
+                }
             }
-            void GoTo(Vec2 coord)
-            {
 
+            void GoTo(Vec2& coord)
+            {
+                FindShortestPath(coord);
             }
+
             void RegenHealth()
             {
                 if (health + healthRegen >= maxHealth)
