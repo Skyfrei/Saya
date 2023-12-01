@@ -1,4 +1,4 @@
-
+#pragma once
 #include "Spell.h"
 
 // Level	Duration	Effect	Hero Level Req

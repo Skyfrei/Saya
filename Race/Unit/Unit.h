@@ -15,9 +15,13 @@ using namespace Warcraft::Environment;
 
 namespace Warcraft::Units
 {
-    enum Type
+    enum UnitType
     {
+        FOOTMAN,
         PEASANT,
+        SORCERESS,
+        ARCHMAGE,
+        BLOODMAGE,
         OTHER
     };
 
@@ -143,7 +147,7 @@ namespace Warcraft::Units
                     Vec2 v = queue.front();
                     queue.pop();
 
-                    if (v.x == terr.coord.x && v.y == terr.coord.y)
+                    if (v.x == terr.x && v.y == terr.y)
                         Move(STAY);
 
                     for (auto adjacCoord : GetAdjacentEdges(n, v))
@@ -223,6 +227,6 @@ namespace Warcraft::Units
             float attackRange;
             int movementSpeed = 1;
             float hpRegen = 0.25f;
-            Type is;
+            UnitType is;
     };
 }

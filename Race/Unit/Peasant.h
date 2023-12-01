@@ -63,7 +63,7 @@ namespace Warcraft::Units
                 }
                 else
                 {
-                    FindShortestPath(tert.coord);
+                    FindShortestPath(terr.coord);
                 }
             }
             void TransferGold()

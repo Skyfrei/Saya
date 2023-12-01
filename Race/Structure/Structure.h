@@ -9,6 +9,7 @@ namespace Warcraft::Structures
     enum StructureType
     {
         HALL,
+        BARRACK,
         OTHER
     };
 

@@ -1,26 +1,17 @@
-#pragme once
+#pragma once
 #include "Structure.h"
 #include "../Unit/Unit.h"
 #include "../Unit/Peasant.h"
-#include "../Unit/Sorceress.h"
 #include "../Unit/Footman.h"
 #include "../Unit/Hero/Archmage.h"
 #include "../Unit/Hero/BloodMage.h"
+#include <vector>
 
 using namespace Warcraft::Units;
 using namespace Warcraft::Units::Heroes;
 
 namespace Warcraft::Structures
 {
-    enum UnitType
-    {
-        FOOTMAN,
-        PEASANT,
-        SORCERESS,
-        ARCHMAGE,
-        BLOODMAGE
-    };
-
     class Barrack : public Structure
     {
         public:
@@ -31,36 +22,54 @@ namespace Warcraft::Structures
                 health = 1500;
                 maxHealth = health;
                 goldCost = 220;
-
+                is = BARRACK;
                 buildTime = 70;
             }
         
         public:
-            Unit& CreateUnit(UnitType type)
+            bool HasEnoghGold(int playerGold, int cost)
+            {
+                if (playerGold >= cost)
+                    return true;
+
+                return false;
+            }
+            void CreateUnit(std::vector<Unit*>& units, int playerGold, UnitType type)
             {
                 switch (type)
                 {
                     case FOOTMAN:
-                        Footman man;
-                        return man;
-
+                        Footman* man;
+                        if (HasEnoghGold(playerGold, man->goldCost) == true)
+                        {
+                            man->coordinate = coordinate;
+                            units.push_back(man);
+                        }
+                        
                     case PEASANT:
-                        Peasant slave;
-                        return slave;
-
-                    case SORCERESS:
-                        Sorceress sorc;
-                        return sorc;
+                        Peasant* slave;
+                        if (HasEnoghGold(playerGold, slave->goldCost) == true)
+                        {
+                            slave->coordinate = coordinate;
+                            units.push_back(slave);
+                        }
 
                     case ARCHMAGE:
-                        Archmage arch;
-                        return arch;
+                        Archmage* arch;
+                        if (HasEnoghGold(playerGold, arch->goldCost) == true)
+                        {
+                            arch->coordinate = coordinate;
+                            units.push_back(arch);
+                        }
                         
                     case BLOODMAGE:
-                        BloodMage blood;
-                        return blood;
+                        BloodMage* blood;
+                        if (HasEnoghGold(playerGold, blood->goldCost) == true)
+                        {
+                            blood->coordinate = coordinate;
+                            units.push_back(blood);
+                        }
                 }
-                return;
             }
     };
 }

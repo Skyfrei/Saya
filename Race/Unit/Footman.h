@@ -20,7 +20,7 @@ namespace Warcraft::Units
                 attackCooldown = 1.35;
                 buildTime = 20;
 
-                is = OTHER;
+                is = FOOTMAN;
             }
             std::string GetDescription() override{};
     };

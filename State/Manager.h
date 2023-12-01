@@ -2,9 +2,11 @@
 
 #include "../Map/Map.h"
 #include "Player.h"
+#include "../Race/Unit/Unit.h"
 #include <chrono>
 
 using namespace Warcraft::Environment;
+
 
 namespace Warcraft::State
 {
@@ -22,7 +24,7 @@ namespace Warcraft::State
         public:
             void MainLoop()
             {   
-                while((player.HasPeasant() && player.HasTownHall()) && (enemy.HasPeasant() && enemy.HasTownHall()))
+                while((player.HasUnit(PEASANT) && player.HasStructure(HALL)) && (enemy.HasUnit(PEASANT) && enemy.HasStructure(HALL)))
                 {
                     
                 }

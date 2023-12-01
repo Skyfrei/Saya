@@ -1,3 +1,4 @@
+#pragma once
 #include "Hero.h"
 #include "../../Spells/Blizzard.h"
 #include "../../Spells/BrillanceAura.h"
@@ -44,6 +45,7 @@ namespace Warcraft::Units::Heroes
                 spells.push_back(new Blizzard());
                 spells.push_back(new BrillanceAura());
                 spells.push_back(new MassTeleport());
+                is = ARCHMAGE;
             }
 
         std::string GetDescription() override {return "Archmage hero";}

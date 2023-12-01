@@ -4,7 +4,7 @@
 #include "../Race/Unit/Peasant.h"
 #include "../Race/Structure/Farm.h"
 #include "../Race/Structure/TownHall.h"
-#include "../Race/Structure/TownHall.h"
+#include "../Race/Structure/Barrack.h"
 #include "../Race/Unit/Unit.h"
 #include "../Living.h"
 
@@ -33,11 +33,11 @@ namespace Warcraft::State
                 structures.push_back(new TownHall());
                 
             }
-            bool HasTownHall()
+            bool HasStructure(StructureType structType)
             {
                 for (int i = 0; i < structures.size(); i++)
                 {
-                    if (structures[i]->is == HALL)
+                    if (structures[i]->is == structType)
                     {
                         return true;
                     }
@@ -45,11 +45,11 @@ namespace Warcraft::State
                 return false;
             }
 
-            bool HasPeasant()
+            bool HasUnit(UnitType unitType)
             {
                 for (int i = 0; i < units.size(); i++)
                 {
-                    if (units[i]->is == PEASANT)
+                    if (units[i]->is == unitType)
                     {
                         return true;
                     }
@@ -85,6 +85,31 @@ namespace Warcraft::State
             void ChooseToBuild()
             {
 
+            }
+
+            void RecruitSoldier(UnitType unitType)
+            {
+                if (HasStructure(BARRACK) == true)
+                {
+                    if (unitType == ARCHMAGE)
+                    {
+                        bool temp = HasUnit(BLOODMAGE);
+                        if (temp == true)
+                        {
+                            return;
+                        }
+                        
+                        
+                    }
+                    else if (unitType == BLOODMAGE)
+                    {
+                        bool temp = HasUnit(ARCHMAGE);
+                        if (temp == true)
+                        {
+                            return;
+                        }
+                    }
+                }
             }
 
         public:

@@ -1,3 +1,4 @@
+#pragma once
 #include "Hero.h"
 #include "../../Spells/Banish.h"
 #include "../../Spells/FlameStrike.h"
@@ -29,7 +30,7 @@ namespace Warcraft::Units::Heroes
                 manaRegen = 0.96f;
                 maxMana += 285;
 
-                goldCold = 535;
+                goldCost = 535;
                 foodCost = 5;
                 buildTime = 55;
                 attack = 24;
@@ -44,6 +45,7 @@ namespace Warcraft::Units::Heroes
                 spells.push_back(new FlameStrike());
                 spells.push_back(new Banish());
                 spells.push_back(new SiphonMana());
+                is = BLOODMAGE;
             }
 
         std::string GetDescription() override {return "Bloodmage hero";}

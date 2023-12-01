@@ -1,3 +1,4 @@
+#pragma once
 #include "Spell.h"
 #include "../Unit/Unit.h"
 
