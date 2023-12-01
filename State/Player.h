@@ -6,6 +6,7 @@
 #include "../Race/Structure/TownHall.h"
 #include "../Race/Structure/Barrack.h"
 #include "../Race/Unit/Unit.h"
+#include <memory>
 #include "../Living.h"
 
 using namespace Warcraft::Units;
@@ -24,13 +25,10 @@ namespace Warcraft::State
             }
             void Initialize()
             {
-                units.push_back(new Peasant());
-                units.push_back(new Peasant());
-                units.push_back(new Peasant());
-                units.push_back(new Peasant());
-                units.push_back(new Peasant());
+                for (int i = 0; i < 5; i++)
+                    units.push_back(std::unique_ptr<Peasant> (new Peasant()));
 
-                structures.push_back(new TownHall());
+                structures.push_back(std::unique_ptr<TownHall> (new TownHall()));
                 
             }
             bool HasStructure(StructureType structType)
@@ -99,7 +97,6 @@ namespace Warcraft::State
                             return;
                         }
                         
-                        
                     }
                     else if (unitType == BLOODMAGE)
                     {
@@ -110,15 +107,22 @@ namespace Warcraft::State
                         }
                     }
                 }
+                for (int i = 0; i < structures.size(); i++)
+                {
+                    if (structures[i]->is == BARRACK)
+                    {
+                        static_cast<Barrack&>(structures[i])->CreateUnit(units, gold, FOOTMAN);
+                    }
+                }
             }
 
         public:
             int gold;
             Vec2 food;
 
-            std::vector<Unit*> units;
-            std::vector<Structure*> structures;
-            std::vector<Living*> all;
+            std::vector<std::unique_ptr<Unit>> units;
+            std::vector<std::unique_ptr<Structure>> structures;
+            std::vector<std::unique_ptr<Living>> all;
     };
 }
 

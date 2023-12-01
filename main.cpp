@@ -14,4 +14,5 @@ int main()
 {
 
     Map map;
+    Manager manager;
 }

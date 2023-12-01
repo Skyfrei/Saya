@@ -18,8 +18,8 @@ namespace Warcraft
         public:
             Living()
             {
-                id = objNumber;
-                objNumber++;
+                //id = objNumber;
+                //objNumber++;
             }
 
         virtual std::string GetDescription() = 0;
@@ -49,7 +49,7 @@ namespace Warcraft
             std::string name;
             std::string description;
             int health;
-            static int objNumber;
+            //static int objNumber;
             int id;
             
             float healthRegen = 0.25;

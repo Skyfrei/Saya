@@ -34,41 +34,45 @@ namespace Warcraft::Structures
 
                 return false;
             }
-            void CreateUnit(std::vector<Unit*>& units, int playerGold, UnitType type)
+            void CreateUnit(std::vector<std::unique_ptr<Unit>>& units, int playerGold, UnitType type)
             {
                 switch (type)
                 {
                     case FOOTMAN:
-                        Footman* man;
+                        std::unique_ptr<Footman> man(new Footman());
                         if (HasEnoghGold(playerGold, man->goldCost) == true)
                         {
                             man->coordinate = coordinate;
-                            units.push_back(man);
+                            units.emplace_back(std::move(man));
                         }
+                        break;
                         
                     case PEASANT:
-                        Peasant* slave;
+                        std::unique_ptr<Peasant> slave(new Peasant());
                         if (HasEnoghGold(playerGold, slave->goldCost) == true)
                         {
                             slave->coordinate = coordinate;
-                            units.push_back(slave);
+                            units.push_back(std::move(slave));
                         }
+                        break;
 
                     case ARCHMAGE:
-                        Archmage* arch;
+                        std::unique_ptr<Archmage> arch(new Archmage());
                         if (HasEnoghGold(playerGold, arch->goldCost) == true)
                         {
                             arch->coordinate = coordinate;
-                            units.push_back(arch);
+                            units.push_back(std::move(arch));
                         }
+                        break;
                         
                     case BLOODMAGE:
-                        BloodMage* blood;
+                        std::unique_ptr<BloodMage> blood(new BloodMage());
                         if (HasEnoghGold(playerGold, blood->goldCost) == true)
                         {
                             blood->coordinate = coordinate;
-                            units.push_back(blood);
+                            units.push_back(std::move(blood));
                         }
+                        break;
                 }
             }
     };

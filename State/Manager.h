@@ -16,7 +16,6 @@ namespace Warcraft::State
             Manager()
             {
                 // game start
-                map.InitializeTerrain();
                 player.Initialize(); // Done 
                 enemy.Initialize(); // Done
                 MainLoop();
@@ -26,6 +25,8 @@ namespace Warcraft::State
             {   
                 while((player.HasUnit(PEASANT) && player.HasStructure(HALL)) && (enemy.HasUnit(PEASANT) && enemy.HasStructure(HALL)))
                 {
+                    player.RecruitSoldier(FOOTMAN);
+                    std::cout<<player.
                     
                 }
             }

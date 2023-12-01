@@ -2,6 +2,7 @@
 
 #include <vector>
 #include "Terrain.h"
+#include <iostream>
 
 #define n 15
 
@@ -16,6 +17,7 @@ namespace Warcraft::Environment
             {
                 for(int i = 0; i < n; i++)
                 {
+                    std::vector<Terrain> boom;
                     for (int j = 0; j < n; j++)
                     {
                         Terrain temp(i, j);
@@ -26,21 +28,16 @@ namespace Warcraft::Environment
                             temp.type = GOLD;
                             temp.resourceLeft = 2000;
                         }
-                        objects[i][j] = temp;
+                        boom.push_back(temp);
+                        //objects[i][j] = temp;
                     }
+                    objects.push_back(boom);
+                    boom.clear();
                 }
-            }
-        
-
-        public:
-            void InitializeTerrain()
-            {
-                
             }
             
         public:
             std::vector<std::vector<Terrain> > objects;
 
-        
     };
 }
