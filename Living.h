@@ -21,6 +21,11 @@ namespace Warcraft
                 //id = objNumber;
                 //objNumber++;
             }
+            virtual ~Living() = default;
+            //Living::Living(const Living&)
+            //Living& Living::operator=(const Living&)
+            //Living::Living(Living&&)
+            //Living& Living::operator=(Living&&)
 
         virtual std::string GetDescription() = 0;
 
@@ -58,7 +63,7 @@ namespace Warcraft
             float maxHealth;
             float manaRegen = 1.15;
 
-            int goldCost;
+            int goldCost = 0;
             int foodCost = 0;
             
             int buildTime;

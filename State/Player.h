@@ -29,7 +29,19 @@ namespace Warcraft::State
                     units.push_back(std::unique_ptr<Peasant> (new Peasant()));
 
                 structures.push_back(std::unique_ptr<TownHall> (new TownHall()));
+                structures.push_back(std::unique_ptr<Barrack> (new Barrack()));
                 
+            }
+            void SetInitialCoordinates(Vec2 v)
+            {
+                for (int i = 0; i < structures.size(); i++)
+                {
+                    structures[i]->coordinate = v;
+                }
+                for(int i = 0; i < units.size(); i++)
+                {
+                    units[i]->coordinate = structures[0]->coordinate;
+                }
             }
             bool HasStructure(StructureType structType)
             {
@@ -80,6 +92,7 @@ namespace Warcraft::State
                     
                 food.y += f.GetFood();
             }
+
             void ChooseToBuild()
             {
 
@@ -96,7 +109,6 @@ namespace Warcraft::State
                         {
                             return;
                         }
-                        
                     }
                     else if (unitType == BLOODMAGE)
                     {
@@ -107,14 +119,17 @@ namespace Warcraft::State
                         }
                     }
                 }
+
                 for (int i = 0; i < structures.size(); i++)
                 {
                     if (structures[i]->is == BARRACK)
                     {
-                        static_cast<Barrack&>(structures[i])->CreateUnit(units, gold, FOOTMAN);
+                        static_cast<Barrack&>(*structures[i]).CreateUnit(units, gold, unitType);
+                        
                     }
                 }
             }
+
 
         public:
             int gold;

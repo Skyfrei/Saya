@@ -6,6 +6,7 @@
 #include "../Unit/Hero/Archmage.h"
 #include "../Unit/Hero/BloodMage.h"
 #include <vector>
+#include <iostream>
 
 using namespace Warcraft::Units;
 using namespace Warcraft::Units::Heroes;
@@ -27,52 +28,47 @@ namespace Warcraft::Structures
             }
         
         public:
-            bool HasEnoghGold(int playerGold, int cost)
+            bool HasEnoughGold(int playerGold, int cost)
             {
                 if (playerGold >= cost)
                     return true;
-
                 return false;
             }
-            void CreateUnit(std::vector<std::unique_ptr<Unit>>& units, int playerGold, UnitType type)
+            void FinishBuilding() override
             {
+
+            }
+            std::string GetDescription() override
+            {
+                return "Recruit soldiers.";
+            }
+            void CreateUnit(std::vector<std::unique_ptr<Unit>>& units, int& playerGold, UnitType type)
+            {
+                std::unique_ptr<Unit> unit;
+
                 switch (type)
                 {
                     case FOOTMAN:
-                        std::unique_ptr<Footman> man(new Footman());
-                        if (HasEnoghGold(playerGold, man->goldCost) == true)
-                        {
-                            man->coordinate = coordinate;
-                            units.emplace_back(std::move(man));
-                        }
+                        unit = std::make_unique<Footman>();
                         break;
                         
                     case PEASANT:
-                        std::unique_ptr<Peasant> slave(new Peasant());
-                        if (HasEnoghGold(playerGold, slave->goldCost) == true)
-                        {
-                            slave->coordinate = coordinate;
-                            units.push_back(std::move(slave));
-                        }
+                        unit =  std::make_unique<Peasant>();
                         break;
 
                     case ARCHMAGE:
-                        std::unique_ptr<Archmage> arch(new Archmage());
-                        if (HasEnoghGold(playerGold, arch->goldCost) == true)
-                        {
-                            arch->coordinate = coordinate;
-                            units.push_back(std::move(arch));
-                        }
+                        unit = std::make_unique<Archmage>();
                         break;
                         
                     case BLOODMAGE:
-                        std::unique_ptr<BloodMage> blood(new BloodMage());
-                        if (HasEnoghGold(playerGold, blood->goldCost) == true)
-                        {
-                            blood->coordinate = coordinate;
-                            units.push_back(std::move(blood));
-                        }
+                        unit = std::make_unique<BloodMage>();
                         break;
+                }   
+                if (HasEnoughGold(playerGold, unit->goldCost) == true)
+                {
+                    //std::cout<<playerGold - unit->goldCost;
+                    playerGold -= unit->goldCost;
+                    units.emplace_back(std::move(unit));                    
                 }
             }
     };

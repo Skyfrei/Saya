@@ -32,6 +32,7 @@ namespace Warcraft::Environment
             Vec2 coord;
             TerrainType type = GROUND;
             Living* object;
+            //std::unique_ptr<Living> object;
     };
 }
 

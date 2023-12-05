@@ -25,7 +25,7 @@ namespace Warcraft::Units
         OTHER
     };
 
-    enum Move
+    enum MoveType
     {
         W,
         NW,
@@ -44,179 +44,105 @@ namespace Warcraft::Units
             Unit()
             {
                 is = OTHER;
+                attackCooldown = 1;
             }
+            virtual ~Unit() = default;
         
         public:
-            std::vector<Vec2> GetAdjacentEdges(int maxSize, Vec2& currentPlace)
+            void Move(Vec2 terr)
             {
-                std::vector<Vec2> adEdges;
-                int y = currentPlace.y;
-                int x = currentPlace.x;
-                
-                if (x < maxSize - 1 && x > 0)
-                {
-                    if (y < maxSize - 1 && y > 0)
-                    {
-                        adEdges.push_back(Vec2(x - 1, y - 1));
-                        adEdges.push_back(Vec2(x - 1, y));
-                        adEdges.push_back(Vec2(x - 1, y + 1));
-                        adEdges.push_back(Vec2(x, y - 1));
-                        adEdges.push_back(Vec2(x, y + 1));
-                        adEdges.push_back(Vec2(x + 1, y - 1));
-                        adEdges.push_back(Vec2(x + 1, y));
-                        adEdges.push_back(Vec2(x + 1, y + 1));
-                    }
-                    else if (y == 0)
-                    {
-                        adEdges.push_back(Vec2(x - 1, y + 1));
-                        adEdges.push_back(Vec2(x - 1, y));
-                        adEdges.push_back(Vec2(x , y + 1));
-                        adEdges.push_back(Vec2(x + 1, y));
-                        adEdges.push_back(Vec2(x + 1, y + 1));
-                    }
-                    else
-                    {
-                         adEdges.push_back(Vec2(x - 1, y));
-                        adEdges.push_back(Vec2(x - 1, y - 1));
-                        adEdges.push_back(Vec2(x , y - 1));
-                        adEdges.push_back(Vec2(x + 1, y - 1));
-                        adEdges.push_back(Vec2(x + 1, y));
-                    }
-                }
-                else if (x == 0)
-                {
-                    if ( y == 0)
-                    {
-                        adEdges.push_back(Vec2(x, y + 1));
-                        adEdges.push_back(Vec2(x + 1, y));
-                        adEdges.push_back(Vec2(x + 1, y + 1));
-                    }
-                    else if (y == maxSize - 1)
-                    {
-                        adEdges.push_back(Vec2(x, y - 1));
-                        adEdges.push_back(Vec2(x + 1, y));
-                        adEdges.push_back(Vec2(x + 1, y - 1));
-                    }
-                    else
-                    {
-                        adEdges.push_back(Vec2(x, y + 1));
-                        adEdges.push_back(Vec2(x, y - 1));
-                        adEdges.push_back(Vec2(x + 1, y));
-                        adEdges.push_back(Vec2(x + 1, y + 1));
-                        adEdges.push_back(Vec2(x + 1, y - 1));
-                    }
-                }
-                else 
-                {
-                    if ( y == 0)
-                    {
-                        adEdges.push_back(Vec2(x - 1, y));
-                        adEdges.push_back(Vec2(x - 1, y + 1));
-                        adEdges.push_back(Vec2(x, y + 1));
-                    }
-                    else if (y == maxSize - 1)
-                    {
-                        adEdges.push_back(Vec2(x - 1, y));
-                        adEdges.push_back(Vec2(x - 1, y - 1));
-                        adEdges.push_back(Vec2(x, y - 1));
-                    }
-                    else
-                    {
-                        adEdges.push_back(Vec2(x, y + 1));
-                        adEdges.push_back(Vec2(x, y - 1));
-                        adEdges.push_back(Vec2(x - 1, y));
-                        adEdges.push_back(Vec2(x - 1, y + 1));
-                        adEdges.push_back(Vec2(x - 1, y - 1));
-                    }
-                }
+                Vec2 difference;
+                difference.x = coordinate.x - terr.x;
+                difference.y = coordinate.y - terr.y;
 
-
-            }
-            void FindShortestPath(Vec2 terr)
-            {
-
-                std::queue<Vec2> queue;
-                bool visited[n][n] = {false};
-
-                
-                queue.push(coordinate);
-                visited[coordinate.x][coordinate.y] = true;
-
-                while(!queue.empty())
-                {
-                    Vec2 v = queue.front();
-                    queue.pop();
-
-                    if (v.x == terr.x && v.y == terr.y)
-                        Move(STAY);
-
-                    for (auto adjacCoord : GetAdjacentEdges(n, v))
-                    {
-                        if (!visited[adjacCoord.x][adjacCoord.y])
-                        {
-                            visited[adjacCoord.x][adjacCoord.y] = true;
-                            queue.push(adjacCoord);
-                        }
-                    }
-                }
+                if (difference.x > 0 && difference.y > 0)
+                    ChangeCoordinate(NW);
+                else if (difference.x > 0 && difference.y <0)
+                    ChangeCoordinate(NE);
+                else if (difference.x < 0 && difference.y > 0)
+                    ChangeCoordinate(SW);
+                else if (difference.x < 0 && difference.y < 0)
+                    ChangeCoordinate(SE);
+                else if (difference.x == 0 && difference.y < 0)
+                    ChangeCoordinate(E);
+                else if (difference.x == 0 && difference.y > 0)
+                    ChangeCoordinate(W);
+                else if (difference.x > 0 && difference.y == 0)
+                    ChangeCoordinate(N);
+                else if (difference.x < 0 && difference.y == 0)
+                    ChangeCoordinate(S);
             }
 
-            void Move(Move dir)
+            void Attack(Living& un)
             {
+                if (coordinate.x + 1 <= un.coordinate.x && coordinate.y + 1 <= un.coordinate.y)
+                {    
+                    if (GetAttackTime() == true)
+                        un.health -= attack;
+                }
+                else
+                    Move(un.coordinate);
+            }
+            bool GetAttackTime()
+            {
+                time = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<float, std::milli> diff = time - time1;
+                time1 = std::chrono::high_resolution_clock::now();
+                
+                if (diff.count() >= attackCooldown)
+                    return true;
+
+                return false;
+            }
+
+            void RegenHealth()
+            {
+                time = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<float, std::milli> diff = time - hpTime;
+                hpTime = std::chrono::high_resolution_clock::now();
+
+                if (health + healthRegen >= maxHealth)
+                    return;
+                if (diff.count() >= attackCooldown)
+                    health += healthRegen;
+            }
+        private:
+            void ChangeCoordinate(MoveType dir)
+            {
+
                 switch (dir)
                 {
                     case W:
-                        coordinate.x -= 1;
+                        coordinate.y -= 1;
                         break;
                     case NW:
                         coordinate.x -= 1;
-                        coordinate.y += 1;
+                        coordinate.y -= 1;
                         break;
                     case N:
-                        coordinate.y += 1;
+                        coordinate.x -= 1;
                         break;
                     case NE:
-                        coordinate.x += 1;
+                        coordinate.x -= 1;
                         coordinate.y += 1;
                         break;
                     case E:
-                        coordinate.x += 1;
+                        coordinate.y += 1;
                         break;
                     case SE:
                         coordinate.x += 1;
-                        coordinate.y -= 1;
+                        coordinate.y += 1;
                         break;
                     case S:
-                        coordinate.y -= 1;
+                        coordinate.x += 1;
                         break;
                     case SW:
-                        coordinate.x -= 1;
+                        coordinate.x += 1;
                         coordinate.y -= 1;
                         break;
                     default:
                         break;
                 }
-            }
-            void Attack(Living& un)
-            {
-                if (coordinate.x + 1 <= un.coordinate.x && coordinate.y + 1 <= un.coordinate.y)
-                    un.health -= attack;
-                else
-                {
-                    FindShortestPath(un.coordinate);
-                }
-            }
-
-            void GoTo(Vec2& coord)
-            {
-                FindShortestPath(coord);
-            }
-
-            void RegenHealth()
-            {
-                if (health + healthRegen >= maxHealth)
-                    return;
-                health += healthRegen;
             }
 
         public:
@@ -228,5 +154,8 @@ namespace Warcraft::Units
             int movementSpeed = 1;
             float hpRegen = 0.25f;
             UnitType is;
+            std::chrono::high_resolution_clock::time_point time1 = std::chrono::high_resolution_clock::now();
+            std::chrono::high_resolution_clock::time_point hpTime = std::chrono::high_resolution_clock::now();
+            std::chrono::high_resolution_clock::time_point time = std::chrono::high_resolution_clock::now();
     };
 }

@@ -18,15 +18,23 @@ namespace Warcraft::State
                 // game start
                 player.Initialize(); // Done 
                 enemy.Initialize(); // Done
+                
+                
                 MainLoop();
             }
         public:
             void MainLoop()
             {   
+                player.SetInitialCoordinates(Vec2(8, 2));
+                
                 while((player.HasUnit(PEASANT) && player.HasStructure(HALL)) && (enemy.HasUnit(PEASANT) && enemy.HasStructure(HALL)))
                 {
-                    player.RecruitSoldier(FOOTMAN);
-                    std::cout<<player.
+                    //player.RecruitSoldier(FOOTMAN);
+                    //std::cout<<player.units.size()<<" ";
+                    //player.units[0]->Attack(*enemy.units[0]);
+                    //std::cout<<enemy.units[0]->health;
+                    
+                    player.units[0]->Move(Vec2(6, 6));
                     
                 }
             }

@@ -20,6 +20,7 @@ class Farm : public Structure
         }
     public:
         std::string GetDescription() override {return description;}
+        void FinishBuilding() {}
 
     public: 
         int GetFood() { return 5;}

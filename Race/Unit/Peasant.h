@@ -40,12 +40,12 @@ namespace Warcraft::Units
                 {
                     if (terr.type == GROUND)
                     {
-
+                        terr.object = &stru;
                     }
                 }
                 else
                 {
-                    FindShortestPath(terr.coord);
+                    Move(terr.coord);
                 }
             }
             void FarmGold(Terrain& terr)
@@ -63,7 +63,7 @@ namespace Warcraft::Units
                 }
                 else
                 {
-                    FindShortestPath(terr.coord);
+                    Move(terr.coord);
                 }
             }
             void TransferGold()
