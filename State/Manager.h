@@ -26,6 +26,7 @@ namespace Warcraft::State
             void MainLoop()
             {   
                 player.SetInitialCoordinates(Vec2(8, 2));
+                enemy.SetInitialCoordinates(Vec2(n - 2, n - 3));
                 
                 while((player.HasUnit(PEASANT) && player.HasStructure(HALL)) && (enemy.HasUnit(PEASANT) && enemy.HasStructure(HALL)))
                 {
@@ -34,7 +35,8 @@ namespace Warcraft::State
                     //player.units[0]->Attack(*enemy.units[0]);
                     //std::cout<<enemy.units[0]->health;
                     
-                    player.units[0]->Move(Vec2(6, 6));
+                    player.units[0]->Attack(*enemy.units[0]);
+                    std::cout<<player.units[0]->coordinate.x << " " << player.units[0]->coordinate.y << " \n";
                     
                 }
             }

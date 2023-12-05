@@ -36,7 +36,7 @@ namespace Warcraft::Units
         public:
            void Build(Structure& stru, Terrain& terr)
             {
-                if (coordinate.x + 1 <= terr.coord.x && coordinate.y + 1 <= terr.coord.y)
+                if (WithinDistance(terr.coord))
                 {
                     if (terr.type == GROUND)
                     {
@@ -50,7 +50,7 @@ namespace Warcraft::Units
             }
             void FarmGold(Terrain& terr)
             {
-                if (coordinate.x == terr.coord.x && coordinate.y == terr.coord.y)
+                if (WithinDistance(terr.coord))
                 {
                     if (terr.type == GOLD)
                     {
@@ -73,6 +73,19 @@ namespace Warcraft::Units
                 goldInventory = 0;
             }
             std::string GetDescription() override{};
+        private:
+
+            bool WithinDistance(Vec2 terr)
+            {
+                Vec2 difference;
+                difference.x = coordinate.x - terr.x;
+                difference.y = coordinate.y - terr.y;
+
+                if (std::abs(difference.x) == 1 && std::abs(difference.y) == 1)
+                    return true;
+
+                return false;
+            }
 
         public:
             int goldInventory = 0;

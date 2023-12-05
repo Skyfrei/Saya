@@ -73,9 +73,21 @@ namespace Warcraft::Units
                     ChangeCoordinate(S);
             }
 
+            bool WithinDistance(Vec2 terr)
+            {
+                Vec2 difference;
+                difference.x = coordinate.x - terr.x;
+                difference.y = coordinate.y - terr.y;
+
+                if (std::abs(difference.x) == 1 && std::abs(difference.y) == 1)
+                    return true;
+
+                return false;
+            }
+
             void Attack(Living& un)
             {
-                if (coordinate.x + 1 <= un.coordinate.x && coordinate.y + 1 <= un.coordinate.y)
+                if (WithinDistance(un.coordinate))
                 {    
                     if (GetAttackTime() == true)
                         un.health -= attack;
