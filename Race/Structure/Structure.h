@@ -10,6 +10,7 @@ namespace Warcraft::Structures
     {
         HALL,
         BARRACK,
+        FARM,
         OTHER
     };
 

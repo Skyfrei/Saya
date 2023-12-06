@@ -17,6 +17,7 @@ class Farm : public Structure
             goldCost = 100;
 
             buildTime = 10;
+            is = FARM;
         }
     public:
         std::string GetDescription() override {return description;}

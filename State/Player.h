@@ -30,6 +30,7 @@ namespace Warcraft::State
 
                 structures.push_back(std::unique_ptr<TownHall> (new TownHall()));
                 structures.push_back(std::unique_ptr<Barrack> (new Barrack()));
+                ValidateFood();
                 
             }
             void SetInitialCoordinates(Vec2 v)
@@ -43,6 +44,7 @@ namespace Warcraft::State
                     units[i]->coordinate = structures[0]->coordinate;
                 }
             }
+
             bool HasStructure(StructureType structType)
             {
                 for (int i = 0; i < structures.size(); i++)
@@ -69,9 +71,17 @@ namespace Warcraft::State
 
             void ValidateFood()
             {
+                food.x = 0;
+                food.y = 0;
+                
                 for(int i = 0; i < units.size(); i++)
                 {
                     food.x += units[i]->foodCost;
+                }
+                for (int i = 0; i < structures.size(); i++)
+                {
+                    if (structures[i]->is == FARM)
+                        food.y += 5;
                 }
             }
 
@@ -80,18 +90,13 @@ namespace Warcraft::State
                 gold += g;
             }
 
-            void Move(std::vector<Unit*> uns)
-            {
-                
-            }
-
-            void IncreaseFoodCapac(Farm& f)
-            {
-                if (food.y + f.GetFood() >= 60 )
-                    return;
+            // void IncreaseFoodCapac()
+            // {
+            //     if (food.y + f.GetFood() >= 60 )
+            //         return;
                     
-                food.y += f.GetFood();
-            }
+            //     food.y += f.GetFood();
+            // }
 
             void ChooseToBuild()
             {
