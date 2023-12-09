@@ -125,7 +125,7 @@ namespace Warcraft::State
             //     food.y += f.GetFood();
             // }
 
-            void ChooseToBuild()
+            void ChooseToBuild(StructureType type)
             {
 
             }

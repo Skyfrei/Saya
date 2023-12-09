@@ -5,9 +5,12 @@
 #include "../Race/Unit/Unit.h"
 #include <chrono>
 #include "../Living.h"
+#include "../Race/Structure/Structure.h"
+
 
 using namespace Warcraft::Environment;
 using namespace Warcraft;
+using Warcraft::Structures::StructureType;
 
 
 namespace Warcraft::State
@@ -37,7 +40,9 @@ namespace Warcraft::State
                     //player.units[0]->Attack(*enemy.units[0]);
                     //std::cout<<enemy.units[0]->health;
                     
-                    player.units[0]->Attack(*enemy.units[0]);
+                    //auto& hall = player.FindClosestLiving(player.units[0], HALL);
+                    float time = GetTime();
+                    std::cout<<time<<" ";
                 }
             }
 
@@ -55,7 +60,7 @@ namespace Warcraft::State
             float GetTime()
             {
                 time = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<float, std::milli> diff = time - time1;
+                std::chrono::duration<float> diff = time - time1;
                 return diff.count();
             }
             

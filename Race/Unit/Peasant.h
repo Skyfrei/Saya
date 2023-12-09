@@ -51,14 +51,14 @@ namespace Warcraft::Units
                     Move(terr.coord);
                 }
             }
-            void FarmGold(Terrain& terr)
+            void FarmGold(Terrain& terr, TownHall& hall)
             {
                 if (WithinDistance(terr.coord))
                 {
                     if (terr.type == GOLD)
                     {
                         if (goldInventory >= 20)
-                            //TransferGold();
+                            TransferGold(hall);
                         if (GetAttackTime())
                             goldInventory++;
                     }

@@ -109,7 +109,7 @@ namespace Warcraft::Units
             bool GetAttackTime()
             {
                 time = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<float, std::milli> diff = time - time1;
+                std::chrono::duration<float> diff = time - time1;
                 time1 = std::chrono::high_resolution_clock::now();
                 
                 if (diff.count() >= attackCooldown)
@@ -121,7 +121,7 @@ namespace Warcraft::Units
             void RegenHealth()
             {
                 time = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<float, std::milli> diff = time - hpTime;
+                std::chrono::duration<float> diff = time - hpTime;
                 hpTime = std::chrono::high_resolution_clock::now();
 
                 if (health + hpRegen >= maxHealth)
