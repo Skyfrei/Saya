@@ -25,10 +25,14 @@ namespace Warcraft::State
             }
             void Initialize()
             {
-                for (int i = 0; i < 5; i++)
-                    units.push_back(std::unique_ptr<Peasant> (new Peasant()));
-
                 structures.push_back(std::unique_ptr<TownHall> (new TownHall()));
+                for (int i = 0; i < 5; i++)
+                {
+                    units.push_back(std::unique_ptr<Peasant>(new Peasant()));
+                    units[0]->coordinate = structures[0]->coordinate;
+                }
+
+
                 structures.push_back(std::unique_ptr<Barrack> (new Barrack()));
                 ValidateFood();
                 

@@ -38,16 +38,11 @@ namespace Warcraft
                 return false;
             }
 
-            bool IsDead()
+            bool Die()
             {
-                if (health <= 0)
+                if (health <= 0 )
                     return true;
                 return false;
-            }
-
-            void Die()
-            {
-                
             }
             
         public:
@@ -56,12 +51,8 @@ namespace Warcraft
             int health;
             //static int objNumber;
             int id;
-            
-            float healthRegen = 0.25;
-            float mana = 0;
-            float maxMana;
+
             float maxHealth;
-            float manaRegen = 1.15;
 
             int goldCost = 0;
             int foodCost = 0;

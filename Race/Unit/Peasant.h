@@ -2,6 +2,7 @@
 
 #include "Unit.h"
 #include "../Structure/Structure.h"
+#include "../Structure/TownHall.h"
 #include "../../Map/Map.h"
 #include "../../Map/Terrain.h"
 #include <vector>
@@ -19,6 +20,8 @@ namespace Warcraft::Units
                 name = "Peasant";
                 description = "God damn farm workers.";
                 health = 240;
+                maxHealth = health;
+
                 attack = 5.5;
                 
                 mana = 200;
@@ -55,10 +58,9 @@ namespace Warcraft::Units
                     if (terr.type == GOLD)
                     {
                         if (goldInventory >= 20)
-                        // cant farm gold anymore
-                        TransferGold();
-
-                        goldInventory++;
+                            TransferGold();
+                        if (GetAttackTime())
+                            goldInventory++;
                     }
                 }
                 else
@@ -66,11 +68,13 @@ namespace Warcraft::Units
                     Move(terr.coord);
                 }
             }
-            void TransferGold()
+            void TransferGold(TownHall& hall)
             {
-                // Find closest town hall
-                // start walking back
-                goldInventory = 0;
+                Move(hall.coordinate);
+
+                if (WithinDistance(hall.coordinate))
+                    goldInventory = 0;
+
             }
             std::string GetDescription() override{};
         private:

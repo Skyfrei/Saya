@@ -76,7 +76,6 @@ namespace Warcraft::Units::Heroes
             int8_t level = 1;
 
 
-
             std::vector<Spell*> spells;
             Attribute primaryAttribute;
         

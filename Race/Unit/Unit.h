@@ -45,6 +45,7 @@ namespace Warcraft::Units
             {
                 is = OTHER;
                 attackCooldown = 1;
+
             }
             virtual ~Unit() = default;
         
@@ -79,7 +80,7 @@ namespace Warcraft::Units
                 difference.x = coordinate.x - terr.x;
                 difference.y = coordinate.y - terr.y;
 
-                if (std::abs(difference.x) == 1 && std::abs(difference.y) == 1)
+                if (std::abs(difference.x) <= 1 && std::abs(difference.y) <= 1)
                     return true;
 
                 return false;
@@ -88,7 +89,7 @@ namespace Warcraft::Units
             void Attack(Living& un)
             {
                 if (WithinDistance(un.coordinate))
-                {    
+                {
                     if (GetAttackTime() == true)
                         un.health -= attack;
                 }
@@ -113,10 +114,10 @@ namespace Warcraft::Units
                 std::chrono::duration<float, std::milli> diff = time - hpTime;
                 hpTime = std::chrono::high_resolution_clock::now();
 
-                if (health + healthRegen >= maxHealth)
+                if (health + hpRegen >= maxHealth)
                     return;
                 if (diff.count() >= attackCooldown)
-                    health += healthRegen;
+                    health += hpRegen;
             }
         private:
             void ChangeCoordinate(MoveType dir)
@@ -162,6 +163,9 @@ namespace Warcraft::Units
             bool isInvisible = false;
             float attack;
             float attackCooldown;
+            float mana = 100;
+            float manaRegen = 0.25;
+            int maxMana = 100;
             float attackRange;
             int movementSpeed = 1;
             float hpRegen = 0.25f;

@@ -12,6 +12,7 @@ namespace Warcraft::Units
                 name = "Footman";
                 description = "A normal foot soldier.";
                 health = 420;
+                maxHealth = health;
                 attack = 12.5;
 
                 goldCost = 135;

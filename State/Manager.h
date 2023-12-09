@@ -4,8 +4,10 @@
 #include "Player.h"
 #include "../Race/Unit/Unit.h"
 #include <chrono>
+#include "../Living.h"
 
 using namespace Warcraft::Environment;
+using namespace Warcraft;
 
 
 namespace Warcraft::State
@@ -36,9 +38,13 @@ namespace Warcraft::State
                     //std::cout<<enemy.units[0]->health;
                     
                     player.units[0]->Attack(*enemy.units[0]);
-                    std::cout<<player.units[0]->coordinate.x << " " << player.units[0]->coordinate.y << " \n";
-                    
                 }
+            }
+
+            void ManageLiving(Player& pl)
+            {
+
+                std::cout<<"dead";
             }
 
             void CheckForMovement()
