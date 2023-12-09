@@ -43,12 +43,28 @@ namespace Warcraft::Units::Heroes
                         break;
                 }
             }
+            void Attack(Living& un)
+            {
+                if (WithinDistance(un.coordinate))
+                {
+                    if (GetAttackTime() == true)
+                        un.health -= attack;
+                }
+                else
+                    Move(un.coordinate);
+            }
 
             void RegenMana()
             {
                 if (mana + manaRegen >= maxMana)
                     return;
                 mana += manaRegen;
+            }
+
+            void CheckExperience(float bonus)
+            {
+                if (experience + bonus >= maxExperience)
+                    LevelUp();
             }
 
             void LevelUp()
@@ -66,6 +82,8 @@ namespace Warcraft::Units::Heroes
                 manaRegen += 0.15;
                 attack += 3;
                 attackCooldown -= 0.02;
+                experience = 0.0f;
+                maxExperience += 150;
             }
 
         public:
@@ -74,7 +92,8 @@ namespace Warcraft::Units::Heroes
             float agility;
             float intelligence;
             int8_t level = 1;
-
+            float experience = 0.0f;
+            float maxExperience = 100.0f;
 
             std::vector<Spell*> spells;
             Attribute primaryAttribute;

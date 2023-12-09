@@ -34,7 +34,9 @@ namespace Warcraft::State
 
 
                 structures.push_back(std::unique_ptr<Barrack> (new Barrack()));
+
                 ValidateFood();
+
                 
             }
             void SetInitialCoordinates(Vec2 v)
@@ -71,6 +73,27 @@ namespace Warcraft::State
                     }
                 }
                 return false;
+            }
+
+            Living& FindClosestLiving(Unit& unit, StructureType type)
+            {
+                double min = 100;
+                int8_t index = 0;
+
+                for(int i  = 0; i < structures.size(); i++)
+                {
+                    if (structures[i]->is == type) {
+                        Vec2 difference = unit.FindDifference(structures[i]->coordinate);
+                        double temp = std::sqrt(std::pow(difference.x, 2) + std::pow(difference.y, 2));
+                        if (temp <= min)
+                        {
+                            min = temp;
+                            index = i;
+                        }
+                    }
+                }
+
+                return *structures[index];
             }
 
             void ValidateFood()
@@ -146,7 +169,6 @@ namespace Warcraft::State
 
             std::vector<std::unique_ptr<Unit>> units;
             std::vector<std::unique_ptr<Structure>> structures;
-            std::vector<std::unique_ptr<Living>> all;
     };
 }
 

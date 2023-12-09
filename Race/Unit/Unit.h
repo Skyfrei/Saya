@@ -6,12 +6,14 @@
 #include <string>
 #include <queue>
 #include "../../Tools/Vec2.h"
+#include "../Structure/Structure.h"
 
 #define n 15
 
 using namespace Warcraft::Spells;
 using Warcraft::Living;
 using namespace Warcraft::Environment;
+using namespace Warcraft::Structures;
 
 namespace Warcraft::Units
 {
@@ -76,14 +78,21 @@ namespace Warcraft::Units
 
             bool WithinDistance(Vec2 terr)
             {
-                Vec2 difference;
-                difference.x = coordinate.x - terr.x;
-                difference.y = coordinate.y - terr.y;
+                Vec2 difference = FindDifference(terr);
 
                 if (std::abs(difference.x) <= 1 && std::abs(difference.y) <= 1)
                     return true;
 
                 return false;
+            }
+
+            Vec2 FindDifference(Vec2 terr)
+            {
+                Vec2 difference;
+                difference.x = coordinate.x - terr.x;
+                difference.y = coordinate.y - terr.y;
+
+                return difference;
             }
 
             void Attack(Living& un)
@@ -96,6 +105,7 @@ namespace Warcraft::Units
                 else
                     Move(un.coordinate);
             }
+
             bool GetAttackTime()
             {
                 time = std::chrono::high_resolution_clock::now();

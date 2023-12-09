@@ -58,7 +58,7 @@ namespace Warcraft::Units
                     if (terr.type == GOLD)
                     {
                         if (goldInventory >= 20)
-                            TransferGold();
+                            //TransferGold();
                         if (GetAttackTime())
                             goldInventory++;
                     }
