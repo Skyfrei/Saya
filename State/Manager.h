@@ -21,8 +21,9 @@ namespace Warcraft::State
             Manager()
             {
                 // game start
-                player.Initialize(); // Done 
-                enemy.Initialize(); // Done
+                map = Map();
+                player.Initialize(map); // Done
+                enemy.Initialize(map); // Done
                 
                 
                 MainLoop();
@@ -33,16 +34,15 @@ namespace Warcraft::State
                 player.SetInitialCoordinates(Vec2(8, 2));
                 enemy.SetInitialCoordinates(Vec2(n - 2, n - 3));
                 
-                while((player.HasUnit(PEASANT) && player.HasStructure(HALL)) && (enemy.HasUnit(PEASANT) && enemy.HasStructure(HALL)))
-                {
+                while((player.HasUnit(PEASANT) && player.HasStructure(HALL)) && (enemy.HasUnit(PEASANT) && enemy.HasStructure(HALL))) {
                     //player.RecruitSoldier(FOOTMAN);
                     //std::cout<<player.units.size()<<" ";
                     //player.units[0]->Attack(*enemy.units[0]);
                     //std::cout<<enemy.units[0]->health;
-                    
+
                     //auto& hall = player.FindClosestLiving(player.units[0], HALL);
                     float time = GetTime();
-                    std::cout<<time<<" ";
+                    //std::cout<<time<<" ";
                 }
             }
 

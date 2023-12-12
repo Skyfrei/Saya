@@ -30,11 +30,11 @@ namespace Warcraft
         virtual std::string GetDescription() = 0;
 
         public:
-            bool IsEnoughGold(int playerGold, int cost)
+
+            bool HasEnoughGold(int playerGold, int cost)
             {
                 if (playerGold >= cost)
                     return true;
-                
                 return false;
             }
 

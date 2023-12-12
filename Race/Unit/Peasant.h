@@ -3,6 +3,8 @@
 #include "Unit.h"
 #include "../Structure/Structure.h"
 #include "../Structure/TownHall.h"
+#include "../Structure/Barrack.h"
+#include "../Structure/Farm.h"
 #include "../../Map/Map.h"
 #include "../../Map/Terrain.h"
 #include <vector>
@@ -37,13 +39,36 @@ namespace Warcraft::Units
             }
 
         public:
-           void Build(Structure& stru, Terrain& terr)
+           void Build(std::vector<std::unique_ptr<Structure>>& structures, int& playerGold, StructureType type, Terrain& terr)
             {
+                std::unique_ptr<Structure> struc;
                 if (WithinDistance(terr.coord))
                 {
                     if (terr.type == GROUND)
                     {
-                        terr.object = &stru;
+                        switch (type)
+                        {
+                            case BARRACK:
+                                struc = std::make_unique<Barrack>();
+                                break;
+
+                            case FARM:
+                                struc =  std::make_unique<Farm>();
+                                break;
+
+                            case HALL:
+                                struc = std::make_unique<TownHall>();
+                                break;
+
+                            case OTHER:
+                                break;
+                        }
+                        if (HasEnoughGold(playerGold, struc->goldCost))
+                        {
+                            playerGold -= struc->goldCost;
+                            structures.emplace_back(std::move(struc));
+                            //terr.object = stru;
+                        }
                     }
                 }
                 else
@@ -77,19 +102,6 @@ namespace Warcraft::Units
 
             }
             std::string GetDescription() override{};
-        private:
-
-            bool WithinDistance(Vec2 terr)
-            {
-                Vec2 difference;
-                difference.x = coordinate.x - terr.x;
-                difference.y = coordinate.y - terr.y;
-
-                if (std::abs(difference.x) == 1 && std::abs(difference.y) == 1)
-                    return true;
-
-                return false;
-            }
 
         public:
             int goldInventory = 0;

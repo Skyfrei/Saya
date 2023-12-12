@@ -1,4 +1,7 @@
+#pragma once
+
 #include "../Tools/Vec2.h"
+#include <memory>
 #include <vector>
 #include "../Race/Unit/Footman.h"
 #include "../Race/Unit/Peasant.h"
@@ -8,10 +11,12 @@
 #include "../Race/Unit/Unit.h"
 #include <memory>
 #include "../Living.h"
+#include "../Map/Map.h"
 
 using namespace Warcraft::Units;
 using namespace Warcraft::Structures;
 using namespace Warcraft;
+using namespace Warcraft::Environment;
 
 namespace Warcraft::State
 {
@@ -23,31 +28,27 @@ namespace Warcraft::State
                 food.y = 10;
                 gold = 300;
             }
-            void Initialize()
+            void Initialize(Map& m)
             {
-                structures.push_back(std::unique_ptr<TownHall> (new TownHall()));
+                structures.push_back(std::make_unique<TownHall> ());
                 for (int i = 0; i < 5; i++)
                 {
-                    units.push_back(std::unique_ptr<Peasant>(new Peasant()));
+                    units.push_back(std::make_unique<Peasant>());
                     units[0]->coordinate = structures[0]->coordinate;
                 }
-
-
-                structures.push_back(std::unique_ptr<Barrack> (new Barrack()));
-
+                structures.push_back(std::make_unique<Barrack> ());
+                map = m;
                 ValidateFood();
-
-                
             }
             void SetInitialCoordinates(Vec2 v)
             {
-                for (int i = 0; i < structures.size(); i++)
+                for (const auto & structure : structures)
                 {
-                    structures[i]->coordinate = v;
+                    structure->coordinate = v;
                 }
-                for(int i = 0; i < units.size(); i++)
+                for(const auto & unit : units)
                 {
-                    units[i]->coordinate = structures[0]->coordinate;
+                    unit->coordinate = structures[0]->coordinate;
                 }
             }
 
@@ -65,9 +66,9 @@ namespace Warcraft::State
 
             bool HasUnit(UnitType unitType)
             {
-                for (int i = 0; i < units.size(); i++)
+                for (const auto & unit : units)
                 {
-                    if (units[i]->is == unitType)
+                    if (unit->is == unitType)
                     {
                         return true;
                     }
@@ -101,13 +102,13 @@ namespace Warcraft::State
                 food.x = 0;
                 food.y = 0;
                 
-                for(int i = 0; i < units.size(); i++)
+                for(const auto & unit : units)
                 {
-                    food.x += units[i]->foodCost;
+                    food.x += unit->foodCost;
                 }
-                for (int i = 0; i < structures.size(); i++)
+                for (const auto & structure : structures)
                 {
-                    if (structures[i]->is == FARM)
+                    if (structure->is == FARM)
                         food.y += 5;
                 }
             }
@@ -117,27 +118,25 @@ namespace Warcraft::State
                 gold += g;
             }
 
-            // void IncreaseFoodCapac()
-            // {
-            //     if (food.y + f.GetFood() >= 60 )
-            //         return;
-                    
-            //     food.y += f.GetFood();
-            // }
-
-            void ChooseToBuild(StructureType type)
+            void ChooseToBuild(StructureType structType, Vec2 terrCoord)
             {
-
+                for (const auto & unit : units)
+                {
+                    if (unit->is == PEASANT)
+                    {
+                        dynamic_cast<Peasant&>(*unit).Build(structures, gold, structType, map.objects[terrCoord.x][terrCoord.y]);
+                    }
+                }
             }
 
             void RecruitSoldier(UnitType unitType)
             {
-                if (HasStructure(BARRACK) == true)
+                if (HasStructure(BARRACK))
                 {
                     if (unitType == ARCHMAGE)
                     {
                         bool temp = HasUnit(BLOODMAGE);
-                        if (temp == true)
+                        if (temp)
                         {
                             return;
                         }
@@ -145,19 +144,19 @@ namespace Warcraft::State
                     else if (unitType == BLOODMAGE)
                     {
                         bool temp = HasUnit(ARCHMAGE);
-                        if (temp == true)
+                        if (temp)
                         {
                             return;
                         }
                     }
                 }
 
-                for (int i = 0; i < structures.size(); i++)
+                for (const auto & structure : structures)
                 {
-                    if (structures[i]->is == BARRACK)
+                    if (structure->is == BARRACK)
                     {
-                        static_cast<Barrack&>(*structures[i]).CreateUnit(units, gold, unitType);
-                        
+                        dynamic_cast<Barrack&>(*structure).CreateUnit(units, gold, unitType);
+
                     }
                 }
             }
@@ -169,6 +168,8 @@ namespace Warcraft::State
 
             std::vector<std::unique_ptr<Unit>> units;
             std::vector<std::unique_ptr<Structure>> structures;
+        private:
+            Map map;
     };
 }
 

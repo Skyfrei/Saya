@@ -21,7 +21,6 @@ namespace Warcraft::Units
     {
         FOOTMAN,
         PEASANT,
-        SORCERESS,
         ARCHMAGE,
         BLOODMAGE,
         OTHER

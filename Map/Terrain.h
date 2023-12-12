@@ -26,13 +26,17 @@ namespace Warcraft::Environment
             {
                 return 0;
             }
-            
+
+            //void GetLiving(std::vector<Living>& obj)
+            //{
+               // objects = obj;
+            //}
+
         public: 
-            int resourceLeft;
+            int resourceLeft{};
             Vec2 coord;
             TerrainType type = GROUND;
-            Living* object;
-            //std::unique_ptr<Living> object;
+            //std::vector<Living> objects;
     };
 }
 
