@@ -1,5 +1,5 @@
-#pragma once
-
+#ifndef PEASANT_H
+#define PEASANT_H
 #include "Unit.h"
 #include "../Structure/Structure.h"
 #include "../Structure/TownHall.h"
@@ -39,71 +39,15 @@ namespace Warcraft::Units
             }
 
         public:
-           void Build(std::vector<std::unique_ptr<Structure>>& structures, int& playerGold, StructureType type, Terrain& terr)
-            {
-                std::unique_ptr<Structure> struc;
-                if (WithinDistance(terr.coord))
-                {
-                    if (terr.type == GROUND)
-                    {
-                        switch (type)
-                        {
-                            case BARRACK:
-                                struc = std::make_unique<Barrack>();
-                                break;
+           void Build(std::vector<std::unique_ptr<Structure>>& structures, int& playerGold, StructureType type, Terrain& terr);
+            void FarmGold(Terrain& terr, TownHall& hall);
+            void TransferGold(TownHall& hall);
 
-                            case FARM:
-                                struc =  std::make_unique<Farm>();
-                                break;
-
-                            case HALL:
-                                struc = std::make_unique<TownHall>();
-                                break;
-
-                            case OTHER:
-                                break;
-                        }
-                        if (HasEnoughGold(playerGold, struc->goldCost))
-                        {
-                            playerGold -= struc->goldCost;
-                            structures.emplace_back(std::move(struc));
-                            //terr.object = stru;
-                        }
-                    }
-                }
-                else
-                {
-                    Move(terr.coord);
-                }
-            }
-            void FarmGold(Terrain& terr, TownHall& hall)
-            {
-                if (WithinDistance(terr.coord))
-                {
-                    if (terr.type == GOLD)
-                    {
-                        if (goldInventory >= 20)
-                            TransferGold(hall);
-                        if (GetAttackTime())
-                            goldInventory++;
-                    }
-                }
-                else
-                {
-                    Move(terr.coord);
-                }
-            }
-            void TransferGold(TownHall& hall)
-            {
-                Move(hall.coordinate);
-
-                if (WithinDistance(hall.coordinate))
-                    goldInventory = 0;
-
-            }
             std::string GetDescription() override{};
 
         public:
             int goldInventory = 0;
     };
 }
+
+#endif
