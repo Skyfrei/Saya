@@ -6,7 +6,14 @@ namespace Warcraft::Units {
     void Peasant::Build(std::vector<std::unique_ptr<Structure>> &structures, int &playerGold, StructureType type,
                         Terrain &terr) {
         std::unique_ptr<Structure> struc;
+        if (!buildTask.empty())
+        {
+            WorkOnTask();
+            return;
+        }
         if (WithinDistance(terr.coord)) {
+            //buildTask.push(Task<Structure>(struc));
+
             if (terr.type == GROUND) {
                 switch (type) {
                     case BARRACK:
@@ -21,7 +28,7 @@ namespace Warcraft::Units {
                         struc = std::make_unique<TownHall>();
                         break;
 
-                    case OTHER:
+                    default:
                         break;
                 }
                 if (HasEnoughGold(playerGold, struc->goldCost)) {
@@ -33,6 +40,23 @@ namespace Warcraft::Units {
         } else {
             Move(terr.coord);
         }
+    }
+    void Peasant::WorkOnTask()
+    {
+        if (buildTask.front().percentage <= 100.0)
+        {
+            if (GetAttackTime())
+            {
+                buildTask.front().UpdateTask(attack);
+                return;
+            }
+        }
+        buildTask.pop();
+    }
+
+    void Peasant::ChangeBuilding()
+    {
+
     }
 
     void Peasant::FarmGold(Terrain &terr, TownHall &hall) {

@@ -5,8 +5,7 @@
 #include "Tools/Vec2.h"
 
 namespace Warcraft
-{   
-
+{
     enum Side
     {
         PLAYER,
@@ -31,38 +30,20 @@ namespace Warcraft
 
         public:
 
-            bool HasEnoughGold(int playerGold, int cost)
-            {
-                if (playerGold >= cost)
-                    return true;
-                return false;
-            }
+            bool HasEnoughGold(int playerGold, int cost);
+            bool Die();
 
-            bool Die()
-            {
-                if (health <= 0 )
-                    return true;
-                return false;
-            }
-            
         public:
             std::string name;
             std::string description;
             int health;
-            //static int objNumber;
             int id;
-
             float maxHealth;
-
             int goldCost = 0;
             int foodCost = 0;
-            
             int buildTime;
-
             Side belongs;
-
             Vec2 coordinate;
 
-            
     };
 }

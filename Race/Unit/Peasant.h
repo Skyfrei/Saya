@@ -8,12 +8,15 @@
 #include "../../Map/Map.h"
 #include "../../Map/Terrain.h"
 #include <vector>
+#include <queue>
 
-using namespace Warcraft::Structures;
-using namespace Warcraft::Environment;
+
 
 namespace Warcraft::Units
 {
+    using namespace Warcraft::Structures;
+    using namespace Warcraft::Environment;
+
     class Peasant : public Unit
     {
         public:
@@ -39,14 +42,17 @@ namespace Warcraft::Units
             }
 
         public:
-           void Build(std::vector<std::unique_ptr<Structure>>& structures, int& playerGold, StructureType type, Terrain& terr);
+            void Build(std::vector<std::unique_ptr<Structure>>& structures, int& playerGold, StructureType type, Terrain& terr);
+            void WorkOnTask();
+            void ChangeBuilding();
             void FarmGold(Terrain& terr, TownHall& hall);
             void TransferGold(TownHall& hall);
-
-            std::string GetDescription() override{};
+            std::string GetDescription() override{return "Slave.";}
 
         public:
             int goldInventory = 0;
+        private:
+            std::queue<Task<Structure>> buildTask;
     };
 }
 

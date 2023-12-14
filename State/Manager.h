@@ -7,13 +7,12 @@
 #include "../Living.h"
 #include "../Race/Structure/Structure.h"
 
-
-using namespace Warcraft::Environment;
-using namespace Warcraft;
-using Warcraft::Structures::StructureType;
-
 namespace Warcraft::State
 {
+    using namespace Warcraft::Environment;
+    using namespace Warcraft;
+    using Warcraft::Structures::StructureType;
+
     class Manager
     {
         public:

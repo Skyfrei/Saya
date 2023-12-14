@@ -1,11 +1,16 @@
 #pragma once
 #include "../../Tools/Vec2.h"
 #include "../../Living.h"
+#include <queue>
+#include "../../State/Task.h"
 
-using Warcraft::Living;
+
 
 namespace Warcraft::Structures
 {
+    using Warcraft::Living;
+    using namespace Warcraft::State;
+
     enum StructureType
     {
         HALL,
@@ -27,6 +32,8 @@ namespace Warcraft::Structures
 
         public:
             StructureType is = OTHER;
+            std::queue<Task<Structure>> tasks;
+            bool isBeingBuilt = false;
 
             
             // std::vector<> building contained within building

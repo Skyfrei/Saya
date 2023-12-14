@@ -28,7 +28,9 @@ namespace Warcraft::State
 
             //auto& hall = player.FindClosestLiving(player.units[0], HALL);
             float time = GetTime();
-            std::cout<<time<<" ";
+            //std::cout<<time<<" ";
+            player.ChooseToBuild(HALL, Vec2(5, 6));
+            std::cout<<player.structures.size()<< " ";
 
         }
     }

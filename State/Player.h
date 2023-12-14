@@ -14,26 +14,23 @@
 #include "../Living.h"
 #include "../Map/Map.h"
 
-using namespace Warcraft::Units;
-using namespace Warcraft::Structures;
-using namespace Warcraft;
-using namespace Warcraft::Environment;
-
 namespace Warcraft::State
 {
+    using namespace Warcraft::Units;
+    using namespace Warcraft::Structures;
+    using namespace Warcraft;
+    using namespace Warcraft::Environment;
+
     class Player
     {
         public: 
-            Player()
-            {
-                food.y = 10;
-                gold = 300;
-            }
+            Player();
             void Initialize(Map& m);
             void SetInitialCoordinates(Vec2 v);
             bool HasStructure(StructureType structType);
             bool HasUnit(UnitType unitType);
-            Living& FindClosestLiving(Unit& unit, StructureType type);
+            Structure& FindClosestStructure(Unit& unit, StructureType type);
+            Living& Select();
             void ValidateFood();
             void UpdateGold(int g);
             void ChooseToBuild(StructureType structType, Vec2 terrCoord);

@@ -4,6 +4,11 @@
 #include "Player.h"
 namespace Warcraft::State
 {
+    Player::Player()
+    {
+        food.y = 10;
+        gold = 3000;
+    }
     void Player::SetInitialCoordinates(Vec2 v) {
         for (const auto &structure: structures) {
             structure->coordinate = v;
@@ -31,7 +36,12 @@ namespace Warcraft::State
         return false;
     }
 
-    Living &Player::FindClosestLiving(Unit &unit, StructureType type) {
+//    std::vector<Living>& Player::Select()
+//    {
+//
+//    }
+
+    Structure& Player::FindClosestStructure(Unit &unit, StructureType type) {
         double min = 100;
         int8_t index = 0;
 
@@ -45,7 +55,6 @@ namespace Warcraft::State
                 }
             }
         }
-
         return *structures[index];
     }
 
@@ -101,6 +110,7 @@ namespace Warcraft::State
     }
 
     void Player::ChooseToBuild(StructureType structType, Vec2 terrCoord) {
+        //Peasant a = FindClosestLiving(terrCoord);
         for (const auto &unit: units) {
             if (unit->is == PEASANT) {
                 dynamic_cast<Peasant &>(*unit).Build(structures, gold, structType, map.objects[terrCoord.x][terrCoord.y]);
