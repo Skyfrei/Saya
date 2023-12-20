@@ -4,10 +4,6 @@ project(Final)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
-#include_directories(../VulkanEngine/glfw/include)
-
-#include_directories(../VulkanEngine/glm)
-
 add_executable(Final
         main.cpp
         Living.h
