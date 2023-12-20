@@ -11,8 +11,8 @@ namespace Warcraft::Units {
             WorkOnTask();
             return;
         }
-        if (WithinDistance(terr.coord)) {
-            //buildTask.push(Task<Structure>(struc));
+        if (WithinDistance(terr.coord))
+        {
 
             if (terr.type == GROUND) {
                 switch (type) {
@@ -33,6 +33,7 @@ namespace Warcraft::Units {
                 }
                 if (HasEnoughGold(playerGold, struc->goldCost)) {
                     playerGold -= struc->goldCost;
+                    //buildTask.emplace_front(*struc);
                     structures.emplace_back(std::move(struc));
                     //terr.object = stru;
                 }
@@ -43,15 +44,19 @@ namespace Warcraft::Units {
     }
     void Peasant::WorkOnTask()
     {
-        if (buildTask.front().percentage <= 100.0)
-        {
-            if (GetAttackTime())
-            {
-                buildTask.front().UpdateTask(attack);
-                return;
-            }
-        }
-        buildTask.pop();
+//        if (buildTask.front().percentage <= 100.0)
+//        {
+//            if (GetAttackTime())
+//            {
+//                if (WithinDistance(buildTask.front().livingReference.coordinate))
+//                {
+//                    buildTask.front().UpdateTask(attack);
+//                    return;
+//                }
+//            }
+//        }
+//        else
+//            buildTask.pop_front();
     }
 
     void Peasant::ChangeBuilding()

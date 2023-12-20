@@ -15,13 +15,13 @@ namespace Warcraft::State
     class Task {
         public:
             Task(Living& ref);
+
             bool IsFinished();
             ///Parameter progress could be negative too. Soldiers attacking an unfinished building do negative to the progress.
             void UpdateTask(float progress);
 
         public:
             float percentage = 0.0f;
-            static int id;
             Living& livingReference;
     };
 }

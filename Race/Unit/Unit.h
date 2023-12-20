@@ -4,7 +4,7 @@
 #include "../../Living.h"
 #include "../../Map/Terrain.h"
 #include <string>
-#include <queue>
+#include <deque>
 #include "../../Tools/Vec2.h"
 #include "../Structure/Structure.h"
 #include "../../State/Task.h"
@@ -69,7 +69,7 @@ namespace Warcraft::Units
             float attackRange{};
             int movementSpeed = 1;
             float hpRegen = 0.25f;
-            std::queue<Task<Unit>> attackTask;
+            std::deque<Task<Unit>> attackTask;
             UnitType is;
             std::chrono::high_resolution_clock::time_point time1 = std::chrono::high_resolution_clock::now();
             std::chrono::high_resolution_clock::time_point hpTime = std::chrono::high_resolution_clock::now();

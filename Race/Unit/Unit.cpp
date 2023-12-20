@@ -90,12 +90,6 @@ namespace Warcraft::Units
             health += hpRegen;
     }
 
-    void Unit::CheckTask(Task<Unit>& t);
-    {
-        if(t.percentage < 0.0)
-            return
-    }
-
     void Unit::ChangeCoordinate(MoveType dir)
     {
 

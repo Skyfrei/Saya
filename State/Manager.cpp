@@ -21,16 +21,15 @@ namespace Warcraft::State
         enemy.SetInitialCoordinates(Vec2(n - 2, n - 3));
 
         while((player.HasUnit(PEASANT) && player.HasStructure(HALL)) && (enemy.HasUnit(PEASANT) && enemy.HasStructure(HALL))) {
-            //player.RecruitSoldier(FOOTMAN);
-            //std::cout<<player.units.size()<<" ";
+            player.RecruitSoldier(ARCHMAGE);
+            std::cout<<player.units.size()<<" ";
             //player.units[0]->Attack(*enemy.units[0]);
             //std::cout<<enemy.units[0]->health;
-
             //auto& hall = player.FindClosestLiving(player.units[0], HALL);
-            float time = GetTime();
+            //float time = GetTime();
             //std::cout<<time<<" ";
-            player.ChooseToBuild(HALL, Vec2(5, 6));
-            std::cout<<player.structures.size()<< " ";
+            //player.ChooseToBuild(HALL, Vec2(5, 6));
+            //std::cout<<player.structures.size()<< " ";
 
         }
     }

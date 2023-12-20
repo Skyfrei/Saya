@@ -7,7 +7,7 @@ namespace Warcraft::State
     Player::Player()
     {
         food.y = 10;
-        gold = 3000;
+        gold = 2000;
     }
     void Player::SetInitialCoordinates(Vec2 v) {
         for (const auto &structure: structures) {
@@ -100,7 +100,6 @@ namespace Warcraft::State
         for (const auto &structure: structures) {
             if (structure->is == BARRACK) {
                 dynamic_cast<Barrack &>(*structure).CreateUnit(units, gold, unitType);
-
             }
         }
     }

@@ -18,6 +18,4 @@ namespace Warcraft
             return true;
         return false;
     }
-
-    void
 }

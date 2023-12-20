@@ -41,7 +41,7 @@ namespace Warcraft::Structures
             }
             std::string GetDescription() override
             {
-
+                return "Town hall.";
             }
             
     };

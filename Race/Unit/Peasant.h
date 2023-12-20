@@ -8,7 +8,7 @@
 #include "../../Map/Map.h"
 #include "../../Map/Terrain.h"
 #include <vector>
-#include <queue>
+#include <deque>
 
 
 
@@ -16,6 +16,7 @@ namespace Warcraft::Units
 {
     using namespace Warcraft::Structures;
     using namespace Warcraft::Environment;
+    using namespace Warcraft::State;
 
     class Peasant : public Unit
     {
@@ -52,7 +53,7 @@ namespace Warcraft::Units
         public:
             int goldInventory = 0;
         private:
-            std::queue<Task<Structure>> buildTask;
+            std::deque<Task<Structure&>> buildTask;
     };
 }
 

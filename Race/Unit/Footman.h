@@ -23,6 +23,6 @@ namespace Warcraft::Units
 
                 is = FOOTMAN;
             }
-            std::string GetDescription() override{};
+            std::string GetDescription() override{ return "Footman";};
     };
 }
