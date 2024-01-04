@@ -13,4 +13,4 @@ the implementation of DeepRL.
 
 - Implementing a simplified version of warcraft3. Only human race will exist for the time being, with only footsoldiers, peasents and sorceresses(sorceresses
 may or may not stick in the game forever). 
-- Creating python bindings for cpp library
+- Creating python bindings for cpp library (currently tested out with basic class and works)
