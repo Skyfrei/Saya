@@ -34,6 +34,11 @@ namespace Warcraft::State
         }
     }
 
+    void Manager::CheckForMovement()
+    {
+
+    }
+
     float Manager::GetTime()
     {
         time = std::chrono::high_resolution_clock::now();

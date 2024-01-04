@@ -139,8 +139,8 @@ PYBIND11_MODULE(Warcraft, m) {
         .def("ManageLiving", &Manager::ManageLiving)
         .def("GetTime", &Manager::GetTime)
         .def("CheckForMovement", &Manager::CheckForMovement)
-        .def_readwrite("player", &Manager::player)
-        .def_readwrite("enemy", &Manager::enemy)
+        //.def_readwrite("player", &Manager::player)
+        //.def_readwrite("enemy", &Manager::enemy)
         .def_readwrite("map", &Manager::map);
 
     // Terrain module

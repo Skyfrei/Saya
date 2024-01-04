@@ -13,7 +13,11 @@ print(barrack.GetDescription())
 
 # Can access player
 player = Warcraft.Player()
-print(player.HasUnit(Warcraft.UnitType.PEASANT))
 print(player.gold)
 print(player.food)
+
+enemey = Warcraft.Player()
+
+# Can access manager
+manager = Warcraft.Manager()
 
