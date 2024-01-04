@@ -200,6 +200,7 @@ Race/Structure/Barrack.o: Race/Structure/Barrack.cpp.o
 # target to build an object file
 Race/Structure/Barrack.cpp.o:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/Race/Structure/Barrack.cpp.o
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/Race/Structure/Barrack.cpp.o
 .PHONY : Race/Structure/Barrack.cpp.o
 
 Race/Structure/Barrack.i: Race/Structure/Barrack.cpp.i
@@ -209,6 +210,7 @@ Race/Structure/Barrack.i: Race/Structure/Barrack.cpp.i
 # target to preprocess a source file
 Race/Structure/Barrack.cpp.i:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/Race/Structure/Barrack.cpp.i
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/Race/Structure/Barrack.cpp.i
 .PHONY : Race/Structure/Barrack.cpp.i
 
 Race/Structure/Barrack.s: Race/Structure/Barrack.cpp.s
@@ -218,6 +220,7 @@ Race/Structure/Barrack.s: Race/Structure/Barrack.cpp.s
 # target to generate assembly for a file
 Race/Structure/Barrack.cpp.s:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/Race/Structure/Barrack.cpp.s
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/Race/Structure/Barrack.cpp.s
 .PHONY : Race/Structure/Barrack.cpp.s
 
 Race/Unit/Peasant.o: Race/Unit/Peasant.cpp.o
@@ -227,6 +230,7 @@ Race/Unit/Peasant.o: Race/Unit/Peasant.cpp.o
 # target to build an object file
 Race/Unit/Peasant.cpp.o:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/Race/Unit/Peasant.cpp.o
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/Race/Unit/Peasant.cpp.o
 .PHONY : Race/Unit/Peasant.cpp.o
 
 Race/Unit/Peasant.i: Race/Unit/Peasant.cpp.i
@@ -236,6 +240,7 @@ Race/Unit/Peasant.i: Race/Unit/Peasant.cpp.i
 # target to preprocess a source file
 Race/Unit/Peasant.cpp.i:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/Race/Unit/Peasant.cpp.i
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/Race/Unit/Peasant.cpp.i
 .PHONY : Race/Unit/Peasant.cpp.i
 
 Race/Unit/Peasant.s: Race/Unit/Peasant.cpp.s
@@ -245,6 +250,7 @@ Race/Unit/Peasant.s: Race/Unit/Peasant.cpp.s
 # target to generate assembly for a file
 Race/Unit/Peasant.cpp.s:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/Race/Unit/Peasant.cpp.s
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/Race/Unit/Peasant.cpp.s
 .PHONY : Race/Unit/Peasant.cpp.s
 
 Race/Unit/Unit.o: Race/Unit/Unit.cpp.o
@@ -254,6 +260,7 @@ Race/Unit/Unit.o: Race/Unit/Unit.cpp.o
 # target to build an object file
 Race/Unit/Unit.cpp.o:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/Race/Unit/Unit.cpp.o
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/Race/Unit/Unit.cpp.o
 .PHONY : Race/Unit/Unit.cpp.o
 
 Race/Unit/Unit.i: Race/Unit/Unit.cpp.i
@@ -263,6 +270,7 @@ Race/Unit/Unit.i: Race/Unit/Unit.cpp.i
 # target to preprocess a source file
 Race/Unit/Unit.cpp.i:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/Race/Unit/Unit.cpp.i
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/Race/Unit/Unit.cpp.i
 .PHONY : Race/Unit/Unit.cpp.i
 
 Race/Unit/Unit.s: Race/Unit/Unit.cpp.s
@@ -272,6 +280,7 @@ Race/Unit/Unit.s: Race/Unit/Unit.cpp.s
 # target to generate assembly for a file
 Race/Unit/Unit.cpp.s:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/Race/Unit/Unit.cpp.s
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/Race/Unit/Unit.cpp.s
 .PHONY : Race/Unit/Unit.cpp.s
 
 State/Manager.o: State/Manager.cpp.o
@@ -281,6 +290,7 @@ State/Manager.o: State/Manager.cpp.o
 # target to build an object file
 State/Manager.cpp.o:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/State/Manager.cpp.o
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/State/Manager.cpp.o
 .PHONY : State/Manager.cpp.o
 
 State/Manager.i: State/Manager.cpp.i
@@ -290,6 +300,7 @@ State/Manager.i: State/Manager.cpp.i
 # target to preprocess a source file
 State/Manager.cpp.i:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/State/Manager.cpp.i
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/State/Manager.cpp.i
 .PHONY : State/Manager.cpp.i
 
 State/Manager.s: State/Manager.cpp.s
@@ -299,6 +310,7 @@ State/Manager.s: State/Manager.cpp.s
 # target to generate assembly for a file
 State/Manager.cpp.s:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/State/Manager.cpp.s
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/State/Manager.cpp.s
 .PHONY : State/Manager.cpp.s
 
 State/Player.o: State/Player.cpp.o
@@ -308,6 +320,7 @@ State/Player.o: State/Player.cpp.o
 # target to build an object file
 State/Player.cpp.o:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/State/Player.cpp.o
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/State/Player.cpp.o
 .PHONY : State/Player.cpp.o
 
 State/Player.i: State/Player.cpp.i
@@ -317,6 +330,7 @@ State/Player.i: State/Player.cpp.i
 # target to preprocess a source file
 State/Player.cpp.i:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/State/Player.cpp.i
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/State/Player.cpp.i
 .PHONY : State/Player.cpp.i
 
 State/Player.s: State/Player.cpp.s
@@ -326,6 +340,7 @@ State/Player.s: State/Player.cpp.s
 # target to generate assembly for a file
 State/Player.cpp.s:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/State/Player.cpp.s
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/State/Player.cpp.s
 .PHONY : State/Player.cpp.s
 
 State/Task.o: State/Task.cpp.o
@@ -335,6 +350,7 @@ State/Task.o: State/Task.cpp.o
 # target to build an object file
 State/Task.cpp.o:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/State/Task.cpp.o
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/State/Task.cpp.o
 .PHONY : State/Task.cpp.o
 
 State/Task.i: State/Task.cpp.i
@@ -344,6 +360,7 @@ State/Task.i: State/Task.cpp.i
 # target to preprocess a source file
 State/Task.cpp.i:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/State/Task.cpp.i
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/State/Task.cpp.i
 .PHONY : State/Task.cpp.i
 
 State/Task.s: State/Task.cpp.s
@@ -353,6 +370,7 @@ State/Task.s: State/Task.cpp.s
 # target to generate assembly for a file
 State/Task.cpp.s:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/State/Task.cpp.s
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/State/Task.cpp.s
 .PHONY : State/Task.cpp.s
 
 main.o: main.cpp.o
@@ -362,6 +380,7 @@ main.o: main.cpp.o
 # target to build an object file
 main.cpp.o:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/main.cpp.o
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/main.cpp.o
 .PHONY : main.cpp.o
 
 main.i: main.cpp.i
@@ -371,6 +390,7 @@ main.i: main.cpp.i
 # target to preprocess a source file
 main.cpp.i:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/main.cpp.i
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/main.cpp.i
 .PHONY : main.cpp.i
 
 main.s: main.cpp.s
@@ -380,6 +400,7 @@ main.s: main.cpp.s
 # target to generate assembly for a file
 main.cpp.s:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/main.cpp.s
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/main.cpp.s
 .PHONY : main.cpp.s
 
 # Help Target

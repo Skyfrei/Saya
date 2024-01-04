@@ -55,7 +55,7 @@ namespace Warcraft::Units
             void Attack(Living& un);
             bool GetAttackTime();
             void RegenHealth();
-            void CheckTask(Task<Unit>& t);
+            //void CheckTask(Task<Unit>& t);
             void ChangeCoordinate(MoveType dir);
 
         public:

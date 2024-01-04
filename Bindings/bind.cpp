@@ -40,6 +40,8 @@ PYBIND11_MODULE(Warcraft, m) {
         .value("SW", MoveType::SW)
         .value("STAY", MoveType::STAY);
 
+    py::class_<Living>(m, "Living");
+
     py::class_<Unit, Living>(m, "Unit")
         .def("Move", &Unit::Move)
         .def("WithinDistance", &Unit::WithinDistance)
@@ -47,7 +49,7 @@ PYBIND11_MODULE(Warcraft, m) {
         .def("Attack", &Unit::Attack)
         .def("GetAttackTime", &Unit::GetAttackTime)
         .def("RegenHealth", &Unit::RegenHealth)
-        .def("CheckTask", &Unit::CheckTask)
+        //.def("CheckTask", &Unit::CheckTask)
         .def("ChangeCoordinate", &Unit::ChangeCoordinate)
         .def_readwrite("isInvisible", &Unit::isInvisible)
         .def_readwrite("attack", &Unit::attack)
