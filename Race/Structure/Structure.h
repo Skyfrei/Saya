@@ -32,7 +32,7 @@ namespace Warcraft::Structures
 
         public:
             StructureType is = OTHER;
-            std::queue<Task<Structure>> tasks;
+            //std::queue<Task<Structure>> tasks;
             bool isBeingBuilt = false;
 
             

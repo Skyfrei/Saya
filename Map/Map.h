@@ -36,17 +36,6 @@ namespace Warcraft::Environment
                     tempTerr.clear();
                 }
             }
-
-//        std::vector<Living>& GetLivingInTerrain(Vec2 coords)
-//        {
-//                return mapp.at(coords);
-//        }
-
-        void ChangeLivingInTerrain()
-        {
-
-        }
-            
         public:
             std::vector<std::vector<Terrain> > objects;
             //std::map<Vec2, std::vector<Living>> mapp;

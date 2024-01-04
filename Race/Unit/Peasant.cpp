@@ -6,11 +6,11 @@ namespace Warcraft::Units {
     void Peasant::Build(std::vector<std::unique_ptr<Structure>> &structures, int &playerGold, StructureType type,
                         Terrain &terr) {
         std::unique_ptr<Structure> struc;
-        if (!buildTask.empty())
-        {
-            WorkOnTask();
-            return;
-        }
+        // if (!buildTask.empty())
+        // {
+        //     WorkOnTask();
+        //     return;
+        // }
         if (WithinDistance(terr.coord))
         {
 

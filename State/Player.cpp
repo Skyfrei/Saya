@@ -36,10 +36,10 @@ namespace Warcraft::State
         return false;
     }
 
-//    std::vector<Living>& Player::Select()
-//    {
-//
-//    }
+    std::vector<Living>& Player::Select()
+    {
+
+    }
 
     Structure& Player::FindClosestStructure(Unit &unit, StructureType type) {
         double min = 100;

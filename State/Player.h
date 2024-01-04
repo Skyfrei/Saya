@@ -31,7 +31,7 @@ namespace Warcraft::State
             bool HasStructure(StructureType structType);
             bool HasUnit(UnitType unitType);
             Structure& FindClosestStructure(Unit& unit, StructureType type);
-            Living& Select();
+            std::vector<Living>& Select();
             void ValidateFood();
             void UpdateGold(int g);
             void ChooseToBuild(StructureType structType, Vec2 terrCoord);
