@@ -124,44 +124,44 @@ Final/fast:
 .PHONY : Final/fast
 
 #=============================================================================
-# Target rules for targets named pyl
+# Target rules for targets named Warcraft
 
 # Build rule for target.
-pyl: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 pyl
-.PHONY : pyl
+Warcraft: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 Warcraft
+.PHONY : Warcraft
 
 # fast build rule for target.
-pyl/fast:
-	$(MAKE) -f CMakeFiles/pyl.dir/build.make CMakeFiles/pyl.dir/build
-.PHONY : pyl/fast
+Warcraft/fast:
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/build
+.PHONY : Warcraft/fast
 
-Bindings/Vec2.o: Bindings/Vec2.cpp.o
+Bindings/bind.o: Bindings/bind.cpp.o
 
-.PHONY : Bindings/Vec2.o
+.PHONY : Bindings/bind.o
 
 # target to build an object file
-Bindings/Vec2.cpp.o:
-	$(MAKE) -f CMakeFiles/pyl.dir/build.make CMakeFiles/pyl.dir/Bindings/Vec2.cpp.o
-.PHONY : Bindings/Vec2.cpp.o
+Bindings/bind.cpp.o:
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/Bindings/bind.cpp.o
+.PHONY : Bindings/bind.cpp.o
 
-Bindings/Vec2.i: Bindings/Vec2.cpp.i
+Bindings/bind.i: Bindings/bind.cpp.i
 
-.PHONY : Bindings/Vec2.i
+.PHONY : Bindings/bind.i
 
 # target to preprocess a source file
-Bindings/Vec2.cpp.i:
-	$(MAKE) -f CMakeFiles/pyl.dir/build.make CMakeFiles/pyl.dir/Bindings/Vec2.cpp.i
-.PHONY : Bindings/Vec2.cpp.i
+Bindings/bind.cpp.i:
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/Bindings/bind.cpp.i
+.PHONY : Bindings/bind.cpp.i
 
-Bindings/Vec2.s: Bindings/Vec2.cpp.s
+Bindings/bind.s: Bindings/bind.cpp.s
 
-.PHONY : Bindings/Vec2.s
+.PHONY : Bindings/bind.s
 
 # target to generate assembly for a file
-Bindings/Vec2.cpp.s:
-	$(MAKE) -f CMakeFiles/pyl.dir/build.make CMakeFiles/pyl.dir/Bindings/Vec2.cpp.s
-.PHONY : Bindings/Vec2.cpp.s
+Bindings/bind.cpp.s:
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/Bindings/bind.cpp.s
+.PHONY : Bindings/bind.cpp.s
 
 Living.o: Living.cpp.o
 
@@ -170,7 +170,7 @@ Living.o: Living.cpp.o
 # target to build an object file
 Living.cpp.o:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/Living.cpp.o
-	$(MAKE) -f CMakeFiles/pyl.dir/build.make CMakeFiles/pyl.dir/Living.cpp.o
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/Living.cpp.o
 .PHONY : Living.cpp.o
 
 Living.i: Living.cpp.i
@@ -180,7 +180,7 @@ Living.i: Living.cpp.i
 # target to preprocess a source file
 Living.cpp.i:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/Living.cpp.i
-	$(MAKE) -f CMakeFiles/pyl.dir/build.make CMakeFiles/pyl.dir/Living.cpp.i
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/Living.cpp.i
 .PHONY : Living.cpp.i
 
 Living.s: Living.cpp.s
@@ -190,7 +190,7 @@ Living.s: Living.cpp.s
 # target to generate assembly for a file
 Living.cpp.s:
 	$(MAKE) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/Living.cpp.s
-	$(MAKE) -f CMakeFiles/pyl.dir/build.make CMakeFiles/pyl.dir/Living.cpp.s
+	$(MAKE) -f CMakeFiles/Warcraft.dir/build.make CMakeFiles/Warcraft.dir/Living.cpp.s
 .PHONY : Living.cpp.s
 
 Race/Structure/Barrack.o: Race/Structure/Barrack.cpp.o
@@ -391,10 +391,10 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... Final"
-	@echo "... pyl"
-	@echo "... Bindings/Vec2.o"
-	@echo "... Bindings/Vec2.i"
-	@echo "... Bindings/Vec2.s"
+	@echo "... Warcraft"
+	@echo "... Bindings/bind.o"
+	@echo "... Bindings/bind.i"
+	@echo "... Bindings/bind.s"
 	@echo "... Living.o"
 	@echo "... Living.i"
 	@echo "... Living.s"

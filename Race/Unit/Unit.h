@@ -56,7 +56,6 @@ namespace Warcraft::Units
             bool GetAttackTime();
             void RegenHealth();
             void CheckTask(Task<Unit>& t);
-        private:
             void ChangeCoordinate(MoveType dir);
 
         public:
@@ -70,7 +69,7 @@ namespace Warcraft::Units
             float attackRange{};
             int movementSpeed = 1;
             float hpRegen = 0.25f;
-            std::deque<Task<Unit>> attackTask;
+            //std::deque<Task<Unit>> attackTask;
             UnitType is;
             std::chrono::high_resolution_clock::time_point time1 = std::chrono::high_resolution_clock::now();
             std::chrono::high_resolution_clock::time_point hpTime = std::chrono::high_resolution_clock::now();

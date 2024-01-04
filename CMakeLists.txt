@@ -12,20 +12,12 @@ set(CPPSRC
 ./Tools
 Living.cpp)
 
-set(PYLIB
-./Bindings/Vec2.cpp)
+set(PYLIB ./Bindings/bind.cpp)
 
 set(PYBIND11_DIR /export/home/klaviot99dm/.local/lib/python3.8/site-packages)
 find_package(pybind11 REQUIRED PATHS ${PYBIND11_DIR})
-pybind11_add_module(pyl ${PYLIB} ${CPPSRC})
 
-target_include_directories(pyl PRIVATE
-        ./Map
-        ./Race
-        ./State
-        ./Tools
-        Living.cpp
-)
+pybind11_add_module(Warcraft ${PYLIB} ${CPPSRC})
 
 add_executable(Final
         main.cpp
@@ -43,5 +35,3 @@ add_executable(Final
         Race/Unit/Unit.cpp
         Living.cpp
 )
-
-target_link_libraries(pyl)
