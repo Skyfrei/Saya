@@ -1,1 +1,5 @@
 -   https://harichada.github.io/osbox/posts/reinforcement-learning-for-real-time-strategy-games/
+
+
+
+cmake -D CMAKE_CXX_COMPILER=g++-10 CMakeLists.txt

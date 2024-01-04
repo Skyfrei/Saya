@@ -9,6 +9,7 @@
 #include "../../Map/Terrain.h"
 #include <vector>
 #include <deque>
+#include <memory>
 
 
 

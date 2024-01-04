@@ -13,6 +13,7 @@
 #include <memory>
 #include "../Living.h"
 #include "../Map/Map.h"
+#include <cmath>
 
 namespace Warcraft::State
 {
@@ -41,7 +42,6 @@ namespace Warcraft::State
             Vec2 food;
             std::vector<std::unique_ptr<Unit>> units;
             std::vector<std::unique_ptr<Structure>> structures;
-        private:
             Map map;
     };
 }

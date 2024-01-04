@@ -8,6 +8,7 @@
 #include "../Unit/Hero/BloodMage.h"
 #include "../Unit/Peasant.h"
 #include <vector>
+#include <memory>
 #include <iostream>
 
 using namespace Warcraft::Units;
