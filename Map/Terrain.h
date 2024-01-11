@@ -1,6 +1,7 @@
 #pragma once
 #include "../Tools/Vec2.h"
 #include "../Living.h"
+#include <memory>
 
 using Warcraft::Living;
 
@@ -36,7 +37,7 @@ namespace Warcraft::Environment
             int resourceLeft{};
             Vec2 coord;
             TerrainType type = GROUND;
-            //std::vector<Living> objects;
+            std::shared_ptr<Living> object;
     };
 }
 

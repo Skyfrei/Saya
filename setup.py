@@ -19,5 +19,5 @@ print(player.food)
 enemey = Warcraft.Player()
 
 # Can access manager
-manager = Warcraft.Manager()
+# manager = Warcraft.Manager()
 

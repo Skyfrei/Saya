@@ -23,14 +23,6 @@ namespace Warcraft::State
         while((player.HasUnit(PEASANT) && player.HasStructure(HALL)) && (enemy.HasUnit(PEASANT) && enemy.HasStructure(HALL))) {
             player.RecruitSoldier(ARCHMAGE);
             std::cout<<player.units.size()<<" ";
-            //player.units[0]->Attack(*enemy.units[0]);
-            //std::cout<<enemy.units[0]->health;
-            //auto& hall = player.FindClosestLiving(player.units[0], HALL);
-            //float time = GetTime();
-            //std::cout<<time<<" ";
-            //player.ChooseToBuild(HALL, Vec2(5, 6));
-            //std::cout<<player.structures.size()<< " ";
-
         }
     }
 

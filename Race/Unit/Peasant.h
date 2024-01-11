@@ -44,7 +44,7 @@ namespace Warcraft::Units
             }
 
         public:
-            void Build(std::vector<std::unique_ptr<Structure>>& structures, int& playerGold, StructureType type, Terrain& terr);
+            void Build(std::vector<std::shared_ptr<Structure>>& structures, int& playerGold, StructureType type, Terrain& terr);
             void WorkOnTask();
             void ChangeBuilding();
             void FarmGold(Terrain& terr, TownHall& hall);

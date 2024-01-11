@@ -4,8 +4,7 @@
 #include "Player.h"
 namespace Warcraft::State
 {
-    Player::Player()
-    {
+    Player::Player(){
         food.y = 10;
         gold = 2000;
     }
@@ -36,8 +35,7 @@ namespace Warcraft::State
         return false;
     }
 
-    std::vector<Living>& Player::Select()
-    {
+    std::vector<Living>& Player::Select(){
 
     }
 

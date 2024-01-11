@@ -39,7 +39,7 @@ namespace Warcraft::Structures
             {
                 return "Recruit soldiers.";
             }
-            void CreateUnit(std::vector<std::unique_ptr<Unit>>& units, int& playerGold, UnitType type);
+            void CreateUnit(std::vector<std::shared_ptr<Unit>>& units, int& playerGold, UnitType type);
     };
 }
 #endif

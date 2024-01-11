@@ -3,9 +3,9 @@
 //
 #include "Peasant.h"
 namespace Warcraft::Units {
-    void Peasant::Build(std::vector<std::unique_ptr<Structure>> &structures, int &playerGold, StructureType type,
+    void Peasant::Build(std::vector<std::shared_ptr<Structure>>& structures, int &playerGold, StructureType type,
                         Terrain &terr) {
-        std::unique_ptr<Structure> struc;
+        std::shared_ptr<Structure> struc;
         // if (!buildTask.empty())
         // {
         //     WorkOnTask();
@@ -13,19 +13,18 @@ namespace Warcraft::Units {
         // }
         if (WithinDistance(terr.coord))
         {
-
             if (terr.type == GROUND) {
                 switch (type) {
                     case BARRACK:
-                        struc = std::make_unique<Barrack>();
+                        struc = std::make_shared<Barrack>();
                         break;
 
                     case FARM:
-                        struc = std::make_unique<Farm>();
+                        struc = std::make_shared<Farm>();
                         break;
 
                     case HALL:
-                        struc = std::make_unique<TownHall>();
+                        struc = std::make_shared<TownHall>();
                         break;
 
                     default:
@@ -35,6 +34,7 @@ namespace Warcraft::Units {
                     playerGold -= struc->goldCost;
                     //buildTask.emplace_front(*struc);
                     structures.emplace_back(std::move(struc));
+                    terr.object = struc;
                     //terr.object = stru;
                 }
             }

@@ -4,13 +4,11 @@
 #include "Unit.h"
 namespace Warcraft::Units
 {
-    Unit::Unit()
-    {
+    Unit::Unit(){
         is = OTHER;
         attackCooldown = 1;
     }
-    void Unit::Move(Vec2 terr)
-    {
+    void Unit::Move(Vec2 terr){
         Vec2 difference;
         difference.x = coordinate.x - terr.x;
         difference.y = coordinate.y - terr.y;
@@ -43,8 +41,7 @@ namespace Warcraft::Units
         return false;
     }
 
-    Vec2 Unit::FindDifference(Vec2 terr)
-    {
+    Vec2 Unit::FindDifference(Vec2 terr){
         Vec2 difference;
         difference.x = coordinate.x - terr.x;
         difference.y = coordinate.y - terr.y;
@@ -52,8 +49,7 @@ namespace Warcraft::Units
         return difference;
     }
 
-    void Unit::Attack(Living& un)
-    {
+    void Unit::Attack(Living& un){
         //if (attackTask)
        //attackTask.push(Task<Unit>());
 
@@ -66,8 +62,7 @@ namespace Warcraft::Units
             Move(un.coordinate);
     }
 
-    bool Unit::GetAttackTime()
-    {
+    bool Unit::GetAttackTime(){
         time = std::chrono::high_resolution_clock::now();
         std::chrono::duration<float> diff = time - time1;
         time1 = std::chrono::high_resolution_clock::now();
@@ -78,8 +73,7 @@ namespace Warcraft::Units
         return false;
     }
 
-    void Unit::RegenHealth()
-    {
+    void Unit::RegenHealth(){
         time = std::chrono::high_resolution_clock::now();
         std::chrono::duration<float> diff = time - hpTime;
         hpTime = std::chrono::high_resolution_clock::now();
@@ -90,8 +84,7 @@ namespace Warcraft::Units
             health += hpRegen;
     }
 
-    void Unit::ChangeCoordinate(MoveType dir)
-    {
+    void Unit::ChangeCoordinate(MoveType dir){
 
         switch (dir)
         {

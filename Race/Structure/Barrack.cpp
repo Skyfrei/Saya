@@ -3,26 +3,26 @@
 //
 #include "Barrack.h"
 
-void Barrack::CreateUnit(std::vector<std::unique_ptr<Unit>>& units, int& playerGold, UnitType type)
+void Barrack::CreateUnit(std::vector<std::shared_ptr<Unit>>& units, int& playerGold, UnitType type)
 {
-    std::unique_ptr<Unit> unit;
+    std::shared_ptr<Unit> unit;
 
     switch (type)
     {
         case FOOTMAN:
-            unit = std::make_unique<Footman>();
+            unit = std::make_shared<Footman>();
             break;
 
         case ARCHMAGE:
-            unit = std::make_unique<Archmage>();
+            unit = std::make_shared<Archmage>();
             break;
 
         case PEASANT:
-            unit =  std::make_unique<Peasant>();
+            unit =  std::make_shared<Peasant>();
             break;
 
         case BLOODMAGE:
-            unit = std::make_unique<BloodMage>();
+            unit = std::make_shared<BloodMage>();
             break;
     }
     if (HasEnoughGold(playerGold, unit->goldCost))
