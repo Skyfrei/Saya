@@ -4,10 +4,16 @@
 #include "Unit.h"
 namespace Warcraft::Units
 {
+
     Unit::Unit(){
         is = OTHER;
         attackCooldown = 1;
     }
+    void Unit::MoveDij(Vec2 terr){
+
+
+    }
+
     void Unit::Move(Vec2 terr){
         Vec2 difference;
         difference.x = coordinate.x - terr.x;

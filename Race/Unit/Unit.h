@@ -4,16 +4,17 @@
 #include "../../Living.h"
 #include "../../Map/Terrain.h"
 #include <string>
-#include <deque>
 #include "../../Tools/Vec2.h"
 #include "../Structure/Structure.h"
 #include "../../State/Task.h"
 #include <chrono>
+#include <unordered_map>
 
-#define n 15
+#define MAP_SIZE 15
 
 namespace Warcraft::Units
 {
+
     using namespace Warcraft::Spells;
     using Warcraft::Living;
     using namespace Warcraft::Environment;
@@ -55,6 +56,7 @@ namespace Warcraft::Units
             void Attack(Living& un);
             bool GetAttackTime();
             void RegenHealth();
+            void MoveDij(Vec2 terr);
             //void CheckTask(Task<Unit>& t);
             void ChangeCoordinate(MoveType dir);
 
@@ -69,7 +71,6 @@ namespace Warcraft::Units
             float attackRange{};
             int movementSpeed = 1;
             float hpRegen = 0.25f;
-            //std::deque<Task<Unit>> attackTask;
             UnitType is;
             std::chrono::high_resolution_clock::time_point time1 = std::chrono::high_resolution_clock::now();
             std::chrono::high_resolution_clock::time_point hpTime = std::chrono::high_resolution_clock::now();

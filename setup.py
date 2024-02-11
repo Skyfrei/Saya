@@ -1,23 +1,24 @@
 import Warcraft
 # Can access vector
-player_instance = Warcraft.Vec2(2, 2)
+player_instance = Warcraft.Vec2(3, 2)
 print(player_instance.x)
 
 # Can access peasants
-slave = Warcraft.Peasant()
+slave = Warcraft.Footman()
 print(slave.GetDescription())
 
 # Can access Structures
-barrack = Warcraft.Barrack()
+barrack = Warcraft.TownHall()
 print(barrack.GetDescription())
 
 # Can access player
 player = Warcraft.Player()
-print(player.gold)
+#print(player.units.size)
 print(player.food)
 
-enemey = Warcraft.Player()
+enemy = Warcraft.Player()
 
 # Can access manager
-# manager = Warcraft.Manager()
+manager = Warcraft.Manager()
+print(manager.player.food)
 
