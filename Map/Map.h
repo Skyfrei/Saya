@@ -12,15 +12,14 @@ using Warcraft::Living;
 namespace Warcraft::Environment
 {
     struct Node{
-        Node(std::vector<Node*> e, Vec2 l) : edges(e), location(l){}
-        
-        std::vector<Node*> edges;
+        Node(std::vector<Node*> e) : neighbors(e){}
+        Node(Vec2 l) : location(l){}
+        std::vector<Node*> neighbors;
         Vec2 location;
     };
 
     struct Graph{
         Graph(std::vector<std::vector<Terrain> > mat){
-            int index = 0;
             for (int i = 0; i < MAP_SIZE; i++){
                 for(int j = 0; j < MAP_SIZE; j++){
                     std::vector<Node*> neighbors; 
@@ -32,21 +31,16 @@ namespace Warcraft::Environment
 
                             // Check if neighbor is within bounds and add it
                             if (neighborY >= 0 && neighborY < MAP_SIZE && neighborX >= 0 && neighborX < MAP_SIZE) {
-                                neighbors.push_back(&nodes[neighborY * MAP_SIZE + neighborX]);
+                                neighbors.push_back(new Node(Vec2(neighborX, neighborY)));
                             }
                         }
                     }
-                    nodes[index] = Node(neighbors, mat[i][j].coord);
-                    index++;
+                    nodes[Vec(i, j)] = Node(neighbors);
                 }
             }
-
-            for(int i = 0; i <nodes.size(); i++)
-            {
-                std::cout<<nodes[i].location.x << " " << nodes[i].location.y<< " \n";
-            }
         }
-        std::vector<Node>nodes;
+        Graph(){}
+        std::unordered_map<Vec2, Node> nodes;  
     };
 
     class Map
@@ -73,12 +67,15 @@ namespace Warcraft::Environment
                     objects.push_back(tempTerr);
                     tempTerr.clear();
                 }
-                graph = Graph(objects);
+            }
+
+            void CreateGraph()
+            {
+                Graph g(objects);
+                graph = g;
             }
         public:
-            std::vector<std::vector<Terrain> > objects;
             Graph graph;
-            //std::map<Vec2, std::vector<Living>> mapp;
-
+            std::vector<std::vector<Terrain> > objects;
     };
 }

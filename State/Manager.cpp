@@ -9,16 +9,17 @@ namespace Warcraft::State
     {
         // game start
         map = Map();
-        player.Initialize(map); // Done
-        enemy.Initialize(map); // Done
-
-        MainLoop();
+        map.CreateGraph();
+        player.Initialize(&map); // Done
+        enemy.Initialize(&map); // Done
+        
+        //MainLoop();
     }
 
     void Manager::MainLoop()
     {
         player.SetInitialCoordinates(Vec2(8, 2));
-        enemy.SetInitialCoordinates(Vec2(n - 2, n - 3));
+        enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 3));
 
         while((player.HasUnit(PEASANT) && player.HasStructure(HALL)) && (enemy.HasUnit(PEASANT) && enemy.HasStructure(HALL))) {
             player.RecruitSoldier(ARCHMAGE);

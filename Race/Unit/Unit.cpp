@@ -10,8 +10,37 @@ namespace Warcraft::Units
         attackCooldown = 1;
     }
     void Unit::MoveDij(Vec2 terr){
+        std::unordered_map<Vec2, Path> indices;
 
+        std::vector<Vec2> q;
+        for (auto& [key, value]: B) {
+            std::cout << key << " " << value;
+            Path indice;
+            indice.dist = 5000;
+            indices[key] = indice;
 
+            q.push_back(key);
+        }
+        indices[coordinate] = 0;
+
+        while(q.size() != 0) 
+        {
+            std::sort(q.begin(), q.end(), [&indices](const Vec2& a, const Vec2& b){
+                return indices[a].dist < indices[b].dist;
+            }
+            
+            Vec2 curr = q[0];
+            q.erase(q.begin());
+            for (auto neigh : map->graph.nodes[curr].neighbor){
+                if (std::find(vec.begin(), vec.end(), neigh) != vec.end() ){
+                    int alt = indices[q].dist + indices[neigh.location].dist
+                    if (alt < indices[neigh].dist){
+                        indices[neigh].dist = alt;
+                        indices[neigh].prev = q;
+                    }
+                }
+            }
+        }
     }
 
     void Unit::Move(Vec2 terr){

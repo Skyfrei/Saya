@@ -26,7 +26,7 @@ namespace Warcraft::State
     {
         public: 
             Player();
-            void Initialize(Map& m);
+            void Initialize(Map* m);
             void SetInitialCoordinates(Vec2 v);
             bool HasStructure(StructureType structType);
             bool HasUnit(UnitType unitType);
@@ -42,7 +42,7 @@ namespace Warcraft::State
             Vec2 food;
             std::vector<std::shared_ptr<Unit>> units;
             std::vector<std::shared_ptr<Structure>> structures;
-            Map map;
+            Map* map;
     };
 }
 

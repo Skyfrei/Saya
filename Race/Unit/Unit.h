@@ -3,14 +3,13 @@
 #include "../Spells/Spell.h"
 #include "../../Living.h"
 #include "../../Map/Terrain.h"
+#include "../../Map/Map.h"
 #include <string>
 #include "../../Tools/Vec2.h"
 #include "../Structure/Structure.h"
 #include "../../State/Task.h"
 #include <chrono>
 #include <unordered_map>
-
-#define MAP_SIZE 15
 
 namespace Warcraft::Units
 {
@@ -41,6 +40,11 @@ namespace Warcraft::Units
         S,
         SW,
         STAY
+    };
+
+    struct Path{
+        int dist;
+        Vec2 prev;
     };
 
     class Unit : public Living

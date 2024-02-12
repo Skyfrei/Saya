@@ -56,7 +56,7 @@ namespace Warcraft::State
         return *structures[index];
     }
 
-    void Player::Initialize(Map &m) {
+    void Player::Initialize(Map* m) {
         structures.push_back(std::make_unique<TownHall>());
         for (int i = 0; i < 5; i++) {
             units.push_back(std::make_unique<Peasant>());
@@ -110,7 +110,7 @@ namespace Warcraft::State
         //Peasant a = FindClosestLiving(terrCoord);
         for (const auto &unit: units) {
             if (unit->is == PEASANT) {
-                dynamic_cast<Peasant &>(*unit).Build(structures, gold, structType, map.objects[terrCoord.x][terrCoord.y]);
+                dynamic_cast<Peasant &>(*unit).Build(structures, gold, structType, map->objects[terrCoord.x][terrCoord.y]);
             }
         }
     }
