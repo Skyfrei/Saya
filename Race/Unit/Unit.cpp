@@ -9,35 +9,40 @@ namespace Warcraft::Units
         is = OTHER;
         attackCooldown = 1;
     }
-    void Unit::MoveDij(Vec2 terr){
-        std::unordered_map<Vec2, Path> indices;
+    void Unit::MoveDij(Vec2 terr, Graph& gra){
+        std::map<Vec2, Path> result;
 
-        std::vector<Vec2> q;
-        for (auto& [key, value]: B) {
+        std::vector<Vec2> visibleNodes;
+        for (auto& [key, value]: gra.nodes) {
             std::cout << key << " " << value;
             Path indice;
             indice.dist = 5000;
-            indices[key] = indice;
+            result[key] = indice;
 
-            q.push_back(key);
+            visibleNodes.push_back(key);
         }
-        indices[coordinate] = 0;
+        // Unit current location
+        Path current(0, coordinate);
+        result[coordinate] = current;
 
-        while(q.size() != 0) 
+        while(visibleNodes.size() != 0) 
         {
-            std::sort(q.begin(), q.end(), [&indices](const Vec2& a, const Vec2& b){
-                return indices[a].dist < indices[b].dist;
+            std::sort(visibleNodes.begin(), visibleNodes.end(), [&result](const Vec2& a, const Vec2& b)){
+                return result[a].distance < result[b].distance;
             }
             
-            Vec2 curr = q[0];
-            q.erase(q.begin());
-            for (auto neigh : map->graph.nodes[curr].neighbor){
-                if (std::find(vec.begin(), vec.end(), neigh) != vec.end() ){
-                    int alt = indices[q].dist + indices[neigh.location].dist
-                    if (alt < indices[neigh].dist){
-                        indices[neigh].dist = alt;
-                        indices[neigh].prev = q;
+            Vec2 curr = visibleNodes[0];
+            visibleNodes.erase(visibleNodes.begin());
+            for (const Node* neighbor : graph.nodes[curr].neighbors){
+                if (std::find(visibleNodes.begin(), visibleNodes.end(), neighbor->location) != visibleNodes.end() ){
+                    int alt = result[curr].dist + result[neighbor->location].dist
+                    if (alt < result[neigh].dist){
+                        result[neigh].dist = alt;
+                        result[neigh].prev = q;
                     }
+                }
+                else{
+                    
                 }
             }
         }

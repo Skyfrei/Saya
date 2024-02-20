@@ -4,6 +4,8 @@
 #include "Terrain.h"
 #include <iostream>
 #include <map>
+#include "../Tools/Vec2.h"
+
 
 #define MAP_SIZE 15
 
@@ -14,37 +16,42 @@ namespace Warcraft::Environment
     struct Node{
         Node(std::vector<Node*> e) : neighbors(e){}
         Node(Vec2 l) : location(l){}
+        void AddNeighbors(std::vector<Node*> e){
+            neighbors = e;
+        };
+
         std::vector<Node*> neighbors;
         Vec2 location;
     };
 
     struct Graph{
-        Graph(std::vector<std::vector<Terrain> > mat){
-            for (int i = 0; i < MAP_SIZE; i++){
-                for(int j = 0; j < MAP_SIZE; j++){
-                    std::vector<Node*> neighbors; 
-                    for (int dy = -1; dy <= 1; ++dy) {
-                        for (int dx = -1; dx <= 1; ++dx) {
-                            if (dy == 0 && dx == 0) continue; // Skip the current cell because its our cell
-                            int neighborY = i + dy;
-                            int neighborX = j + dx;
+        Graph(std::vector<std::vector<Terrain> > m){
+            // for (int i = 0; i < MAP_SIZE; i++){
+            //     for(int j = 0; j < MAP_SIZE; j++){
+            //         std::vector<Node*> neighbors; 
+            //         Node temp(Vec2(i, j));
+            //         for (int dy = -1; dy <= 1; ++dy) {
+            //             for (int dx = -1; dx <= 1; ++dx) {
+            //                 if (dy == 0 && dx == 0) continue; // Skip the current cell because its our cell
+            //                 int neighborY = i + dy;
+            //                 int neighborX = j + dx;
 
-                            // Check if neighbor is within bounds and add it
-                            if (neighborY >= 0 && neighborY < MAP_SIZE && neighborX >= 0 && neighborX < MAP_SIZE) {
-                                neighbors.push_back(new Node(Vec2(neighborX, neighborY)));
-                            }
-                        }
-                    }
-                    nodes[Vec(i, j)] = Node(neighbors);
-                }
-            }
+            //                 // Check if neighbor is within bounds and add it
+            //                 if (neighborY >= 0 && neighborY < MAP_SIZE && neighborX >= 0 && neighborX < MAP_SIZE) {
+            //                     neighbors.push_back(new Node(Vec2(neighborX, neighborY)));
+            //                 }
+            //             }
+            //         }
+            //         temp.AddNeighbors(neighbors);
+            //         nodes[temp.location] = temp;
+            //     }
+            // }
         }
         Graph(){}
-        std::unordered_map<Vec2, Node> nodes;  
+        std::map<Vec2, Node> nodes;  
     };
 
-    class Map
-    {
+    class Map{
         public:
             Map()
             {
@@ -67,15 +74,17 @@ namespace Warcraft::Environment
                     objects.push_back(tempTerr);
                     tempTerr.clear();
                 }
+                CreateGraph();
             }
 
             void CreateGraph()
             {
                 Graph g(objects);
-                graph = g;
+                graph = &g;
             }
+            
         public:
-            Graph graph;
+            Graph* graph;
             std::vector<std::vector<Terrain> > objects;
     };
 }

@@ -9,7 +9,8 @@
 #include "../Structure/Structure.h"
 #include "../../State/Task.h"
 #include <chrono>
-#include <unordered_map>
+#include <map>
+#include <iostream>
 
 namespace Warcraft::Units
 {
@@ -43,8 +44,9 @@ namespace Warcraft::Units
     };
 
     struct Path{
-        int dist;
-        Vec2 prev;
+        Path(int d, Vec2 l) : distance(d), comesFrom(l) {}
+        int distance;
+        Vec2 comesFrom;
     };
 
     class Unit : public Living

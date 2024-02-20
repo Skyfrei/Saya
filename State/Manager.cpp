@@ -9,7 +9,6 @@ namespace Warcraft::State
     {
         // game start
         map = Map();
-        map.CreateGraph();
         player.Initialize(&map); // Done
         enemy.Initialize(&map); // Done
         
