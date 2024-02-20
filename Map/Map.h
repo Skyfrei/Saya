@@ -19,7 +19,7 @@ namespace Warcraft::Environment
         void AddNeighbors(std::vector<Node*> e){
             neighbors = e;
         };
-
+        Node(){}
         std::vector<Node*> neighbors;
         Vec2 location;
     };
@@ -82,7 +82,7 @@ namespace Warcraft::Environment
                 Graph g(objects);
                 graph = &g;
             }
-            
+
         public:
             Graph* graph;
             std::vector<std::vector<Terrain> > objects;

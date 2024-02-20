@@ -45,6 +45,7 @@ namespace Warcraft::Units
 
     struct Path{
         Path(int d, Vec2 l) : distance(d), comesFrom(l) {}
+        Path(){}
         int distance;
         Vec2 comesFrom;
     };
@@ -62,7 +63,7 @@ namespace Warcraft::Units
             void Attack(Living& un);
             bool GetAttackTime();
             void RegenHealth();
-            void MoveDij(Vec2 terr);
+            void MoveDij(Vec2 terr, Graph& gra);
             //void CheckTask(Task<Unit>& t);
             void ChangeCoordinate(MoveType dir);
 

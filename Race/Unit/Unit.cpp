@@ -11,12 +11,11 @@ namespace Warcraft::Units
     }
     void Unit::MoveDij(Vec2 terr, Graph& gra){
         std::map<Vec2, Path> result;
-
         std::vector<Vec2> visibleNodes;
+
         for (auto& [key, value]: gra.nodes) {
-            std::cout << key << " " << value;
             Path indice;
-            indice.dist = 5000;
+            indice.distance = 5000;
             result[key] = indice;
 
             visibleNodes.push_back(key);
@@ -27,22 +26,22 @@ namespace Warcraft::Units
 
         while(visibleNodes.size() != 0) 
         {
-            std::sort(visibleNodes.begin(), visibleNodes.end(), [&result](const Vec2& a, const Vec2& b)){
+            std::sort(visibleNodes.begin(), visibleNodes.end(), [&result](const Vec2& a, const Vec2& b){
                 return result[a].distance < result[b].distance;
-            }
+            });
             
             Vec2 curr = visibleNodes[0];
             visibleNodes.erase(visibleNodes.begin());
-            for (const Node* neighbor : graph.nodes[curr].neighbors){
+            for (const Node* neighbor : gra.nodes[curr].neighbors){
                 if (std::find(visibleNodes.begin(), visibleNodes.end(), neighbor->location) != visibleNodes.end() ){
-                    int alt = result[curr].dist + result[neighbor->location].dist
-                    if (alt < result[neigh].dist){
-                        result[neigh].dist = alt;
-                        result[neigh].prev = q;
+                    int alt = result[curr].distance + result[neighbor->location].distance;
+                    if (alt < result[neighbor->location].distance){
+                        result[neighbor->location].distance = alt;
+                        result[neighbor->location].comesFrom = curr;
                     }
                 }
                 else{
-                    
+                    visibleNodes.push_back(neighbor->location);
                 }
             }
         }
