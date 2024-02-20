@@ -26,26 +26,25 @@ namespace Warcraft::Environment
 
     struct Graph{
         Graph(std::vector<std::vector<Terrain> > m){
-            // for (int i = 0; i < MAP_SIZE; i++){
-            //     for(int j = 0; j < MAP_SIZE; j++){
-            //         std::vector<Node*> neighbors; 
-            //         Node temp(Vec2(i, j));
-            //         for (int dy = -1; dy <= 1; ++dy) {
-            //             for (int dx = -1; dx <= 1; ++dx) {
-            //                 if (dy == 0 && dx == 0) continue; // Skip the current cell because its our cell
-            //                 int neighborY = i + dy;
-            //                 int neighborX = j + dx;
-
-            //                 // Check if neighbor is within bounds and add it
-            //                 if (neighborY >= 0 && neighborY < MAP_SIZE && neighborX >= 0 && neighborX < MAP_SIZE) {
-            //                     neighbors.push_back(new Node(Vec2(neighborX, neighborY)));
-            //                 }
-            //             }
-            //         }
-            //         temp.AddNeighbors(neighbors);
-            //         nodes[temp.location] = temp;
-            //     }
-            // }
+            for (int i = 0; i < MAP_SIZE; i++){
+                for(int j = 0; j < MAP_SIZE; j++){
+                    std::vector<Node*> neighbors; 
+                    Node temp(Vec2(i, j));
+                    for (int dy = -1; dy <= 1; ++dy) {
+                        for (int dx = -1; dx <= 1; ++dx) {
+                            if (dy == 0 && dx == 0) continue; // Skip the current cell because its our cell
+                            int neighborY = i + dy;
+                            int neighborX = j + dx;
+                            // Check if neighbor is within bounds and add it
+                            if (neighborY >= 0 && neighborY < MAP_SIZE && neighborX >= 0 && neighborX < MAP_SIZE) {
+                                neighbors.push_back(new Node(Vec2(neighborX, neighborY)));
+                            }
+                        }
+                    }
+                    temp.AddNeighbors(neighbors);
+                    nodes[temp.location] = temp;
+                }
+            }
         }
         Graph(){}
         std::map<Vec2, Node> nodes;  

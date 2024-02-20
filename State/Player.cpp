@@ -57,12 +57,12 @@ namespace Warcraft::State
     }
 
     void Player::Initialize(Map* m) {
-        structures.push_back(std::make_unique<TownHall>());
+        structures.push_back(std::make_shared<TownHall>());
         for (int i = 0; i < 5; i++) {
-            units.push_back(std::make_unique<Peasant>());
+            units.push_back(std::make_shared<Peasant>());
             units[0]->coordinate = structures[0]->coordinate;
         }
-        structures.push_back(std::make_unique<Barrack>());
+        structures.push_back(std::make_shared<Barrack>());
         map = m;
         ValidateFood();
     }

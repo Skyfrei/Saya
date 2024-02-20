@@ -11,6 +11,9 @@ namespace Warcraft::State
         map = Map();
         player.Initialize(&map); // Done
         enemy.Initialize(&map); // Done
+        player.SetInitialCoordinates(Vec2(8, 2));
+        enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 3));
+        player.units[1]->MoveDij(Vec2(6, 7), *player.map->graph);
         
         //MainLoop();
     }

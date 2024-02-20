@@ -31,6 +31,7 @@ namespace Warcraft::Units
             });
             
             Vec2 curr = visibleNodes[0];
+            std::cout<<curr.x << " " << curr.y << "\n";
             visibleNodes.erase(visibleNodes.begin());
             for (const Node* neighbor : gra.nodes[curr].neighbors){
                 if (std::find(visibleNodes.begin(), visibleNodes.end(), neighbor->location) != visibleNodes.end() ){
