@@ -34,15 +34,10 @@ namespace Warcraft::Units
             std::cout<<curr.x << " " << curr.y << "\n";
             visibleNodes.erase(visibleNodes.begin());
             for (const Node* neighbor : gra.nodes[curr].neighbors){
-                if (std::find(visibleNodes.begin(), visibleNodes.end(), neighbor->location) != visibleNodes.end() ){
-                    int alt = result[curr].distance + result[neighbor->location].distance;
-                    if (alt < result[neighbor->location].distance){
-                        result[neighbor->location].distance = alt;
-                        result[neighbor->location].comesFrom = curr;
-                    }
-                }
-                else{
-                    visibleNodes.push_back(neighbor->location);
+                int alt = result[curr].distance + result[neighbor->location].distance;
+                if (alt < result[neighbor->location].distance){
+                    result[neighbor->location].distance = alt;
+                    result[neighbor->location].comesFrom = curr;
                 }
             }
         }
