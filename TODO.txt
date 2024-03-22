@@ -1,1 +1,6 @@
 Importing module to python aber es funtioniert nicht
+
+
+
+in the map sort based on the custom function
+

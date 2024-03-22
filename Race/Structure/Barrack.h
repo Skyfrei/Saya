@@ -1,46 +1,33 @@
 #ifndef BARRACK_H
 #define BARRACK_H
 
-#include "Structure.h"
-#include "../Unit/Unit.h"
+#include <iostream>
+#include <memory>
+#include <vector>
+
 #include "../Unit/Footman.h"
 #include "../Unit/Hero/Archmage.h"
 #include "../Unit/Hero/BloodMage.h"
 #include "../Unit/Peasant.h"
-#include <vector>
-#include <memory>
-#include <iostream>
+#include "../Unit/Unit.h"
+#include "Structure.h"
 
-using namespace Warcraft::Units;
-using namespace Warcraft::Units::Heroes;
+class Barrack : public Structure {
+ public:
+  Barrack() {
+    name = "Barrack";
+    description = "Can create units.";
+    health = 1500;
+    maxHealth = health;
+    goldCost = 220;
+    is = BARRACK;
+    buildTime = 70;
+  }
 
-namespace Warcraft::Structures
-{
-    class Barrack : public Structure
-    {
-        public:
-            Barrack()
-            {
-                name = "Barrack";
-                description = "Can create units.";
-                health = 1500;
-                maxHealth = health;
-                goldCost = 220;
-                is = BARRACK;
-                buildTime = 70;
-            }
-        
-        public:
-            void FinishBuilding() override
-            {
-
-            }
-            std::string GetDescription() override
-            {
-                return "Recruit soldiers.";
-            }
-            void CreateUnit(std::vector<std::shared_ptr<Unit>>& units, int& playerGold, UnitType type);
-    };
-}
+ public:
+  void FinishBuilding() override {}
+  std::string GetDescription() override { return "Recruit soldiers."; }
+  void CreateUnit(std::vector<std::shared_ptr<Unit>> &units, int &playerGold,
+                  UnitType type);
+};
 #endif
-

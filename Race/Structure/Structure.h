@@ -1,41 +1,22 @@
 #pragma once
-#include "../../Tools/Vec2.h"
-#include "../../Living.h"
 #include <queue>
-#include "../../State/Task.h"
 
+#include "../../Living.h"
+#include "../../Tools/Vec2.h"
 
+enum StructureType { HALL, BARRACK, FARM, OTHER };
 
-namespace Warcraft::Structures
-{
-    using Warcraft::Living;
-    using namespace Warcraft::State;
+class Structure : public Living {
+ public:
+  Structure() {}
 
-    enum StructureType
-    {
-        HALL,
-        BARRACK,
-        FARM,
-        OTHER
-    };
+ public:
+  virtual void FinishBuilding() = 0;
 
-    class Structure : public Living
-    {
-        public:
-            Structure()
-            {
-                
-            }
+ public:
+  StructureType is = OTHER;
+  // std::queue<Task<Structure>> tasks;
+  bool isBeingBuilt = false;
 
-        public:
-            virtual void FinishBuilding() = 0;
-
-        public:
-            StructureType is = OTHER;
-            //std::queue<Task<Structure>> tasks;
-            bool isBeingBuilt = false;
-
-            
-            // std::vector<> building contained within building
-    };
-}
+  // std::vector<> building contained within building
+};

@@ -2,157 +2,116 @@
 // Created by Klavio Tarka on 14.12.23.
 //
 #include "Unit.h"
-namespace Warcraft::Units
-{
 
-    Unit::Unit(){
-        is = OTHER;
-        attackCooldown = 1;
-    }
-    void Unit::MoveDij(Vec2 terr, Graph& gra){
-        std::map<Vec2, Path> result;
-        std::vector<Vec2> visibleNodes;
+#include <iterator>
 
-        for (auto& [key, value]: gra.nodes) {
-            Path indice;
-            indice.distance = 5000;
-            result[key] = indice;
+Unit::Unit() { attackCooldown = 1; }
+void Unit::MoveDij(Vec2 dest, Map &map) {
+  std::vector<Node> nextDestination = map.GetClosestDestNode(coordinate, dest);
+  for (Node a : nextDestination) {
+    std::cout << a.location.x << " " << a.location.y << " \n";
+  }
+}
 
-            visibleNodes.push_back(key);
-        }
-        // Unit current location
-        Path current(0, coordinate);
-        result[coordinate] = current;
+void Unit::Move(Vec2 terr) {
+  Vec2 difference;
+  difference.x = coordinate.x - terr.x;
+  difference.y = coordinate.y - terr.y;
 
-        while(visibleNodes.size() != 0) 
-        {
-            std::sort(visibleNodes.begin(), visibleNodes.end(), [&result](const Vec2& a, const Vec2& b){
-                return result[a].distance < result[b].distance;
-            });
-            
-            Vec2 curr = visibleNodes[0];
-            std::cout<<curr.x << " " << curr.y << "\n";
-            visibleNodes.erase(visibleNodes.begin());
-            for (const Node* neighbor : gra.nodes[curr].neighbors){
-                int alt = result[curr].distance + result[neighbor->location].distance;
-                if (alt < result[neighbor->location].distance){
-                    result[neighbor->location].distance = alt;
-                    result[neighbor->location].comesFrom = curr;
-                }
-            }
-        }
-    }
+  if (difference.x > 0 && difference.y > 0)
+    ChangeCoordinate(NW);
+  else if (difference.x > 0 && difference.y < 0)
+    ChangeCoordinate(NE);
+  else if (difference.x < 0 && difference.y > 0)
+    ChangeCoordinate(SW);
+  else if (difference.x < 0 && difference.y < 0)
+    ChangeCoordinate(SE);
+  else if (difference.x == 0 && difference.y < 0)
+    ChangeCoordinate(E);
+  else if (difference.x == 0 && difference.y > 0)
+    ChangeCoordinate(W);
+  else if (difference.x > 0 && difference.y == 0)
+    ChangeCoordinate(N);
+  else if (difference.x < 0 && difference.y == 0)
+    ChangeCoordinate(S);
+}
 
-    void Unit::Move(Vec2 terr){
-        Vec2 difference;
-        difference.x = coordinate.x - terr.x;
-        difference.y = coordinate.y - terr.y;
+bool Unit::WithinDistance(Vec2 terr) {
+  Vec2 difference = FindDifference(terr);
 
-        if (difference.x > 0 && difference.y > 0)
-            ChangeCoordinate(NW);
-        else if (difference.x > 0 && difference.y <0)
-            ChangeCoordinate(NE);
-        else if (difference.x < 0 && difference.y > 0)
-            ChangeCoordinate(SW);
-        else if (difference.x < 0 && difference.y < 0)
-            ChangeCoordinate(SE);
-        else if (difference.x == 0 && difference.y < 0)
-            ChangeCoordinate(E);
-        else if (difference.x == 0 && difference.y > 0)
-            ChangeCoordinate(W);
-        else if (difference.x > 0 && difference.y == 0)
-            ChangeCoordinate(N);
-        else if (difference.x < 0 && difference.y == 0)
-            ChangeCoordinate(S);
-    }
+  if (std::abs(difference.x) <= 1 && std::abs(difference.y) <= 1) return true;
 
-    bool Unit::WithinDistance(Vec2 terr)
-    {
-        Vec2 difference = FindDifference(terr);
+  return false;
+}
 
-        if (std::abs(difference.x) <= 1 && std::abs(difference.y) <= 1)
-            return true;
+Vec2 Unit::FindDifference(Vec2 terr) {
+  Vec2 difference;
+  difference.x = coordinate.x - terr.x;
+  difference.y = coordinate.y - terr.y;
 
-        return false;
-    }
+  return difference;
+}
 
-    Vec2 Unit::FindDifference(Vec2 terr){
-        Vec2 difference;
-        difference.x = coordinate.x - terr.x;
-        difference.y = coordinate.y - terr.y;
+void Unit::Attack(Living &un) {
+  // if (attackTask)
+  // attackTask.push(Task<Unit>());
 
-        return difference;
-    }
+  if (WithinDistance(un.coordinate)) {
+    if (GetAttackTime() == true) un.health -= attack;
+  } else
+    Move(un.coordinate);
+}
 
-    void Unit::Attack(Living& un){
-        //if (attackTask)
-       //attackTask.push(Task<Unit>());
+bool Unit::GetAttackTime() {
+  time = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<float> diff = time - time1;
+  time1 = std::chrono::high_resolution_clock::now();
 
-        if (WithinDistance(un.coordinate))
-        {
-            if (GetAttackTime() == true)
-                un.health -= attack;
-        }
-        else
-            Move(un.coordinate);
-    }
+  if (diff.count() >= attackCooldown) return true;
 
-    bool Unit::GetAttackTime(){
-        time = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<float> diff = time - time1;
-        time1 = std::chrono::high_resolution_clock::now();
+  return false;
+}
 
-        if (diff.count() >= attackCooldown)
-            return true;
+void Unit::RegenHealth() {
+  time = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<float> diff = time - hpTime;
+  hpTime = std::chrono::high_resolution_clock::now();
 
-        return false;
-    }
+  if (health + hpRegen >= maxHealth) return;
+  if (diff.count() >= attackCooldown) health += hpRegen;
+}
 
-    void Unit::RegenHealth(){
-        time = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<float> diff = time - hpTime;
-        hpTime = std::chrono::high_resolution_clock::now();
-
-        if (health + hpRegen >= maxHealth)
-            return;
-        if (diff.count() >= attackCooldown)
-            health += hpRegen;
-    }
-
-    void Unit::ChangeCoordinate(MoveType dir){
-
-        switch (dir)
-        {
-            case W:
-                coordinate.y -= 1;
-                break;
-            case NW:
-                coordinate.x -= 1;
-                coordinate.y -= 1;
-                break;
-            case N:
-                coordinate.x -= 1;
-                break;
-            case NE:
-                coordinate.x -= 1;
-                coordinate.y += 1;
-                break;
-            case E:
-                coordinate.y += 1;
-                break;
-            case SE:
-                coordinate.x += 1;
-                coordinate.y += 1;
-                break;
-            case S:
-                coordinate.x += 1;
-                break;
-            case SW:
-                coordinate.x += 1;
-                coordinate.y -= 1;
-                break;
-            default:
-                break;
-        }
-    }
+void Unit::ChangeCoordinate(MoveType dir) {
+  switch (dir) {
+    case W:
+      coordinate.y -= 1;
+      break;
+    case NW:
+      coordinate.x -= 1;
+      coordinate.y -= 1;
+      break;
+    case N:
+      coordinate.x -= 1;
+      break;
+    case NE:
+      coordinate.x -= 1;
+      coordinate.y += 1;
+      break;
+    case E:
+      coordinate.y += 1;
+      break;
+    case SE:
+      coordinate.x += 1;
+      coordinate.y += 1;
+      break;
+    case S:
+      coordinate.x += 1;
+      break;
+    case SW:
+      coordinate.x += 1;
+      coordinate.y -= 1;
+      break;
+    default:
+      break;
+  }
 }

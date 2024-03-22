@@ -7,24 +7,24 @@ project(Final)
 
 set(CPPSRC main.cpp
         Living.h
-        ./Tools
-        ./State
-        ./Race
-        ./Map
+        Map/Graph.cpp
+        Map/Map.cpp
         Race/Structure/Barrack.cpp
         Race/Unit/Peasant.cpp
-        State/Player.cpp
-        State/Manager.cpp
-        State/Task.cpp
-        State/Task.h
         Race/Unit/Unit.cpp
+        
+        State/Manager.cpp
+        State/Manager.h
+        State/Player.h
+        State/Player.cpp
         Living.cpp)
+include_directories(./ include)
 
-set(PYLIB ./Bindings/bind.cpp)
+#set(PYLIB ./Bindings/bind.cpp)
 
-set(PYBIND11_DIR /export/home/klaviot99dm/.local/lib/python3.8/site-packages)
-find_package(pybind11 REQUIRED PATHS ${PYBIND11_DIR})
+#set(PYBIND11_DIR /export/home/klaviot99dm/.local/lib/python3.8/site-packages)
+#find_package(pybind11 REQUIRED PATHS ${PYBIND11_DIR})
 
-pybind11_add_module(Warcraft ${PYLIB} ${CPPSRC})
+#pybind11_add_module(Warcraft ${PYLIB} ${CPPSRC})
 
 add_executable(Final ${CPPSRC})

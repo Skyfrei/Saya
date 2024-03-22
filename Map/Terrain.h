@@ -1,43 +1,31 @@
 #pragma once
-#include "../Tools/Vec2.h"
-#include "../Living.h"
 #include <memory>
 
-using Warcraft::Living;
+#include "../Living.h"
+#include "../Tools/Vec2.h"
 
-namespace Warcraft::Environment
-{
-    enum TerrainType
-    {
-        GROUND,
-        GOLD
-    };
+#define MAP_SIZE 15
 
-    class Terrain
-    {
-        public:
-            Terrain(int x, int y)
-            {
-                coord.x = x;
-                coord.y = y;
-            }
+enum TerrainType { GROUND, GOLD };
 
-        public:
-            int GetResourceLeft()
-            {
-                return 0;
-            }
+class Terrain {
+ public:
+  Terrain(int x, int y) {
+    coord.x = x;
+    coord.y = y;
+  }
 
-            //void GetLiving(std::vector<Living>& obj)
-            //{
-               // objects = obj;
-            //}
+ public:
+  int GetResourceLeft() { return 0; }
 
-        public: 
-            int resourceLeft{};
-            Vec2 coord;
-            TerrainType type = GROUND;
-            std::shared_ptr<Living> object;
-    };
-}
+  // void GetLiving(std::vector<Living>& obj)
+  //{
+  //  objects = obj;
+  //}
 
+ public:
+  int resourceLeft{};
+  Vec2 coord;
+  TerrainType type = GROUND;
+  std::shared_ptr<Living> object;
+};

@@ -1,30 +1,26 @@
 #pragma once
-#include "Structure.h"
 #include <string>
 
-using namespace Warcraft::Structures;
+#include "Structure.h"
 
-class Farm : public Structure
-{
-    public:
-        Farm()
-        {
-            name = "Farm";
-            description = "Gives 6 food.";
-            health = 500;
-            maxHealth = health;
+class Farm : public Structure {
+ public:
+  Farm() {
+    name = "Farm";
+    description = "Gives 6 food.";
+    health = 500;
+    maxHealth = health;
 
-            goldCost = 100;
+    goldCost = 100;
 
-            buildTime = 10;
-            is = FARM;
-        }
-    public:
-        std::string GetDescription() override {return description;}
-        void FinishBuilding() {}
+    buildTime = 10;
+    is = FARM;
+  }
 
-    public: 
-        int GetFood() { return 5;}
+ public:
+  std::string GetDescription() override { return description; }
+  void FinishBuilding() override {}
 
-
+ public:
+  int GetFood() { return 5; }
 };

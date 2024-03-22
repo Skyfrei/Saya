@@ -1,28 +1,24 @@
 #pragma once
-#include "Unit.h"
 #include <string>
 
-namespace Warcraft::Units
-{
-    class Footman : public Unit
-    {
-        public:
-            Footman()
-            {
-                name = "Footman";
-                description = "A normal foot soldier.";
-                health = 420;
-                maxHealth = health;
-                attack = 12.5;
+#include "Unit.h"
 
-                goldCost = 135;
-                foodCost = 2;
+class Footman : public Unit {
+ public:
+  Footman() {
+    name = "Footman";
+    description = "A normal foot soldier.";
+    health = 420;
+    maxHealth = health;
+    attack = 12.5;
 
-                attackCooldown = 1.35;
-                buildTime = 20;
+    goldCost = 135;
+    foodCost = 2;
 
-                is = FOOTMAN;
-            }
-            std::string GetDescription() override{ return "Footman.";};
-    };
-}
+    attackCooldown = 1.35;
+    buildTime = 20;
+
+    is = FOOTMAN;
+  }
+  std::string GetDescription() override { return "Footman."; };
+};
