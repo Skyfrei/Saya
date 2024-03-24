@@ -10,11 +10,11 @@ Player::Player() {
 }
 void Player::Move(Unit &un, Vec2 terr) { un.MoveDij(terr, *map); }
 void Player::SetInitialCoordinates(Vec2 v) {
-  for (const auto &structure : structures) {
+  for (auto &structure : structures) {
     structure->coordinate = v;
   }
-  for (const auto &unit : units) {
-    unit->coordinate = structures[0]->coordinate;
+  for (auto &unit : units) {
+    unit->coordinate = v;
   }
 }
 std::vector<std::shared_ptr<Unit>> Player::SelectUnits(int n) {

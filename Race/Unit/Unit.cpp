@@ -7,9 +7,10 @@
 
 Unit::Unit() { attackCooldown = 1; }
 void Unit::MoveDij(Vec2 dest, Map &map) {
-  std::vector<Node> nextDestination = map.GetClosestDestNode(coordinate, dest);
-  for (Node a : nextDestination) {
-    std::cout << a.location.x << " " << a.location.y << " \n";
+  std::vector<Node *> nextDestination =
+      map.GetClosestDestNode(coordinate, dest);
+  for (Node *a : nextDestination) {
+    std::cout << a->location.x << " " << a->location.y << " \n";
   }
 }
 

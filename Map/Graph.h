@@ -30,9 +30,9 @@ class Graph {
  public:
   Graph(std::vector<std::vector<Terrain>> m);
   Graph();
-  std::vector<Node> GetAllGraphNodes();
+  std::vector<Node *> GetAllGraphNodes();
   std::vector<Node *> GetAllNeighbors(Node &n);
-  Node GetNodeAtLocation(const Vec2 &loc);
+  Node &GetNodeAtLocation(const Vec2 &loc);
 
  private:
   std::map<Vec2, Node> nodes;

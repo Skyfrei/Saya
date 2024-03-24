@@ -19,11 +19,11 @@ class Map {
   void TurnMatrixToGraph();
 
  public:
-  std::vector<Node> GetClosestDestNode(Vec2 &coord, Vec2 &dest);
+  std::vector<Node *> GetClosestDestNode(Vec2 &coord, Vec2 &dest);
   std::vector<std::vector<Terrain>> objects;
 
  private:
-  std::vector<Node> GetAllNodes();
+  std::vector<Node *> GetAllNodes();
   Graph graph;
 };
 
