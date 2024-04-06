@@ -3,22 +3,59 @@
 //
 #include "Unit.h"
 
-#include <iterator>
+#include <__algorithm/remove.h>
 
-Unit::Unit() { attackCooldown = 1; }
+#include <memory>
+
+#include "State/Manager.h"
+#include "Tools/Vec2.h"
+
+Unit::Unit() {}
+void Unit::InsertAction(actionT v) {
+  if (std::find(actionQueue.begin(), actionQueue.end(), v) ==
+      actionQueue.end()) {
+    actionQueue.push_back(v);
+  }
+}
+bool Unit::HasCommand() {
+  if (actionQueue.size() > 0) return true;
+  return false;
+}
+
+void Unit::TakeAction() {
+  if (!HasCommand()) return;
+
+  if (std::holds_alternative<std::shared_ptr<Living>>(actionQueue[0])) {
+    Attack(*std::get<std::shared_ptr<Living>>(actionQueue[0]));
+  }
+
+  else if (std::holds_alternative<Vec2>(actionQueue[0])) {
+    Vec2 targetDest = std::get<Vec2>(actionQueue[0]);
+    if (coordinate.x == targetDest.x && coordinate.y == targetDest.y) {
+      actionQueue.erase(actionQueue.begin());
+      return;
+    }
+    Move(targetDest);
+
+  } else if (std::holds_alternative<std::shared_ptr<Structure>>(
+                 actionQueue[0])) {
+    std::cout << "Implement build here";
+  }
+}
+int Unit::GetActionQueueSize() { return actionQueue.size(); }
+
 void Unit::MoveDij(Vec2 dest, Map &map) {
   std::vector<Node *> nextDestination =
       map.GetClosestDestNode(coordinate, dest);
-  for (Node *a : nextDestination) {
-    std::cout << a->location.x << " " << a->location.y << " \n";
-  }
 }
-
 void Unit::Move(Vec2 terr) {
+  if (!IsMovable()) {
+    return;
+  }
+
   Vec2 difference;
   difference.x = coordinate.x - terr.x;
   difference.y = coordinate.y - terr.y;
-
   if (difference.x > 0 && difference.y > 0)
     ChangeCoordinate(NW);
   else if (difference.x > 0 && difference.y < 0)
@@ -56,30 +93,47 @@ Vec2 Unit::FindDifference(Vec2 terr) {
 void Unit::Attack(Living &un) {
   // if (attackTask)
   // attackTask.push(Task<Unit>());
-
-  if (WithinDistance(un.coordinate)) {
-    if (GetAttackTime() == true) un.health -= attack;
-  } else
+  // if (WithinDistance(un.coordinate)) {
+  if (CanAttack()) {
+    un.health -= attack;
+    std::cout << "AAAA";
+    // }
+    //} else
     Move(un.coordinate);
+  }
 }
 
-bool Unit::GetAttackTime() {
-  time = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<float> diff = time - time1;
-  time1 = std::chrono::high_resolution_clock::now();
-
-  if (diff.count() >= attackCooldown) return true;
+bool Unit::CanAttack() {
+  auto currentCd =
+      duration_cast<seconds>(high_resolution_clock::now() - attackTime).count();
+  std::cout << currentCd << "\n";
+  if (currentCd >= attackCooldown) {
+    attackTime = high_resolution_clock::now();
+    return true;
+  };
 
   return false;
 }
 
-void Unit::RegenHealth() {
-  time = std::chrono::high_resolution_clock::now();
-  std::chrono::duration<float> diff = time - hpTime;
-  hpTime = std::chrono::high_resolution_clock::now();
+bool Unit::IsMovable() {
+  auto currentCd =
+      duration_cast<seconds>(high_resolution_clock::now() - moveTime).count();
+  if (currentCd >= moveCooldown) {
+    moveTime = high_resolution_clock::now();
+    return true;
+  }
+  return false;
+}
 
-  if (health + hpRegen >= maxHealth) return;
-  if (diff.count() >= attackCooldown) health += hpRegen;
+void Unit::RegenHealth() {
+  auto currentCd =
+      duration_cast<seconds>(high_resolution_clock::now() - hpTime).count();
+
+  if (currentCd >= hpCooldown) {
+    if (health + hpRegen >= maxHealth) return;
+    health += hpRegen;
+    hpTime = high_resolution_clock::now();
+  }
 }
 
 void Unit::ChangeCoordinate(MoveType dir) {

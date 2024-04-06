@@ -29,13 +29,11 @@ std::vector<Node *> Graph::GetAllGraphNodes() {
   std::vector<Node *> result;
   for (auto it = nodes.begin(); it != nodes.end(); it++) {
     result.push_back(&it->second);
-    std::cout << it->second.location.x;
   }
   return result;
 }
 
 std::vector<Node *> Graph::GetAllNeighbors(Node &n) {
-  std::cout << n.location.x << " " << n.location.y << " ";
   return n.neighbors;
 }
 

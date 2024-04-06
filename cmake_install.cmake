@@ -1,4 +1,4 @@
-# Install script for directory: /Users/klavio/Important/Comp Science/Lab/Code/Game
+# Install script for directory: /Users/klavio/Important/Documents/Uni Wien/Lab/Code/Game
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/Users/klavio/Important/Comp Science/Lab/Code/Game/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/Users/klavio/Important/Documents/Uni Wien/Lab/Code/Game/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

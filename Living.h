@@ -1,11 +1,9 @@
-#pragma once
+#ifndef LIVING_H
+#define LIVING_H
 
-#include <iostream>
 #include <string>
 
 #include "Tools/Vec2.h"
-
-enum Side { PLAYER, ENEMY };
 
 class Living {
  public:
@@ -28,12 +26,13 @@ class Living {
  public:
   std::string name;
   std::string description;
-  int health;
+  float health;
   int id;
   float maxHealth;
   int goldCost = 0;
   int foodCost = 0;
   int buildTime;
-  Side belongs;
   Vec2 coordinate;
 };
+
+#endif

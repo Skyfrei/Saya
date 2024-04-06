@@ -1,12 +1,17 @@
 #pragma once
 
 #include <chrono>
+#include <memory>
+#include <variant>
 
 #include "../Living.h"
 #include "../Map/Map.h"
 #include "../Race/Structure/Structure.h"
 #include "../Race/Unit/Unit.h"
 #include "Player.h"
+
+using actionT =
+    std::variant<std::shared_ptr<Living>, Vec2, std::shared_ptr<Structure>>;
 
 class Manager {
  public:

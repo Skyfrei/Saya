@@ -3,27 +3,42 @@
 //
 #include "Manager.h"
 
+#include <memory>
+
+#include "Race/Structure/Structure.h"
+#include "Race/Unit/Unit.h"
+
 Manager::Manager() {
   // game start
   map = Map();
-  player.Initialize(&map);  // Done
-  enemy.Initialize(&map);   // Done
+  player = Player(map);
+  enemy = Player(map);
+
   player.SetInitialCoordinates(Vec2(8, 2));
   enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 3));
-  player.Move(*player.units[0], Vec2(12, 6));
-  // player.units[1]->MoveDij(Vec2(6, 7), *player.map->graph);
+  actionT t = enemy.units[0];
+  player.units[0]->InsertAction(t);
+  player.units[0]->TakeAction();
 
-  // MainLoop();
+  // player.units[1]->MoveDij(Vec2(6, 7), *player.map->graph);
+  MainLoop();
 }
 
 void Manager::MainLoop() {
-  player.SetInitialCoordinates(Vec2(8, 2));
-  enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 3));
-
   while ((player.HasUnit(PEASANT) && player.HasStructure(HALL)) &&
          (enemy.HasUnit(PEASANT) && enemy.HasStructure(HALL))) {
-    player.RecruitSoldier(ARCHMAGE);
-    std::cout << player.units.size() << " ";
+    for (int i = 0; i < player.units.size(); i++) {
+      if (player.units[i]->GetActionQueueSize() > 0) {
+        player.units[i]->TakeAction();
+      }
+      std::cout << player.units[0]->coordinate.x << " ";
+      std::cout << player.units[0]->coordinate.y << "\n";
+      //  player.RecruitSoldier(ARCHMAGE);
+      //    std::cout << player.units.size() << " ";
+      // std::cout << enemy.units[0]->health << "\n";
+      // player.units[0]->Attack(*enemy.units[0]);
+      // std::cout << enemy.units[0]->health;
+    }
   }
 }
 

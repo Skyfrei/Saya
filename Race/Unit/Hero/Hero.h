@@ -30,7 +30,7 @@ class Hero : public Unit {
   }
   void Attack(Living &un) {
     if (WithinDistance(un.coordinate)) {
-      if (GetAttackTime() == true) un.health -= attack;
+      if (CanAttack()) un.health -= attack;
     } else
       Move(un.coordinate);
   }

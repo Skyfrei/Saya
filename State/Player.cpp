@@ -4,11 +4,23 @@
 #include "Player.h"
 
 #include <memory>
-Player::Player() {
+Player::Player(Map &m) {
+  Initialize(m);
   food.y = 10;
   gold = 2000;
 }
-void Player::Move(Unit &un, Vec2 terr) { un.MoveDij(terr, *map); }
+Player::Player() {}
+void Player::Initialize(Map &m) {
+  structures.push_back(std::make_shared<TownHall>());
+  for (int i = 0; i < 5; i++) {
+    units.push_back(std::make_shared<Peasant>());
+    units[0]->coordinate = structures[0]->coordinate;
+  }
+  structures.push_back(std::make_shared<Barrack>());
+  map = m;
+  ValidateFood();
+}
+void Player::Move(Unit &un, Vec2 terr) { un.Move(terr); }
 void Player::SetInitialCoordinates(Vec2 v) {
   for (auto &structure : structures) {
     structure->coordinate = v;
@@ -17,11 +29,8 @@ void Player::SetInitialCoordinates(Vec2 v) {
     unit->coordinate = v;
   }
 }
-std::vector<std::shared_ptr<Unit>> Player::SelectUnits(int n) {
+std::vector<std::shared_ptr<Unit>> Player::SelectUnits() {
   std::vector<std::shared_ptr<Unit>> result;
-  for (int i = 0; i < n; i++) {
-    result.push_back(units[i]);
-  }
   return result;
 }
 
@@ -61,17 +70,6 @@ Structure &Player::FindClosestStructure(Unit &unit, StructureType type) {
     }
   }
   return *structures[index];
-}
-
-void Player::Initialize(Map *m) {
-  structures.push_back(std::make_shared<TownHall>());
-  for (int i = 0; i < 5; i++) {
-    units.push_back(std::make_shared<Peasant>());
-    units[0]->coordinate = structures[0]->coordinate;
-  }
-  structures.push_back(std::make_shared<Barrack>());
-  map = m;
-  ValidateFood();
 }
 
 void Player::ValidateFood() {
@@ -115,7 +113,7 @@ void Player::ChooseToBuild(StructureType structType, Vec2 terrCoord) {
   for (const auto &unit : units) {
     if (unit->is == PEASANT) {
       dynamic_cast<Peasant &>(*unit).Build(
-          structures, gold, structType, map->objects[terrCoord.x][terrCoord.y]);
+          structures, gold, structType, map.objects[terrCoord.x][terrCoord.y]);
     }
   }
 }
