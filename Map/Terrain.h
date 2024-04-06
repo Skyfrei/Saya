@@ -17,6 +17,7 @@ class Terrain {
 
  public:
   int GetResourceLeft() { return 0; }
+  std::shared_ptr<Living> ObjectsAtTerrain(Vec2 terr);
 
   // void GetLiving(std::vector<Living>& obj)
   //{
@@ -27,5 +28,5 @@ class Terrain {
   int resourceLeft{};
   Vec2 coord;
   TerrainType type = GROUND;
-  std::shared_ptr<Living> object;
+  std::shared_ptr<Living> onTerrainObjects;
 };

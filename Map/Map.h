@@ -1,11 +1,7 @@
 #ifndef MAP_H
 #define MAP_H
 
-#include <algorithm>
-#include <cmath>
 #include <iostream>
-#include <map>
-#include <stack>
 #include <vector>
 
 #include "../Tools/Vec2.h"
@@ -20,6 +16,7 @@ class Map {
 
  public:
   std::vector<Node *> GetClosestDestNode(Vec2 &coord, Vec2 &dest);
+  void UpdateTerrain(Living &);
   std::vector<std::vector<Terrain>> objects;
 
  private:

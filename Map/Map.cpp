@@ -12,12 +12,19 @@ Map::Map() {
         temp.resourceLeft = 2000;
       }
       tempTerr.push_back(temp);
-      //objects[i][j] = temp;
+      // objects[i][j] = temp;
     }
     objects.push_back(tempTerr);
     tempTerr.clear();
   }
   graph = Graph(objects);
+}
+void Map::UpdateTerrain(Living &obj) {
+  for (int i = 0; i < objects.size(); i++) {
+    if (std::find(objects[i].onTerrainObjects.begin(),
+                  objects[i].onTerrainObjects.end(),
+                  obj) != objects[i].onTerrainObjects.end())
+  }
 }
 
 std::vector<Node *> Map::GetAllNodes() { return graph.GetAllGraphNodes(); }
@@ -42,7 +49,7 @@ std::vector<Node *> Map::GetClosestDestNode(Vec2 &coord, Vec2 &dest) {
     for (Node *n : graph.GetAllNeighbors(*u)) {
       if (std::find(q.begin(), q.end(), n) != q.end()) {
         int alt = dist[u] + 1;
-        std::cout<<alt;
+        std::cout << alt;
         if (alt < dist[n]) {
           dist[n] = alt;
           prev[n] = u;
@@ -50,8 +57,9 @@ std::vector<Node *> Map::GetClosestDestNode(Vec2 &coord, Vec2 &dest) {
       }
     }
   }
-  //std::cout << prev.size();
-  //for (int i = 0; i < result.size(); i++)
-  //  std::cout << result[i]->location.x << " " << result[i]->location.y << "\n";
+  // std::cout << prev.size();
+  // for (int i = 0; i < result.size(); i++)
+  //   std::cout << result[i]->location.x << " " << result[i]->location.y <<
+  //   "\n";
   return result;
 }
