@@ -12,18 +12,34 @@ Map::Map() {
         temp.resourceLeft = 2000;
       }
       tempTerr.push_back(temp);
-      // objects[i][j] = temp;
+      // terrain[i][j] = temp;
     }
-    objects.push_back(tempTerr);
+    terrain.push_back(tempTerr);
     tempTerr.clear();
   }
-  graph = Graph(objects);
+  graph = Graph(terrain);
+}
+std::vector<Living *> Map::GetObjectsAtTerrain(Vec2 v) {
+  Terrain t = GetTerrainAtCoordinate(v);
+  return t.onTerrainLiving;
+}
+Terrain &Map::GetTerrainAtCoordinate(Vec2 v) {
+  for (int i = 0; i < terrain.size(); i++) {
+    for (int j = 0; j < terrain.size(); j++) {
+      if (terrain[i][j].coord.x == v.x && terrain[i][j].coord.y == v.y) {
+        return terrain[i][j];
+      }
+    }
+  }
+  return terrain[0][0];
 }
 void Map::UpdateTerrain(Living &obj) {
-  for (int i = 0; i < objects.size(); i++) {
-    if (std::find(objects[i].onTerrainObjects.begin(),
-                  objects[i].onTerrainObjects.end(),
-                  obj) != objects[i].onTerrainObjects.end())
+  for (int i = 0; i < terrain.size(); i++) {
+    for (int j = 0; j < terrain.size(); j++) {
+      // if (std::find(terrain[i][j].onTerrainLiving.begin(),
+      //             terrain[i][j].onTerrainLiving.end(),
+      //           obj) != terrain[i][j].onTerrainLiving.end())
+    }
   }
 }
 

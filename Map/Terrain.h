@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TERRAIN_H
+#define TERRAIN_H
 #include <memory>
 
 #include "../Living.h"
@@ -17,16 +18,13 @@ class Terrain {
 
  public:
   int GetResourceLeft() { return 0; }
-  std::shared_ptr<Living> ObjectsAtTerrain(Vec2 terr);
-
-  // void GetLiving(std::vector<Living>& obj)
-  //{
-  //  objects = obj;
-  //}
+  // std::unique_ptr<i><Living> ObjectsAtTerrain(Vec2 terr);
+  bool ExistsInTerrain(Living &);
 
  public:
   int resourceLeft{};
   Vec2 coord;
   TerrainType type = GROUND;
-  std::shared_ptr<Living> onTerrainObjects;
+  std::vector<Living *> onTerrainLiving;
 };
+#endif

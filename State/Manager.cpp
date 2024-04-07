@@ -16,7 +16,10 @@ Manager::Manager() {
 
   player.SetInitialCoordinates(Vec2(8, 2));
   enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 3));
-  actionT t = enemy.units[0];
+
+  AttackAction b;
+  b.object = enemy.units[0].get();
+  actionT t = b;
   player.units[0]->InsertAction(t);
   player.units[0]->TakeAction();
 
@@ -31,14 +34,8 @@ void Manager::MainLoop() {
       if (player.units[i]->GetActionQueueSize() > 0) {
         player.units[i]->TakeAction();
       }
-      std::cout << player.units[0]->coordinate.x << " ";
-      std::cout << player.units[0]->coordinate.y << "\n";
-      //  player.RecruitSoldier(ARCHMAGE);
-      //    std::cout << player.units.size() << " ";
-      // std::cout << enemy.units[0]->health << "\n";
-      // player.units[0]->Attack(*enemy.units[0]);
-      // std::cout << enemy.units[0]->health;
     }
+    std::cout << player.units[0]->coordinate.y;
   }
 }
 

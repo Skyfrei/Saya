@@ -35,7 +35,7 @@ class Peasant : public Unit {
   }
 
  public:
-  void Build(std::vector<std::shared_ptr<Structure>> &structures,
+  void Build(std::vector<std::unique_ptr<Structure>> &structures,
              int &playerGold, StructureType type, Terrain &terr);
   void WorkOnTask();
   void ChangeBuilding();

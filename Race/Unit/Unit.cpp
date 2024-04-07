@@ -4,8 +4,7 @@
 #include "Unit.h"
 
 #include <__algorithm/remove.h>
-
-#include <memory>
+#include <__fwd/get.h>
 
 #include "State/Manager.h"
 #include "Tools/Vec2.h"
@@ -25,8 +24,9 @@ bool Unit::HasCommand() {
 void Unit::TakeAction() {
   if (!HasCommand()) return;
 
-  if (std::holds_alternative<std::shared_ptr<Living>>(actionQueue[0])) {
-    Attack(*std::get<std::shared_ptr<Living>>(actionQueue[0]));
+  if (std::holds_alternative<AttackAction>(actionQueue[0])) {
+    AttackAction action = std::get<AttackAction>(actionQueue[0]);
+    Attack(*action.object);
   }
 
   else if (std::holds_alternative<Vec2>(actionQueue[0])) {
@@ -37,8 +37,7 @@ void Unit::TakeAction() {
     }
     Move(targetDest);
 
-  } else if (std::holds_alternative<std::shared_ptr<Structure>>(
-                 actionQueue[0])) {
+  } else if (std::holds_alternative<BuildAction>(actionQueue[0])) {
     std::cout << "Implement build here";
   }
 }
@@ -91,24 +90,21 @@ Vec2 Unit::FindDifference(Vec2 terr) {
 }
 
 void Unit::Attack(Living &un) {
-  // if (attackTask)
-  // attackTask.push(Task<Unit>());
-  // if (WithinDistance(un.coordinate)) {
-  if (CanAttack()) {
-    un.health -= attack;
-    std::cout << "AAAA";
-    // }
-    //} else
-    Move(un.coordinate);
+  if (WithinDistance(un.coordinate)) {
+    if (CanAttack()) {
+      un.health -= attack;
+      std::cout << "AAAA";
+    }
   }
+  Move(un.coordinate);
 }
 
 bool Unit::CanAttack() {
   auto currentCd =
       duration_cast<seconds>(high_resolution_clock::now() - attackTime).count();
-  std::cout << currentCd << "\n";
   if (currentCd >= attackCooldown) {
     attackTime = high_resolution_clock::now();
+    std::cout << "A";
     return true;
   };
 

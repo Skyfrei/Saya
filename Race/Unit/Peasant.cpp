@@ -4,22 +4,22 @@
 #include "Peasant.h"
 
 #include "Race/Unit/Unit.h"
-void Peasant::Build(std::vector<std::shared_ptr<Structure>> &structures,
+void Peasant::Build(std::vector<std::unique_ptr<Structure>> &structures,
                     int &playerGold, StructureType type, Terrain &terr) {
-  std::shared_ptr<Structure> struc;
+  std::unique_ptr<Structure> struc;
   if (WithinDistance(terr.coord)) {
     if (terr.type == GROUND) {
       switch (type) {
         case BARRACK:
-          struc = std::make_shared<Barrack>();
+          struc = std::make_unique<Barrack>();
           break;
 
         case FARM:
-          struc = std::make_shared<Farm>();
+          struc = std::make_unique<Farm>();
           break;
 
         case HALL:
-          struc = std::make_shared<TownHall>();
+          struc = std::make_unique<TownHall>();
           break;
 
         default:
@@ -29,7 +29,7 @@ void Peasant::Build(std::vector<std::shared_ptr<Structure>> &structures,
         playerGold -= struc->goldCost;
         // buildTask.emplace_front(*struc);
         structures.emplace_back(std::move(struc));
-        terr.object = struc;
+        terr.onTerrainLiving.push_back(struc.get());
         // terr.object = stru;
       }
     }

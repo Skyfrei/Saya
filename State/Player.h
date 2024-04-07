@@ -28,13 +28,13 @@ class Player {
   void ChooseToBuild(StructureType structType, Vec2 terrCoord);
   void RecruitSoldier(UnitType unitType);
   void Move(Unit &un, Vec2 terr);
-  std::vector<std::shared_ptr<Unit>> SelectUnits();
+  std::vector<std::unique_ptr<Unit>> SelectUnits();
 
  public:
   int gold;
   Vec2 food;
-  std::vector<std::shared_ptr<Unit>> units;
-  std::vector<std::shared_ptr<Structure>> structures;
+  std::vector<std::unique_ptr<Unit>> units;
+  std::vector<std::unique_ptr<Structure>> structures;
   Map map;
 };
 

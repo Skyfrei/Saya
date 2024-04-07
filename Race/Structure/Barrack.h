@@ -27,7 +27,7 @@ class Barrack : public Structure {
  public:
   void FinishBuilding() override {}
   std::string GetDescription() override { return "Recruit soldiers."; }
-  void CreateUnit(std::vector<std::shared_ptr<Unit>> &units, int &playerGold,
+  void CreateUnit(std::vector<std::unique_ptr<Unit>> &units, int &playerGold,
                   UnitType type);
 };
 #endif

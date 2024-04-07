@@ -13,11 +13,13 @@ class Map {
   Map();
 
   void TurnMatrixToGraph();
-
- public:
   std::vector<Node *> GetClosestDestNode(Vec2 &coord, Vec2 &dest);
   void UpdateTerrain(Living &);
-  std::vector<std::vector<Terrain>> objects;
+  Terrain &GetTerrainAtCoordinate(Vec2);
+  std::vector<Living *> GetObjectsAtTerrain(Vec2);
+
+ public:
+  std::vector<std::vector<Terrain>> terrain;
 
  private:
   std::vector<Node *> GetAllNodes();

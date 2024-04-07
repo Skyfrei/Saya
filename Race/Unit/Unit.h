@@ -15,14 +15,31 @@ enum UnitType { FOOTMAN, PEASANT, ARCHMAGE, BLOODMAGE };
 
 enum MoveType { W, NW, N, NE, E, SE, S, SW, STAY };
 
-using actionT =
-    std::variant<std::shared_ptr<Living>, Vec2, std::shared_ptr<Structure>>;
 struct Path {
   Path(int d, Vec2 l) : distance(d), comesFrom(l) {}
   Path() {}
   int distance;
   Vec2 comesFrom;
 };
+
+struct AttackAction {
+  Living *object;
+  constexpr bool operator==(const AttackAction &b) const {
+    if (object == b.object) return true;
+    return false;
+  }
+};
+struct BuildAction {
+  StructureType type;
+  Vec2 coord;
+  bool operator==(const BuildAction &b) const {
+    if (coord.x == b.coord.x && coord.y == b.coord.y && type == b.type)
+      return true;
+    return false;
+  }
+};
+
+using actionT = std::variant<AttackAction, Vec2, BuildAction>;
 
 class Unit : public Living {
  public:
@@ -47,7 +64,6 @@ class Unit : public Living {
   bool IsMovable();
   void MoveCoordinates(Vec2 terr);
   void ChangeCoordinate(MoveType dir);
-  void InsertAction(std::variant<Living *, Vec2>);
 
  public:
   bool isInvisible = false;

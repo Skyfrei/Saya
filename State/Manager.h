@@ -10,8 +10,7 @@
 #include "../Race/Unit/Unit.h"
 #include "Player.h"
 
-using actionT =
-    std::variant<std::shared_ptr<Living>, Vec2, std::shared_ptr<Structure>>;
+using actionT = std::variant<AttackAction, Vec2, BuildAction>;
 
 class Manager {
  public:

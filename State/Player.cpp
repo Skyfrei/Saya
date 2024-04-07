@@ -11,12 +11,12 @@ Player::Player(Map &m) {
 }
 Player::Player() {}
 void Player::Initialize(Map &m) {
-  structures.push_back(std::make_shared<TownHall>());
+  structures.push_back(std::make_unique<TownHall>());
   for (int i = 0; i < 5; i++) {
-    units.push_back(std::make_shared<Peasant>());
+    units.push_back(std::make_unique<Peasant>());
     units[0]->coordinate = structures[0]->coordinate;
   }
-  structures.push_back(std::make_shared<Barrack>());
+  structures.push_back(std::make_unique<Barrack>());
   map = m;
   ValidateFood();
 }
@@ -29,8 +29,8 @@ void Player::SetInitialCoordinates(Vec2 v) {
     unit->coordinate = v;
   }
 }
-std::vector<std::shared_ptr<Unit>> Player::SelectUnits() {
-  std::vector<std::shared_ptr<Unit>> result;
+std::vector<std::unique_ptr<Unit>> Player::SelectUnits() {
+  std::vector<std::unique_ptr<Unit>> result;
   return result;
 }
 
@@ -113,7 +113,7 @@ void Player::ChooseToBuild(StructureType structType, Vec2 terrCoord) {
   for (const auto &unit : units) {
     if (unit->is == PEASANT) {
       dynamic_cast<Peasant &>(*unit).Build(
-          structures, gold, structType, map.objects[terrCoord.x][terrCoord.y]);
+          structures, gold, structType, map.terrain[terrCoord.x][terrCoord.y]);
     }
   }
 }
