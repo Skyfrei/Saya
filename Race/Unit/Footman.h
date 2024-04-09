@@ -15,7 +15,6 @@ class Footman : public Unit {
     goldCost = 135;
     foodCost = 2;
 
-    attackCooldown = 1.35;
     buildTime = 20;
 
     is = FOOTMAN;

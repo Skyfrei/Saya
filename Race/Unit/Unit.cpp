@@ -26,6 +26,10 @@ void Unit::TakeAction() {
 
   if (std::holds_alternative<AttackAction>(actionQueue[0])) {
     AttackAction action = std::get<AttackAction>(actionQueue[0]);
+    if (action.object->health <= 0) {
+      actionQueue.erase(actionQueue.begin());
+      return;
+    }
     Attack(*action.object);
   }
 
@@ -51,10 +55,10 @@ void Unit::Move(Vec2 terr) {
   if (!IsMovable()) {
     return;
   }
-
   Vec2 difference;
   difference.x = coordinate.x - terr.x;
   difference.y = coordinate.y - terr.y;
+
   if (difference.x > 0 && difference.y > 0)
     ChangeCoordinate(NW);
   else if (difference.x > 0 && difference.y < 0)
@@ -93,27 +97,26 @@ void Unit::Attack(Living &un) {
   if (WithinDistance(un.coordinate)) {
     if (CanAttack()) {
       un.health -= attack;
-      std::cout << "AAAA";
+      std::cout << un.health;
     }
-  }
-  Move(un.coordinate);
+  } else
+    Move(un.coordinate);
 }
 
 bool Unit::CanAttack() {
   auto currentCd =
-      duration_cast<seconds>(high_resolution_clock::now() - attackTime).count();
+      duration_cast<seconds>(high_resolution_clock::now() - attackTime);
+
   if (currentCd >= attackCooldown) {
     attackTime = high_resolution_clock::now();
-    std::cout << "A";
     return true;
-  };
-
+  }
   return false;
 }
 
 bool Unit::IsMovable() {
   auto currentCd =
-      duration_cast<seconds>(high_resolution_clock::now() - moveTime).count();
+      duration_cast<seconds>(high_resolution_clock::now() - moveTime);
   if (currentCd >= moveCooldown) {
     moveTime = high_resolution_clock::now();
     return true;
@@ -123,7 +126,7 @@ bool Unit::IsMovable() {
 
 void Unit::RegenHealth() {
   auto currentCd =
-      duration_cast<seconds>(high_resolution_clock::now() - hpTime).count();
+      duration_cast<seconds>(high_resolution_clock::now() - hpTime);
 
   if (currentCd >= hpCooldown) {
     if (health + hpRegen >= maxHealth) return;

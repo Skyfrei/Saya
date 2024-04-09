@@ -8,7 +8,6 @@
 #include "../../Tools/Vec2.h"
 #include "../Spells/Spell.h"
 #include "Race/Structure/Structure.h"
-
 using namespace std::chrono;
 
 enum UnitType { FOOTMAN, PEASANT, ARCHMAGE, BLOODMAGE };
@@ -23,6 +22,9 @@ struct Path {
 };
 
 struct AttackAction {
+  AttackAction() {}
+  AttackAction(Living *o) : object(o) {}
+
   Living *object;
   constexpr bool operator==(const AttackAction &b) const {
     if (object == b.object) return true;
@@ -72,10 +74,10 @@ class Unit : public Living {
   int maxMana = 100;
   float attackRange{};
   int movementSpeed = 1;
-  float attackCooldown = 0.35f;
-  float hpCooldown = 0.35f;
-  float moveCooldown = 0.25f;
-  float manaRegen = 0.25;
+  duration<float> attackCooldown = duration<float>(0.40f);
+  duration<float> hpCooldown = duration<float>(0.35f);
+  duration<float> moveCooldown = duration<float>(0.35f);
+  float manaRegen = 0.25f;
   float hpRegen = 0.25f;
 
   UnitType is;

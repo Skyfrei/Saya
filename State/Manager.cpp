@@ -15,15 +15,10 @@ Manager::Manager() {
   enemy = Player(map);
 
   player.SetInitialCoordinates(Vec2(8, 2));
-  enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 3));
+  enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 2));
 
-  AttackAction b;
-  b.object = enemy.units[0].get();
-  actionT t = b;
-  player.units[0]->InsertAction(t);
-  player.units[0]->TakeAction();
+  player.Move(player.units[0].get(), Vec2(13, 12));
 
-  // player.units[1]->MoveDij(Vec2(6, 7), *player.map->graph);
   MainLoop();
 }
 
@@ -35,7 +30,6 @@ void Manager::MainLoop() {
         player.units[i]->TakeAction();
       }
     }
-    std::cout << player.units[0]->coordinate.y;
   }
 }
 

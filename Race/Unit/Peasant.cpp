@@ -37,9 +37,6 @@ void Peasant::Build(std::vector<std::unique_ptr<Structure>> &structures,
     Move(terr.coord);
   }
 }
-void Peasant::WorkOnTask() {}
-
-void Peasant::ChangeBuilding() {}
 
 void Peasant::FarmGold(Terrain &terr, TownHall &hall) {
   if (WithinDistance(terr.coord)) {

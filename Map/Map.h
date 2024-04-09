@@ -17,6 +17,8 @@ class Map {
   void UpdateTerrain(Living &);
   Terrain &GetTerrainAtCoordinate(Vec2);
   std::vector<Living *> GetObjectsAtTerrain(Vec2);
+  void RemoveOwnership(Living *);
+  void AddOwnership(Living *, Vec2);
 
  public:
   std::vector<std::vector<Terrain>> terrain;

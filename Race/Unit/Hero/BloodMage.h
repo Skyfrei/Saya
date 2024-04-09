@@ -41,7 +41,7 @@ class BloodMage : public Hero {
     foodCost = 5;
     buildTime = 55;
     attack = 24;
-    attackCooldown = 1.28;
+    attackCooldown = duration<float>(1.28f);
 
     strength = 18;
     agility = 14;

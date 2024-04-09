@@ -56,7 +56,7 @@ class Hero : public Unit {
     maxMana += 45;
     manaRegen += 0.15;
     attack += 3;
-    attackCooldown -= 0.02;
+    attackCooldown = duration<float>(attackCooldown.count() - 0.02f);
     experience = 0.0f;
     maxExperience += 150;
   }

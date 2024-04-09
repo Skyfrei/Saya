@@ -13,6 +13,7 @@
 #include "../Race/Unit/Peasant.h"
 #include "../Race/Unit/Unit.h"
 #include "../Tools/Vec2.h"
+using actionT = std::variant<AttackAction, Vec2, BuildAction>;
 
 class Player {
  public:
@@ -29,6 +30,8 @@ class Player {
   void RecruitSoldier(UnitType unitType);
   void Move(Unit &un, Vec2 terr);
   std::vector<std::unique_ptr<Unit>> SelectUnits();
+  void Move(Unit *, Vec2);
+  void Attack(Unit *, Living *);
 
  public:
   int gold;

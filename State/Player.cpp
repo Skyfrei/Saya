@@ -10,6 +10,18 @@ Player::Player(Map &m) {
   gold = 2000;
 }
 Player::Player() {}
+void Player::Move(Unit *u, Vec2 v) {
+  Vec2 k = v;
+  actionT t = k;
+  map.RemoveOwnership(u);
+  u->InsertAction(t);
+  map.AddOwnership(u, v);
+}
+void Player::Attack(Unit *u, Living *l) {
+  AttackAction b(l);
+  actionT t = b;
+  u->InsertAction(t);
+}
 void Player::Initialize(Map &m) {
   structures.push_back(std::make_unique<TownHall>());
   for (int i = 0; i < 5; i++) {

@@ -1,5 +1,7 @@
 #include "Map.h"
 
+#include "Map/Terrain.h"
+
 Map::Map() {
   std::vector<Terrain> tempTerr;
   for (int i = 0; i < MAP_SIZE; i++) {
@@ -18,6 +20,15 @@ Map::Map() {
     tempTerr.clear();
   }
   graph = Graph(terrain);
+}
+void Map::RemoveOwnership(Living *l) {
+  Terrain terr = GetTerrainAtCoordinate(l->coordinate);
+  terr.onTerrainLiving.erase(
+      std::find(terr.onTerrainLiving.begin(), terr.onTerrainLiving.end(), l));
+}
+void Map::AddOwnership(Living *l, Vec2 v) {
+  Terrain terr = GetTerrainAtCoordinate(v);
+  terr.onTerrainLiving.push_back(l);
 }
 std::vector<Living *> Map::GetObjectsAtTerrain(Vec2 v) {
   Terrain t = GetTerrainAtCoordinate(v);

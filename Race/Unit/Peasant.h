@@ -28,7 +28,6 @@ class Peasant : public Unit {
     goldCost = 75;
     foodCost = 1;
 
-    attackCooldown = 2.0f;
     buildTime = 15;
 
     is = PEASANT;
@@ -37,8 +36,6 @@ class Peasant : public Unit {
  public:
   void Build(std::vector<std::unique_ptr<Structure>> &structures,
              int &playerGold, StructureType type, Terrain &terr);
-  void WorkOnTask();
-  void ChangeBuilding();
   void FarmGold(Terrain &terr, TownHall &hall);
   void TransferGold(TownHall &hall);
   std::string GetDescription() override { return "Slave."; }
