@@ -31,7 +31,7 @@ void Map::AddOwnership(Living *l, Vec2 v) {
   terr.onTerrainLiving.push_back(l);
 }
 std::vector<Living *> Map::GetObjectsAtTerrain(Vec2 v) {
-  Terrain t = GetTerrainAtCoordinate(v);
+  Terrain &t = GetTerrainAtCoordinate(v);
   return t.onTerrainLiving;
 }
 Terrain &Map::GetTerrainAtCoordinate(Vec2 v) {

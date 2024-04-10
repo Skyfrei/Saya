@@ -18,16 +18,12 @@ Player::Player(Map &m) : map(m) {
 Player::Player() {}
 void Player::Move(Unit *u, Vec2 v) {
   actionT t = v;
-  map.RemoveOwnership(u);
   u->InsertAction(t);
-  map.AddOwnership(u, u->coordinate);
 }
 void Player::Attack(Unit *u, Living *l) {
   AttackAction b(l);
   actionT t = b;
-  map.RemoveOwnership(u);
   u->InsertAction(t);
-  map.AddOwnership(u, u->coordinate);
 }
 void Player::Build(Peasant *p, StructureType type, Vec2 v) {
   Terrain &ter = map.GetTerrainAtCoordinate(v);
@@ -46,7 +42,6 @@ void Player::Initialize() {
     units.push_back(std::make_unique<Peasant>());
     units[i]->coordinate = structures[0]->coordinate;
   }
-  structures.push_back(std::make_unique<Barrack>());
 
   ValidateFood();
 }

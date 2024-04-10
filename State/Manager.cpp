@@ -22,12 +22,23 @@ Manager::Manager() {
   MainLoop();
 }
 
+void Manager::CheckForOwnership(Living *oldL, Living *newL) {
+  if (oldL->coordinate != newL->coordinate) {
+    map.RemoveOwnership(oldL);
+    map.AddOwnership(newL, newL->coordinate);
+  } else if (oldL->health <= 0) {
+    map.RemoveOwnership(oldL);
+  }
+}
+
 void Manager::MainLoop() {
   while ((player.HasUnit(PEASANT) && player.HasStructure(HALL)) &&
          (enemy.HasUnit(PEASANT) && enemy.HasStructure(HALL))) {
     for (int i = 0; i < player.units.size(); i++) {
       if (player.units[i]->GetActionQueueSize() > 0) {
+        Living *temp = player.units[i].get();
         player.units[i]->TakeAction();
+        CheckForOwnership(temp, player.units[i].get());
       }
     }
   }

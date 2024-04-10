@@ -20,6 +20,7 @@ class Manager {
   void ManageLiving(Player &pl);
   float GetTime();
   void CheckForMovement();
+  void CheckForOwnership(Living *, Living *);
 
  public:
   Player player;
