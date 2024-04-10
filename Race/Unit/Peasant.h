@@ -34,8 +34,7 @@ class Peasant : public Unit {
   }
 
  public:
-  void Build(std::vector<std::unique_ptr<Structure>> &structures,
-             int &playerGold, StructureType type, Terrain &terr);
+  std::unique_ptr<Structure> Build(StructureType type, Terrain &terr);
   void FarmGold(Terrain &terr, TownHall &hall);
   void TransferGold(TownHall &hall);
   std::string GetDescription() override { return "Slave."; }

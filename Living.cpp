@@ -4,11 +4,7 @@
 #include "Living.h"
 
 bool Living::HasEnoughGold(int playerGold, int cost) {
-  if (playerGold >= cost) return true;
-  return false;
+  return playerGold >= cost;
 }
 
-bool Living::Die() {
-  if (health <= 0) return true;
-  return false;
-}
+bool Living::Die() { return health <= 0; }

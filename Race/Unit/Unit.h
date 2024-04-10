@@ -32,10 +32,11 @@ struct AttackAction {
   }
 };
 struct BuildAction {
-  StructureType type;
   Vec2 coord;
+  Structure *stru;
+  BuildAction(Structure *s, Vec2 c) : stru(s), coord(c) {}
   bool operator==(const BuildAction &b) const {
-    if (coord.x == b.coord.x && coord.y == b.coord.y && type == b.type)
+    if (coord.x == b.coord.x && coord.y == b.coord.y && stru == b.stru)
       return true;
     return false;
   }

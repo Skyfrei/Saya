@@ -6,6 +6,7 @@
 #include <__algorithm/remove.h>
 #include <__fwd/get.h>
 
+#include "Race/Unit/Peasant.h"
 #include "State/Manager.h"
 #include "Tools/Vec2.h"
 
@@ -42,7 +43,12 @@ void Unit::TakeAction() {
     Move(targetDest);
 
   } else if (std::holds_alternative<BuildAction>(actionQueue[0])) {
-    std::cout << "Implement build here";
+    BuildAction target = std::get<BuildAction>(actionQueue[0]);
+    if (target.stru->health >= target.stru->maxHealth) {
+      actionQueue.erase(actionQueue.begin());
+    } else {
+      target.stru->health += 15;
+    }
   }
 }
 int Unit::GetActionQueueSize() { return actionQueue.size(); }

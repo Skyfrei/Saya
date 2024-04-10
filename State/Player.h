@@ -13,25 +13,26 @@
 #include "../Race/Unit/Peasant.h"
 #include "../Race/Unit/Unit.h"
 #include "../Tools/Vec2.h"
+#include "Race/Structure/Structure.h"
 using actionT = std::variant<AttackAction, Vec2, BuildAction>;
 
 class Player {
  public:
   Player(Map &m);
   Player();
-  void Initialize(Map &m);
+  void Initialize();
   void SetInitialCoordinates(Vec2 v);
   bool HasStructure(StructureType structType);
   bool HasUnit(UnitType unitType);
   Structure &FindClosestStructure(Unit &unit, StructureType type);
   void ValidateFood();
   void UpdateGold(int g);
-  void ChooseToBuild(StructureType structType, Vec2 terrCoord);
+  Structure *ChooseToBuild(StructureType structType);
   void RecruitSoldier(UnitType unitType);
-  void Move(Unit &un, Vec2 terr);
   std::vector<std::unique_ptr<Unit>> SelectUnits();
   void Move(Unit *, Vec2);
   void Attack(Unit *, Living *);
+  void Build(Peasant *, StructureType, Vec2);
 
  public:
   int gold;

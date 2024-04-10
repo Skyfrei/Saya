@@ -3,39 +3,37 @@
 //
 #include "Peasant.h"
 
+#include <memory>
+
 #include "Race/Unit/Unit.h"
-void Peasant::Build(std::vector<std::unique_ptr<Structure>> &structures,
-                    int &playerGold, StructureType type, Terrain &terr) {
+std::unique_ptr<Structure> Peasant::Build(StructureType type, Terrain &terr) {
   std::unique_ptr<Structure> struc;
   if (WithinDistance(terr.coord)) {
     if (terr.type == GROUND) {
       switch (type) {
         case BARRACK:
           struc = std::make_unique<Barrack>();
+          return struc;
           break;
 
         case FARM:
           struc = std::make_unique<Farm>();
+          return struc;
           break;
 
         case HALL:
           struc = std::make_unique<TownHall>();
+          return struc;
           break;
 
         default:
           break;
       }
-      if (HasEnoughGold(playerGold, struc->goldCost)) {
-        playerGold -= struc->goldCost;
-        // buildTask.emplace_front(*struc);
-        structures.emplace_back(std::move(struc));
-        terr.onTerrainLiving.push_back(struc.get());
-        // terr.object = stru;
-      }
     }
   } else {
     Move(terr.coord);
   }
+  return struc;
 }
 
 void Peasant::FarmGold(Terrain &terr, TownHall &hall) {

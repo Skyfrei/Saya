@@ -22,12 +22,12 @@ Map::Map() {
   graph = Graph(terrain);
 }
 void Map::RemoveOwnership(Living *l) {
-  Terrain terr = GetTerrainAtCoordinate(l->coordinate);
+  Terrain &terr = GetTerrainAtCoordinate(l->coordinate);
   terr.onTerrainLiving.erase(
       std::find(terr.onTerrainLiving.begin(), terr.onTerrainLiving.end(), l));
 }
 void Map::AddOwnership(Living *l, Vec2 v) {
-  Terrain terr = GetTerrainAtCoordinate(v);
+  Terrain &terr = GetTerrainAtCoordinate(v);
   terr.onTerrainLiving.push_back(l);
 }
 std::vector<Living *> Map::GetObjectsAtTerrain(Vec2 v) {

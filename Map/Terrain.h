@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "../Living.h"
+#include "../Race/Structure/Structure.h"
 #include "../Tools/Vec2.h"
 
 #define MAP_SIZE 15
@@ -26,5 +27,6 @@ class Terrain {
   Vec2 coord;
   TerrainType type = GROUND;
   std::vector<Living *> onTerrainLiving;
+  Structure *structureOnTerrain;
 };
 #endif

@@ -4,41 +4,60 @@
 #include "Player.h"
 
 #include <memory>
-Player::Player(Map &m) {
-  Initialize(m);
+
+#include "Race/Structure/Barrack.h"
+#include "Race/Structure/Farm.h"
+#include "Race/Structure/Structure.h"
+#include "Race/Structure/TownHall.h"
+#include "Race/Unit/Unit.h"
+Player::Player(Map &m) : map(m) {
+  Initialize();
   food.y = 10;
   gold = 2000;
 }
 Player::Player() {}
 void Player::Move(Unit *u, Vec2 v) {
-  Vec2 k = v;
-  actionT t = k;
+  actionT t = v;
   map.RemoveOwnership(u);
   u->InsertAction(t);
-  map.AddOwnership(u, v);
+  map.AddOwnership(u, u->coordinate);
 }
 void Player::Attack(Unit *u, Living *l) {
   AttackAction b(l);
   actionT t = b;
+  map.RemoveOwnership(u);
   u->InsertAction(t);
+  map.AddOwnership(u, u->coordinate);
 }
-void Player::Initialize(Map &m) {
+void Player::Build(Peasant *p, StructureType type, Vec2 v) {
+  Terrain &ter = map.GetTerrainAtCoordinate(v);
+  if (ter.structureOnTerrain == nullptr) {
+    Structure *s = ChooseToBuild(type);
+    if (gold - s->goldCost >= 0) {
+      BuildAction b(s, v);
+      actionT t = b;
+      p->InsertAction(t);
+    }
+  }
+}
+void Player::Initialize() {
   structures.push_back(std::make_unique<TownHall>());
   for (int i = 0; i < 5; i++) {
     units.push_back(std::make_unique<Peasant>());
-    units[0]->coordinate = structures[0]->coordinate;
+    units[i]->coordinate = structures[0]->coordinate;
   }
   structures.push_back(std::make_unique<Barrack>());
-  map = m;
+
   ValidateFood();
 }
-void Player::Move(Unit &un, Vec2 terr) { un.Move(terr); }
 void Player::SetInitialCoordinates(Vec2 v) {
   for (auto &structure : structures) {
     structure->coordinate = v;
+    map.AddOwnership(structure.get(), structure->coordinate);
   }
   for (auto &unit : units) {
     unit->coordinate = v;
+    map.AddOwnership(unit.get(), unit->coordinate);
   }
 }
 std::vector<std::unique_ptr<Unit>> Player::SelectUnits() {
@@ -120,12 +139,24 @@ void Player::RecruitSoldier(UnitType unitType) {
 
 void Player::UpdateGold(int g) { gold += g; }
 
-void Player::ChooseToBuild(StructureType structType, Vec2 terrCoord) {
-  // Peasant a = FindClosestLiving(terrCoord);
-  for (const auto &unit : units) {
-    if (unit->is == PEASANT) {
-      dynamic_cast<Peasant &>(*unit).Build(
-          structures, gold, structType, map.terrain[terrCoord.x][terrCoord.y]);
-    }
+Structure *Player::ChooseToBuild(StructureType structType) {
+  Structure *str;
+  switch (structType) {
+    case HALL:
+      str = new TownHall();
+      break;
+
+    case BARRACK:
+      str = new Barrack();
+      break;
+
+    case FARM:
+      str = new Farm();
+      break;
+
+    default:
+      break;
   }
+  return str;
+  // Peasant a = FindClosestLiving(terrCoord);
 }
