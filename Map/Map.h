@@ -14,11 +14,10 @@ class Map {
 
   void TurnMatrixToGraph();
   std::vector<Node *> GetClosestDestNode(Vec2 &coord, Vec2 &dest);
-  void UpdateTerrain(Living &);
   Terrain &GetTerrainAtCoordinate(Vec2);
   std::vector<Living *> GetObjectsAtTerrain(Vec2);
-  void RemoveOwnership(Living *);
-  void AddOwnership(Living *, Vec2);
+  void RemoveOwnership(Living *, Vec2);
+  void AddOwnership(Living *);
 
  public:
   std::vector<std::vector<Terrain>> terrain;

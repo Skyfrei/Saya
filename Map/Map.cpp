@@ -21,13 +21,12 @@ Map::Map() {
   }
   graph = Graph(terrain);
 }
-void Map::RemoveOwnership(Living *l) {
-  Terrain &terr = GetTerrainAtCoordinate(l->coordinate);
-  terr.onTerrainLiving.erase(
-      std::find(terr.onTerrainLiving.begin(), terr.onTerrainLiving.end(), l));
-}
-void Map::AddOwnership(Living *l, Vec2 v) {
+void Map::RemoveOwnership(Living *l, Vec2 v) {
   Terrain &terr = GetTerrainAtCoordinate(v);
+  std::erase(terr.onTerrainLiving, l);
+}
+void Map::AddOwnership(Living *l) {
+  Terrain &terr = GetTerrainAtCoordinate(l->coordinate);
   terr.onTerrainLiving.push_back(l);
 }
 std::vector<Living *> Map::GetObjectsAtTerrain(Vec2 v) {
@@ -43,15 +42,6 @@ Terrain &Map::GetTerrainAtCoordinate(Vec2 v) {
     }
   }
   return terrain[0][0];
-}
-void Map::UpdateTerrain(Living &obj) {
-  for (int i = 0; i < terrain.size(); i++) {
-    for (int j = 0; j < terrain.size(); j++) {
-      // if (std::find(terrain[i][j].onTerrainLiving.begin(),
-      //             terrain[i][j].onTerrainLiving.end(),
-      //           obj) != terrain[i][j].onTerrainLiving.end())
-    }
-  }
 }
 
 std::vector<Node *> Map::GetAllNodes() { return graph.GetAllGraphNodes(); }

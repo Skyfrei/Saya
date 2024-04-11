@@ -8,11 +8,8 @@
 #include "Race/Structure/Structure.h"
 #include "Race/Unit/Unit.h"
 
-Manager::Manager() {
+Manager::Manager() : player(map), enemy(map) {
   // game start
-  map = Map();
-  player = Player(map);
-  enemy = Player(map);
 
   player.SetInitialCoordinates(Vec2(8, 2));
   enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 2));
@@ -22,12 +19,13 @@ Manager::Manager() {
   MainLoop();
 }
 
-void Manager::CheckForOwnership(Living *oldL, Living *newL) {
-  if (oldL->coordinate != newL->coordinate) {
-    map.RemoveOwnership(oldL);
-    map.AddOwnership(newL, newL->coordinate);
-  } else if (oldL->health <= 0) {
-    map.RemoveOwnership(oldL);
+void Manager::CheckForOwnership(Living *l, Vec2 v) {
+  if (l->health <= 0) {
+    map.RemoveOwnership(l, v);
+  }
+  if (l->coordinate.x != v.x && l->coordinate.y != v.y) {
+    map.RemoveOwnership(l, v);
+    map.AddOwnership(l);
   }
 }
 
@@ -36,9 +34,9 @@ void Manager::MainLoop() {
          (enemy.HasUnit(PEASANT) && enemy.HasStructure(HALL))) {
     for (int i = 0; i < player.units.size(); i++) {
       if (player.units[i]->GetActionQueueSize() > 0) {
-        Living *temp = player.units[i].get();
-        player.units[i]->TakeAction();
-        CheckForOwnership(temp, player.units[i].get());
+        Vec2 temp = player.units[0]->coordinate;
+        player.units[0]->TakeAction();
+        CheckForOwnership(player.units[0].get(), temp);
       }
     }
   }

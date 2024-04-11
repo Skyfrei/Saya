@@ -15,7 +15,6 @@ Player::Player(Map &m) : map(m) {
   food.y = 10;
   gold = 2000;
 }
-Player::Player() {}
 void Player::Move(Unit *u, Vec2 v) {
   actionT t = v;
   u->InsertAction(t);
@@ -48,11 +47,11 @@ void Player::Initialize() {
 void Player::SetInitialCoordinates(Vec2 v) {
   for (auto &structure : structures) {
     structure->coordinate = v;
-    map.AddOwnership(structure.get(), structure->coordinate);
+    map.AddOwnership(structure.get());
   }
   for (auto &unit : units) {
     unit->coordinate = v;
-    map.AddOwnership(unit.get(), unit->coordinate);
+    map.AddOwnership(unit.get());
   }
 }
 std::vector<std::unique_ptr<Unit>> Player::SelectUnits() {

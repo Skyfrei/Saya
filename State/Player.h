@@ -19,7 +19,6 @@ using actionT = std::variant<AttackAction, Vec2, BuildAction>;
 class Player {
  public:
   Player(Map &m);
-  Player();
   void Initialize();
   void SetInitialCoordinates(Vec2 v);
   bool HasStructure(StructureType structType);
@@ -39,7 +38,7 @@ class Player {
   Vec2 food;
   std::vector<std::unique_ptr<Unit>> units;
   std::vector<std::unique_ptr<Structure>> structures;
-  Map map;
+  Map &map;
 };
 
 #endif
