@@ -10,7 +10,7 @@
 #include "../Race/Unit/Unit.h"
 #include "Player.h"
 
-using actionT = std::variant<AttackAction, Vec2, BuildAction>;
+using actionT = std::variant<AttackAction, MoveAction, BuildAction>;
 
 class Manager {
  public:
@@ -20,7 +20,7 @@ class Manager {
   void ManageLiving(Player &pl);
   float GetTime();
   void CheckForMovement();
-  void CheckForOwnership(Living *, Vec2);
+  void CheckForOwnership(Living *, actionT);
 
  public:
   Player player;

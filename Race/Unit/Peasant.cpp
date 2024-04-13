@@ -6,32 +6,30 @@
 #include <memory>
 
 #include "Race/Unit/Unit.h"
-std::unique_ptr<Structure> Peasant::Build(StructureType type, Terrain &terr) {
+std::unique_ptr<Structure> Peasant::Build(StructureType type, Vec2 coord) {
   std::unique_ptr<Structure> struc;
-  if (WithinDistance(terr.coord)) {
-    if (terr.type == GROUND) {
-      switch (type) {
-        case BARRACK:
-          struc = std::make_unique<Barrack>();
-          return struc;
-          break;
+  if (WithinDistance(coord)) {
+    switch (type) {
+      case BARRACK:
+        struc = std::make_unique<Barrack>();
+        return struc;
+        break;
 
-        case FARM:
-          struc = std::make_unique<Farm>();
-          return struc;
-          break;
+      case FARM:
+        struc = std::make_unique<Farm>();
+        return struc;
+        break;
 
-        case HALL:
-          struc = std::make_unique<TownHall>();
-          return struc;
-          break;
+      case HALL:
+        struc = std::make_unique<TownHall>();
+        return struc;
+        break;
 
-        default:
-          break;
-      }
+      default:
+        break;
     }
   } else {
-    Move(terr.coord);
+    Move(coord);
   }
   return struc;
 }

@@ -15,6 +15,7 @@ class Terrain {
   Terrain(int x, int y) {
     coord.x = x;
     coord.y = y;
+    resourceLeft = 0;
   }
 
  public:

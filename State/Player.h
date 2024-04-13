@@ -14,7 +14,7 @@
 #include "../Race/Unit/Unit.h"
 #include "../Tools/Vec2.h"
 #include "Race/Structure/Structure.h"
-using actionT = std::variant<AttackAction, Vec2, BuildAction>;
+using actionT = std::variant<AttackAction, MoveAction, BuildAction>;
 
 class Player {
  public:

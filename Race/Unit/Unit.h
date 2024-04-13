@@ -1,5 +1,6 @@
 #pragma once
 #include <chrono>
+#include <cstddef>
 #include <variant>
 #include <vector>
 
@@ -20,10 +21,20 @@ struct Path {
   int distance;
   Vec2 comesFrom;
 };
-
+struct MoveAction {
+  Vec2 prevCoord;
+  Vec2 destCoord;
+  MoveAction(Vec2 c) : destCoord(c) {}
+  bool operator==(const MoveAction &b) const {
+    if (destCoord.x == b.destCoord.x && destCoord.y == b.destCoord.y)
+      return true;
+    return false;
+  }
+};
 struct AttackAction {
   AttackAction() {}
   AttackAction(Living *o) : object(o) {}
+  Vec2 prevCoord;
 
   Living *object;
   constexpr bool operator==(const AttackAction &b) const {
@@ -34,6 +45,7 @@ struct AttackAction {
 struct BuildAction {
   Vec2 coord;
   Structure *stru;
+  Vec2 prevCoord;
   BuildAction(Structure *s, Vec2 c) : stru(s), coord(c) {}
   bool operator==(const BuildAction &b) const {
     if (coord.x == b.coord.x && coord.y == b.coord.y && stru == b.stru)
@@ -42,7 +54,7 @@ struct BuildAction {
   }
 };
 
-using actionT = std::variant<AttackAction, Vec2, BuildAction>;
+using actionT = std::variant<AttackAction, MoveAction, BuildAction>;
 
 class Unit : public Living {
  public:
@@ -57,7 +69,7 @@ class Unit : public Living {
   bool WithinDistance(Vec2 terr);
   bool CanAttack();
   Vec2 FindDifference(Vec2 terr);
-  void TakeAction();
+  actionT TakeAction();
   void InsertAction(actionT);
   void ResetActions();
   bool HasCommand();

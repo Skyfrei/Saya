@@ -6,6 +6,8 @@
 #include <__algorithm/remove.h>
 #include <__fwd/get.h>
 
+#include <cstddef>
+
 #include "Race/Unit/Peasant.h"
 #include "State/Manager.h"
 #include "Tools/Vec2.h"
@@ -17,39 +19,45 @@ void Unit::InsertAction(actionT v) {
     actionQueue.push_back(v);
   }
 }
-bool Unit::HasCommand() {
-  if (actionQueue.size() > 0) return true;
-  return false;
-}
+bool Unit::HasCommand() { return actionQueue.size() > 0; }
 
-void Unit::TakeAction() {
-  if (!HasCommand()) return;
+actionT Unit::TakeAction() {
+  if (!HasCommand()) return nullptr;
 
   if (std::holds_alternative<AttackAction>(actionQueue[0])) {
     AttackAction action = std::get<AttackAction>(actionQueue[0]);
     if (action.object->health <= 0) {
       actionQueue.erase(actionQueue.begin());
-      return;
+      return action;
     }
+    action.prevCoord = coordinate;
     Attack(*action.object);
+    return action;
   }
 
-  else if (std::holds_alternative<Vec2>(actionQueue[0])) {
-    Vec2 targetDest = std::get<Vec2>(actionQueue[0]);
-    if (coordinate.x == targetDest.x && coordinate.y == targetDest.y) {
+  else if (std::holds_alternative<MoveAction>(actionQueue[0])) {
+    MoveAction &action = std::get<MoveAction>(actionQueue[0]);
+    if (coordinate.x == action.destCoord.x &&
+        coordinate.y == action.destCoord.y) {
       actionQueue.erase(actionQueue.begin());
-      return;
+      return nullptr;
     }
-    Move(targetDest);
+    action.prevCoord = coordinate;
+    Move(coordinate);
+    return action;
 
   } else if (std::holds_alternative<BuildAction>(actionQueue[0])) {
-    BuildAction target = std::get<BuildAction>(actionQueue[0]);
-    if (target.stru->health >= target.stru->maxHealth) {
+    BuildAction action = std::get<BuildAction>(actionQueue[0]);
+    if (action.stru->health >= action.stru->maxHealth) {
       actionQueue.erase(actionQueue.begin());
-    } else {
-      target.stru->health += 15;
+      return action;
     }
+    action.prevCoord = coordinate;
+    action.stru->health += 15;
+    Peasant &p = static_cast<Peasant &>(*this);
+    p.Build(action.stru.is, ) return action;
   }
+  return nullptr;
 }
 int Unit::GetActionQueueSize() { return actionQueue.size(); }
 

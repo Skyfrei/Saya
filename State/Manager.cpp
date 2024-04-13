@@ -4,8 +4,10 @@
 #include "Manager.h"
 
 #include <memory>
+#include <variant>
 
 #include "Race/Structure/Structure.h"
+#include "Race/Unit/Peasant.h"
 #include "Race/Unit/Unit.h"
 
 Manager::Manager() : player(map), enemy(map) {
@@ -19,13 +21,25 @@ Manager::Manager() : player(map), enemy(map) {
   MainLoop();
 }
 
-void Manager::CheckForOwnership(Living *l, Vec2 v) {
-  if (l->health <= 0) {
-    map.RemoveOwnership(l, v);
+void Manager::CheckForOwnership(Living *l, actionT actionTaken) {
+  if (std::holds_alternative<AttackAction>(actionTaken)) {
+    AttackAction &action = std::get<AttackAction>(actionTaken);
+    if (action.object->health <= 0) {
+      map.RemoveOwnership(action.object, action.object->coordinate);
+    }
+    if (l->coordinate.x != action.prevCoord.x &&
+        l->coordinate.y != action.prevCoord.y) {
+      map.RemoveOwnership(l, action.prevCoord);
+      map.AddOwnership(l);
+    }
   }
-  if (l->coordinate.x != v.x && l->coordinate.y != v.y) {
-    map.RemoveOwnership(l, v);
+  if (std::holds_alternative<MoveAction>(actionTaken)) {
+    MoveAction &action = std::get<MoveAction>(actionTaken);
+    map.RemoveOwnership(l, action.prevCoord);
     map.AddOwnership(l);
+  }
+  if (std::holds_alternative<BuildAction>(actionTaken)) {
+    BuildAction &action = std::get<BuildAction>(actionTaken);
   }
 }
 
@@ -34,9 +48,8 @@ void Manager::MainLoop() {
          (enemy.HasUnit(PEASANT) && enemy.HasStructure(HALL))) {
     for (int i = 0; i < player.units.size(); i++) {
       if (player.units[i]->GetActionQueueSize() > 0) {
-        Vec2 temp = player.units[0]->coordinate;
-        player.units[0]->TakeAction();
-        CheckForOwnership(player.units[0].get(), temp);
+        actionT actionDone = player.units[0]->TakeAction();
+        CheckForOwnership(player.units[0].get(), actionDone);
       }
     }
   }

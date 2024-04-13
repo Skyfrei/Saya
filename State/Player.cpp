@@ -5,6 +5,7 @@
 
 #include <memory>
 
+#include "Map/Terrain.h"
 #include "Race/Structure/Barrack.h"
 #include "Race/Structure/Farm.h"
 #include "Race/Structure/Structure.h"
@@ -16,7 +17,7 @@ Player::Player(Map &m) : map(m) {
   gold = 2000;
 }
 void Player::Move(Unit *u, Vec2 v) {
-  actionT t = v;
+  actionT t = MoveAction(v);
   u->InsertAction(t);
 }
 void Player::Attack(Unit *u, Living *l) {
@@ -26,12 +27,14 @@ void Player::Attack(Unit *u, Living *l) {
 }
 void Player::Build(Peasant *p, StructureType type, Vec2 v) {
   Terrain &ter = map.GetTerrainAtCoordinate(v);
-  if (ter.structureOnTerrain == nullptr) {
+  if (ter.structureOnTerrain == nullptr && ter.resourceLeft == 0) {
     Structure *s = ChooseToBuild(type);
     if (gold - s->goldCost >= 0) {
+      s->health = 1;
       BuildAction b(s, v);
       actionT t = b;
       p->InsertAction(t);
+      map.AddOwnership(b.stru);
     }
   }
 }
