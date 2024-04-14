@@ -26,7 +26,7 @@ class Player {
   Structure &FindClosestStructure(Unit &unit, StructureType type);
   void ValidateFood();
   void UpdateGold(int g);
-  Structure *ChooseToBuild(StructureType structType);
+  std::unique_ptr<Structure> ChooseToBuild(StructureType structType);
   void RecruitSoldier(UnitType unitType);
   std::vector<std::unique_ptr<Unit>> SelectUnits();
   void Move(Unit *, Vec2);

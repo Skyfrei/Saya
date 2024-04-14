@@ -3,6 +3,7 @@
 //
 #include "Player.h"
 
+#include <algorithm>
 #include <memory>
 
 #include "Map/Terrain.h"
@@ -28,10 +29,12 @@ void Player::Attack(Unit *u, Living *l) {
 void Player::Build(Peasant *p, StructureType type, Vec2 v) {
   Terrain &ter = map.GetTerrainAtCoordinate(v);
   if (ter.structureOnTerrain == nullptr && ter.resourceLeft == 0) {
-    Structure *s = ChooseToBuild(type);
+    std::unique_ptr<Structure> s = ChooseToBuild(type);
+    structures.emplace_back(std::move(s));
     if (gold - s->goldCost >= 0) {
       s->health = 1;
-      BuildAction b(s, v);
+      s->coordinate = v;
+      BuildAction b(s.get(), v);
       actionT t = b;
       p->InsertAction(t);
       map.AddOwnership(b.stru);
@@ -136,19 +139,19 @@ void Player::RecruitSoldier(UnitType unitType) {
 
 void Player::UpdateGold(int g) { gold += g; }
 
-Structure *Player::ChooseToBuild(StructureType structType) {
-  Structure *str;
+std::unique_ptr<Structure> Player::ChooseToBuild(StructureType structType) {
+  std::unique_ptr<Structure> str;
   switch (structType) {
     case HALL:
-      str = new TownHall();
+      str = std::make_unique<TownHall>();
       break;
 
     case BARRACK:
-      str = new Barrack();
+      str = std::make_unique<Barrack>();
       break;
 
     case FARM:
-      str = new Farm();
+      str = std::make_unique<Farm>();
       break;
 
     default:

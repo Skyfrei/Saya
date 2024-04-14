@@ -43,7 +43,7 @@ actionT Unit::TakeAction() {
       return nullptr;
     }
     action.prevCoord = coordinate;
-    Move(coordinate);
+    Move(action.destCoord);
     return action;
 
   } else if (std::holds_alternative<BuildAction>(actionQueue[0])) {
@@ -55,7 +55,8 @@ actionT Unit::TakeAction() {
     action.prevCoord = coordinate;
     action.stru->health += 15;
     Peasant &p = static_cast<Peasant &>(*this);
-    p.Build(action.stru.is, ) return action;
+    p.Build(action.stru->is, action.coord);
+    return action;
   }
   return nullptr;
 }

@@ -6,32 +6,15 @@
 #include <memory>
 
 #include "Race/Unit/Unit.h"
-std::unique_ptr<Structure> Peasant::Build(StructureType type, Vec2 coord) {
-  std::unique_ptr<Structure> struc;
-  if (WithinDistance(coord)) {
-    switch (type) {
-      case BARRACK:
-        struc = std::make_unique<Barrack>();
-        return struc;
-        break;
-
-      case FARM:
-        struc = std::make_unique<Farm>();
-        return struc;
-        break;
-
-      case HALL:
-        struc = std::make_unique<TownHall>();
-        return struc;
-        break;
-
-      default:
-        break;
+void Peasant::Build(Structure *str) {
+  if (WithinDistance(str->coordinate)) {
+    if (CanAttack()) {
+      if (str->health + attack <= maxHealth) {
+        str->health += attack;
+      }
     }
-  } else {
-    Move(coord);
-  }
-  return struc;
+  } else
+    Move(str->coordinate);
 }
 
 void Peasant::FarmGold(Terrain &terr, TownHall &hall) {

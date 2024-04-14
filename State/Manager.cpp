@@ -16,7 +16,7 @@ Manager::Manager() : player(map), enemy(map) {
   player.SetInitialCoordinates(Vec2(8, 2));
   enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 2));
 
-  player.Move(player.units[0].get(), Vec2(13, 12));
+  player.Attack(player.units[0].get(), enemy.units[0].get());
 
   MainLoop();
 }
@@ -27,7 +27,7 @@ void Manager::CheckForOwnership(Living *l, actionT actionTaken) {
     if (action.object->health <= 0) {
       map.RemoveOwnership(action.object, action.object->coordinate);
     }
-    if (l->coordinate.x != action.prevCoord.x &&
+    if (l->coordinate.x != action.prevCoord.x ||
         l->coordinate.y != action.prevCoord.y) {
       map.RemoveOwnership(l, action.prevCoord);
       map.AddOwnership(l);
@@ -40,6 +40,11 @@ void Manager::CheckForOwnership(Living *l, actionT actionTaken) {
   }
   if (std::holds_alternative<BuildAction>(actionTaken)) {
     BuildAction &action = std::get<BuildAction>(actionTaken);
+    if (l->coordinate.x != action.prevCoord.x ||
+      l->coordinate.y != action.prevCoord.y) {
+      map.RemoveOwnership(l, action.prevCoord);
+      map.AddOwnership(l);
+    }
   }
 }
 
@@ -47,9 +52,10 @@ void Manager::MainLoop() {
   while ((player.HasUnit(PEASANT) && player.HasStructure(HALL)) &&
          (enemy.HasUnit(PEASANT) && enemy.HasStructure(HALL))) {
     for (int i = 0; i < player.units.size(); i++) {
-      if (player.units[i]->GetActionQueueSize() > 0) {
+      if (player.units[0]->GetActionQueueSize() > 0) {
         actionT actionDone = player.units[0]->TakeAction();
         CheckForOwnership(player.units[0].get(), actionDone);
+        std::cout<<enemy.units[0]->health << "\n";
       }
     }
   }
