@@ -28,6 +28,6 @@ class Terrain {
   Vec2 coord;
   TerrainType type = GROUND;
   std::vector<Living *> onTerrainLiving;
-  Structure *structureOnTerrain;
+  Structure *structureOnTerrain = nullptr;
 };
 #endif

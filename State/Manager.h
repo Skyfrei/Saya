@@ -10,7 +10,8 @@
 #include "../Race/Unit/Unit.h"
 #include "Player.h"
 
-using actionT = std::variant<AttackAction, MoveAction, BuildAction>;
+using actionT = std::variant<std::monostate, AttackAction, MoveAction,
+                             BuildAction, FarmGoldAction>;
 
 class Manager {
  public:

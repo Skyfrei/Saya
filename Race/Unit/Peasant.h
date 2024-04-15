@@ -17,7 +17,7 @@ class Peasant : public Unit {
   Peasant() {
     name = "Peasant";
     description = "God damn farm workers.";
-    health = 20;  // 240
+    health = 240;  // 240
     maxHealth = health;
 
     attack = 5.5;
@@ -35,12 +35,12 @@ class Peasant : public Unit {
 
  public:
   void Build(Structure *);
-  void FarmGold(Terrain &terr, TownHall &hall);
-  void TransferGold(TownHall &hall);
+  void FarmGold(Terrain &terr, TownHall &hall, int &g);
   std::string GetDescription() override { return "Slave."; }
 
  public:
   int goldInventory = 0;
+  int maxGoldInventory = 10;
 
  private:
 };

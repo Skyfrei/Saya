@@ -7,6 +7,7 @@
 #include <__fwd/get.h>
 
 #include <cstddef>
+#include <variant>
 
 #include "Race/Unit/Peasant.h"
 #include "State/Manager.h"
@@ -19,13 +20,16 @@ void Unit::InsertAction(actionT v) {
     actionQueue.push_back(v);
   }
 }
+void Unit::ResetActions() {
+  actionQueue.erase(actionQueue.begin(), actionQueue.end());
+}
 bool Unit::HasCommand() { return actionQueue.size() > 0; }
 
 actionT Unit::TakeAction() {
-  if (!HasCommand()) return nullptr;
+  if (!HasCommand()) return {};
 
   if (std::holds_alternative<AttackAction>(actionQueue[0])) {
-    AttackAction action = std::get<AttackAction>(actionQueue[0]);
+    AttackAction &action = std::get<AttackAction>(actionQueue[0]);
     if (action.object->health <= 0) {
       actionQueue.erase(actionQueue.begin());
       return action;
@@ -40,25 +44,34 @@ actionT Unit::TakeAction() {
     if (coordinate.x == action.destCoord.x &&
         coordinate.y == action.destCoord.y) {
       actionQueue.erase(actionQueue.begin());
-      return nullptr;
+      return {};
     }
     action.prevCoord = coordinate;
     Move(action.destCoord);
     return action;
 
   } else if (std::holds_alternative<BuildAction>(actionQueue[0])) {
-    BuildAction action = std::get<BuildAction>(actionQueue[0]);
+    BuildAction &action = std::get<BuildAction>(actionQueue[0]);
     if (action.stru->health >= action.stru->maxHealth) {
       actionQueue.erase(actionQueue.begin());
       return action;
     }
     action.prevCoord = coordinate;
-    action.stru->health += 15;
     Peasant &p = static_cast<Peasant &>(*this);
-    p.Build(action.stru->is, action.coord);
+    p.Build(action.stru);
+    return action;
+  } else if (std::holds_alternative<FarmGoldAction>(actionQueue[0])) {
+    Peasant &p = static_cast<Peasant &>(*this);
+    FarmGoldAction &action = std::get<FarmGoldAction>(actionQueue[0]);
+    if (action.terr->resourceLeft <= 0) {
+      actionQueue.erase(actionQueue.begin());
+      return {};
+    }
+    action.prev = coordinate;
+    p.FarmGold(*action.terr, *action.hall, action.gold);
     return action;
   }
-  return nullptr;
+  return {};
 }
 int Unit::GetActionQueueSize() { return actionQueue.size(); }
 

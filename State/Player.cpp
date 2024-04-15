@@ -11,11 +11,13 @@
 #include "Race/Structure/Farm.h"
 #include "Race/Structure/Structure.h"
 #include "Race/Structure/TownHall.h"
-#include "Race/Unit/Unit.h"
+#include "Race/Unit/Footman.h"
+#include "Race/Unit/Hero/Archmage.h"
+#include "Race/Unit/Hero/BloodMage.h"
+#include "Race/Unit/Peasant.h"
 Player::Player(Map &m) : map(m) {
   Initialize();
   food.y = 10;
-  gold = 2000;
 }
 void Player::Move(Unit *u, Vec2 v) {
   actionT t = MoveAction(v);
@@ -29,16 +31,39 @@ void Player::Attack(Unit *u, Living *l) {
 void Player::Build(Peasant *p, StructureType type, Vec2 v) {
   Terrain &ter = map.GetTerrainAtCoordinate(v);
   if (ter.structureOnTerrain == nullptr && ter.resourceLeft == 0) {
-    std::unique_ptr<Structure> s = ChooseToBuild(type);
-    structures.emplace_back(std::move(s));
+    std::unique_ptr<Structure> &s =
+        structures.emplace_back(ChooseToBuild(type));
     if (gold - s->goldCost >= 0) {
       s->health = 1;
       s->coordinate = v;
-      BuildAction b(s.get(), v);
-      actionT t = b;
-      p->InsertAction(t);
+      BuildAction b(s.get());
+      p->InsertAction(b);
       map.AddOwnership(b.stru);
     }
+  }
+}
+void Player::FarmGold(Peasant *p, Vec2 v, TownHall *hall) {
+  Terrain &ter = map.GetTerrainAtCoordinate(v);
+
+  if (ter.resourceLeft <= 0) {
+    MoveAction action(ter.coord);
+    p->InsertAction(action);
+    return;
+  }
+  FarmGoldAction action(v, &ter, hall);
+  p->InsertAction(action);
+}
+void Player::RecruitSoldier(UnitType unitType, Structure *stru) {
+  if (auto s = dynamic_cast<Barrack *>(stru)) {
+    Terrain &ter = map.GetTerrainAtCoordinate(stru->coordinate);
+    if (unitType == ARCHMAGE) {
+      if (HasUnit(BLOODMAGE)) return;
+    } else if (unitType == BLOODMAGE) {
+      if (HasUnit(ARCHMAGE)) return;
+    }
+    std::unique_ptr<Unit> &un = units.emplace_back(ChooseToRecruit(unitType));
+    un->coordinate = stru->coordinate;
+    map.AddOwnership(un.get());
   }
 }
 void Player::Initialize() {
@@ -47,8 +72,6 @@ void Player::Initialize() {
     units.push_back(std::make_unique<Peasant>());
     units[i]->coordinate = structures[0]->coordinate;
   }
-
-  ValidateFood();
 }
 void Player::SetInitialCoordinates(Vec2 v) {
   for (auto &structure : structures) {
@@ -115,28 +138,6 @@ void Player::ValidateFood() {
   }
 }
 
-void Player::RecruitSoldier(UnitType unitType) {
-  if (HasStructure(BARRACK)) {
-    if (unitType == ARCHMAGE) {
-      bool temp = HasUnit(BLOODMAGE);
-      if (temp) {
-        return;
-      }
-    } else if (unitType == BLOODMAGE) {
-      bool temp = HasUnit(ARCHMAGE);
-      if (temp) {
-        return;
-      }
-    }
-  }
-
-  for (const auto &structure : structures) {
-    if (structure->is == BARRACK) {
-      dynamic_cast<Barrack &>(*structure).CreateUnit(units, gold, unitType);
-    }
-  }
-}
-
 void Player::UpdateGold(int g) { gold += g; }
 
 std::unique_ptr<Structure> Player::ChooseToBuild(StructureType structType) {
@@ -158,5 +159,28 @@ std::unique_ptr<Structure> Player::ChooseToBuild(StructureType structType) {
       break;
   }
   return str;
-  // Peasant a = FindClosestLiving(terrCoord);
+}
+
+std::unique_ptr<Unit> Player::ChooseToRecruit(UnitType unitType) {
+  std::unique_ptr<Unit> unt;
+  switch (unitType) {
+    case PEASANT:
+      unt = std::make_unique<Peasant>();
+      break;
+    case FOOTMAN:
+      unt = std::make_unique<Footman>();
+      break;
+
+    case BLOODMAGE:
+      unt = std::make_unique<BloodMage>();
+      break;
+
+    case ARCHMAGE:
+      unt = std::make_unique<Archmage>();
+      break;
+
+    default:
+      break;
+  }
+  return unt;
 }

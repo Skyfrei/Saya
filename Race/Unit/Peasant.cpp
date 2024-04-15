@@ -17,19 +17,23 @@ void Peasant::Build(Structure *str) {
     Move(str->coordinate);
 }
 
-void Peasant::FarmGold(Terrain &terr, TownHall &hall) {
+void Peasant::FarmGold(Terrain &terr, TownHall &hall, int &g) {
+  if (goldInventory > 0 && WithinDistance(hall.coordinate)) {
+    goldInventory = 0;
+  }
+  if (goldInventory >= maxGoldInventory) {
+    Move(hall.coordinate);
+    return;
+  }
   if (WithinDistance(terr.coord)) {
     if (terr.type == GOLD) {
-      if (goldInventory >= 20) TransferGold(hall);
-      if (CanAttack()) goldInventory++;
+      if (CanAttack()) {
+        goldInventory++;
+        terr.resourceLeft--;
+        g++;
+      }
     }
   } else {
     Move(terr.coord);
   }
-}
-
-void Peasant::TransferGold(TownHall &hall) {
-  Move(hall.coordinate);
-
-  if (WithinDistance(hall.coordinate)) goldInventory = 0;
 }

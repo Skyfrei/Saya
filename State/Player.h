@@ -14,7 +14,9 @@
 #include "../Race/Unit/Unit.h"
 #include "../Tools/Vec2.h"
 #include "Race/Structure/Structure.h"
-using actionT = std::variant<AttackAction, MoveAction, BuildAction>;
+
+using actionT = std::variant<std::monostate, AttackAction, MoveAction,
+                             BuildAction, FarmGoldAction>;
 
 class Player {
  public:
@@ -27,14 +29,16 @@ class Player {
   void ValidateFood();
   void UpdateGold(int g);
   std::unique_ptr<Structure> ChooseToBuild(StructureType structType);
-  void RecruitSoldier(UnitType unitType);
+  std::unique_ptr<Unit> ChooseToRecruit(UnitType);
+  void RecruitSoldier(UnitType unitType, Structure *);
   std::vector<std::unique_ptr<Unit>> SelectUnits();
   void Move(Unit *, Vec2);
   void Attack(Unit *, Living *);
   void Build(Peasant *, StructureType, Vec2);
+  void FarmGold(Peasant *, Vec2, TownHall *);
 
  public:
-  int gold;
+  int gold = 300;
   Vec2 food;
   std::vector<std::unique_ptr<Unit>> units;
   std::vector<std::unique_ptr<Structure>> structures;

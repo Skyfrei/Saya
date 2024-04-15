@@ -7,6 +7,7 @@
 #include <variant>
 
 #include "Race/Structure/Structure.h"
+#include "Race/Structure/TownHall.h"
 #include "Race/Unit/Peasant.h"
 #include "Race/Unit/Unit.h"
 
@@ -16,8 +17,9 @@ Manager::Manager() : player(map), enemy(map) {
   player.SetInitialCoordinates(Vec2(8, 2));
   enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 2));
 
-  player.Attack(player.units[0].get(), enemy.units[0].get());
-
+  Peasant &p = static_cast<Peasant &>(*player.units[0].get());
+  TownHall &h = static_cast<TownHall &>(*player.structures[0].get());
+  player.FarmGold(&p, Vec2(10, 10), &h);
   MainLoop();
 }
 
@@ -32,18 +34,27 @@ void Manager::CheckForOwnership(Living *l, actionT actionTaken) {
       map.RemoveOwnership(l, action.prevCoord);
       map.AddOwnership(l);
     }
-  }
-  if (std::holds_alternative<MoveAction>(actionTaken)) {
+  } else if (std::holds_alternative<MoveAction>(actionTaken)) {
     MoveAction &action = std::get<MoveAction>(actionTaken);
     map.RemoveOwnership(l, action.prevCoord);
     map.AddOwnership(l);
-  }
-  if (std::holds_alternative<BuildAction>(actionTaken)) {
+  } else if (std::holds_alternative<BuildAction>(actionTaken)) {
     BuildAction &action = std::get<BuildAction>(actionTaken);
     if (l->coordinate.x != action.prevCoord.x ||
-      l->coordinate.y != action.prevCoord.y) {
+        l->coordinate.y != action.prevCoord.y) {
       map.RemoveOwnership(l, action.prevCoord);
       map.AddOwnership(l);
+    }
+  } else if (std::holds_alternative<FarmGoldAction>(actionTaken)) {
+    FarmGoldAction &action = std::get<FarmGoldAction>(actionTaken);
+    auto s = static_cast<Peasant *>(l);
+    if (l->coordinate.x != action.prev.x || l->coordinate.y != action.prev.y) {
+      map.RemoveOwnership(l, action.prev);
+      map.AddOwnership(l);
+    }
+    if (s->WithinDistance(action.hall->coordinate)) {
+      player.gold += action.gold;
+      action.gold = 0;
     }
   }
 }
@@ -55,7 +66,6 @@ void Manager::MainLoop() {
       if (player.units[0]->GetActionQueueSize() > 0) {
         actionT actionDone = player.units[0]->TakeAction();
         CheckForOwnership(player.units[0].get(), actionDone);
-        std::cout<<enemy.units[0]->health << "\n";
       }
     }
   }

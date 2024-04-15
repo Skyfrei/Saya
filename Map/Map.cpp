@@ -27,7 +27,10 @@ void Map::RemoveOwnership(Living *l, Vec2 v) {
 }
 void Map::AddOwnership(Living *l) {
   Terrain &terr = GetTerrainAtCoordinate(l->coordinate);
-  terr.onTerrainLiving.push_back(l);
+  if (auto s = dynamic_cast<Structure *>(l)) {
+    terr.structureOnTerrain = s;
+  } else
+    terr.onTerrainLiving.push_back(l);
 }
 std::vector<Living *> Map::GetObjectsAtTerrain(Vec2 v) {
   Terrain &t = GetTerrainAtCoordinate(v);

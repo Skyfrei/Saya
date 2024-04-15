@@ -8,7 +8,9 @@
 #include "../../Map/Map.h"
 #include "../../Tools/Vec2.h"
 #include "../Spells/Spell.h"
+#include "Map/Terrain.h"
 #include "Race/Structure/Structure.h"
+#include "Race/Structure/TownHall.h"
 using namespace std::chrono;
 
 enum UnitType { FOOTMAN, PEASANT, ARCHMAGE, BLOODMAGE };
@@ -21,6 +23,7 @@ struct Path {
   int distance;
   Vec2 comesFrom;
 };
+
 struct MoveAction {
   Vec2 prevCoord;
   Vec2 destCoord;
@@ -38,23 +41,36 @@ struct AttackAction {
 
   Living *object;
   constexpr bool operator==(const AttackAction &b) const {
-    if (object == b.object) return true;
-    return false;
+    return object == b.object;
   }
 };
 struct BuildAction {
-  Vec2 coord;
   Structure *stru;
   Vec2 prevCoord;
-  BuildAction(Structure *s, Vec2 c) : stru(s), coord(c) {}
+  BuildAction(Structure *s) : stru(s) {}
   bool operator==(const BuildAction &b) const {
-    if (coord.x == b.coord.x && coord.y == b.coord.y && stru == b.stru)
+    if (stru->coordinate.x == b.stru->coordinate.x &&
+        stru->coordinate.y == b.stru->coordinate.y && stru == b.stru)
       return true;
     return false;
   }
 };
+struct FarmGoldAction {
+  Vec2 dest;
+  Vec2 prev;
+  Terrain *terr;
+  TownHall *hall;
+  int gold = 0;
+  FarmGoldAction(Vec2 v, Terrain *te, TownHall *t)
+      : dest(v), terr(te), hall(t) {}
+  bool operator==(const FarmGoldAction &a) const {
+    if (a.dest.x == dest.x && a.dest.y == dest.y) return true;
+    return false;
+  }
+};
 
-using actionT = std::variant<AttackAction, MoveAction, BuildAction>;
+using actionT = std::variant<std::monostate, AttackAction, MoveAction,
+                             BuildAction, FarmGoldAction>;
 
 class Unit : public Living {
  public:
