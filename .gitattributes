@@ -1,0 +1,16 @@
+libtorch filter=lfs diff=lfs merge=lfs -text
+libtorch/bin filter=lfs diff=lfs merge=lfs -text
+libtorch/build-hash filter=lfs diff=lfs merge=lfs -text
+libtorch/build-version filter=lfs diff=lfs merge=lfs -text
+libtorch/include filter=lfs diff=lfs merge=lfs -text
+libtorch/lib filter=lfs diff=lfs merge=lfs -text
+libtorch/share filter=lfs diff=lfs merge=lfs -text
+*.dylib filter=lfs diff=lfs merge=lfs -text
+libtorch/lib/libtorch_python.dylib filter=lfs diff=lfs merge=lfs -text
+libtorch/lib/libc10.dylib filter=lfs diff=lfs merge=lfs -text
+libtorch/lib/libfbjni.dylib filter=lfs diff=lfs merge=lfs -text
+libtorch/lib/libpytorch_jni.dylib filter=lfs diff=lfs merge=lfs -text
+libtorch/lib/libshm.dylib filter=lfs diff=lfs merge=lfs -text
+libtorch/lib/libtorch.dylib filter=lfs diff=lfs merge=lfs -text
+libtorch/lib/libtorch_cpu.dylib filter=lfs diff=lfs merge=lfs -text
+libtorch/lib/libtorch_global_deps.dylib filter=lfs diff=lfs merge=lfs -text
