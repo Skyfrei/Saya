@@ -8,6 +8,7 @@
 #include "../Map/Map.h"
 #include "../Race/Structure/Structure.h"
 #include "../Race/Unit/Unit.h"
+#include "../ReinforcementLearning/RLManager.h"
 #include "Player.h"
 
 using actionT = std::variant<std::monostate, AttackAction, MoveAction,
@@ -15,17 +16,18 @@ using actionT = std::variant<std::monostate, AttackAction, MoveAction,
 
 class Manager {
  public:
-  Manager();
+  Manager()
 
-  void MainLoop();
+      void MainLoop();
   void ManageLiving(Player &pl);
   float GetTime();
   void CheckForMovement();
-  void CheckForOwnership(Living *, actionT);
+  void CheckForOwnership(Player &p, Living *, actionT);
 
  public:
   Player player;
   Player enemy;
+  RLManager trainerManager;
   Map map;
   std::chrono::high_resolution_clock::time_point time1 =
       std::chrono::high_resolution_clock::now();

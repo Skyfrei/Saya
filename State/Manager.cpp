@@ -23,7 +23,7 @@ Manager::Manager() : player(map), enemy(map) {
   MainLoop();
 }
 
-void Manager::CheckForOwnership(Living *l, actionT actionTaken) {
+void Manager::CheckForOwnership(Player &p, Living *l, actionT actionTaken) {
   if (std::holds_alternative<AttackAction>(actionTaken)) {
     AttackAction &action = std::get<AttackAction>(actionTaken);
     if (action.object->health <= 0) {
@@ -53,7 +53,7 @@ void Manager::CheckForOwnership(Living *l, actionT actionTaken) {
       map.AddOwnership(l);
     }
     if (s->WithinDistance(action.hall->coordinate)) {
-      player.gold += action.gold;
+      p.gold += action.gold;
       action.gold = 0;
     }
   }
@@ -63,10 +63,19 @@ void Manager::MainLoop() {
   while ((player.HasUnit(PEASANT) && player.HasStructure(HALL)) &&
          (enemy.HasUnit(PEASANT) && enemy.HasStructure(HALL))) {
     for (int i = 0; i < player.units.size(); i++) {
-      if (player.units[0]->GetActionQueueSize() > 0) {
-        actionT actionDone = player.units[0]->TakeAction();
-        CheckForOwnership(player.units[0].get(), actionDone);
+      if (player.units[i]->GetActionQueueSize() > 0) {
+        actionT actionDone = player.units[i]->TakeAction();
+        CheckForOwnership(player, player.units[i].get(), actionDone);
       }
+      for (int i = 0; i < enemy.units.size(); i++) {
+        if (enemy.units[i]->GetActionQueueSize() > 0) {
+          actionT actionDone = enemy.units[i]->TakeAction();
+          CheckForOwnership(enemy, enemy.units[i].get(), actionDone);
+        }
+      }
+
+      // Every 10 frames
+      trainerManager.StartPolicy(map, player, enemy);
     }
   }
 }

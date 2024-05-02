@@ -4,7 +4,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_COMPILER_VERSION "10.5.0")
 set(CMAKE_BUILD_TYPE Debug)
 add_compile_options("-g")
+
 project(Final)
+
+find_package(Torch REQUIRED PATHS ./libtorch/share/cmake/Torch)
+set(CMAKE_CXX_FLAGS ${TORCH_CXX_FLAGS})
 
 set(CPPSRC main.cpp
         Living.h
@@ -18,14 +22,13 @@ set(CPPSRC main.cpp
         State/Manager.h
         State/Player.h
         State/Player.cpp
-        Living.cpp)
+        Living.cpp
+        ReinforcementLearning/RLManager.cpp
+        ReinforcementLearning/RlManager.h)
 include_directories(./ include)
 
-#set(PYLIB ./Bindings/bind.cpp)
-
-#set(PYBIND11_DIR /export/home/klaviot99dm/.local/lib/python3.8/site-packages)
-#find_package(pybind11 REQUIRED PATHS ${PYBIND11_DIR})
-
-#pybind11_add_module(Warcraft ${PYLIB} ${CPPSRC})
-
 add_executable(Final ${CPPSRC})
+
+target_link_libraries(Final "${TORCH_LIBRARIES}")
+
+
