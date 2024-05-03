@@ -16,12 +16,13 @@ using actionT = std::variant<std::monostate, AttackAction, MoveAction,
 
 class Manager {
  public:
-  Manager()
+  Manager();
 
-      void MainLoop();
+  void MainLoop();
   void ManageLiving(Player &pl);
   float GetTime();
   void CheckForMovement();
+  int GetFrames();
   void CheckForOwnership(Player &p, Living *, actionT);
 
  public:
@@ -32,5 +33,11 @@ class Manager {
   std::chrono::high_resolution_clock::time_point time1 =
       std::chrono::high_resolution_clock::now();
   std::chrono::high_resolution_clock::time_point time =
+      std::chrono::high_resolution_clock::now();
+
+ private:
+  int frames = 0;
+  const int rlFrameCondition = 10;
+  std::chrono::high_resolution_clock::time_point frameTimer =
       std::chrono::high_resolution_clock::now();
 };

@@ -1,0 +1,4 @@
+1. Action space
+2. Environment space
+3. Rewards condition
+4. Episode end condition 

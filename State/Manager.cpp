@@ -3,6 +3,7 @@
 //
 #include "Manager.h"
 
+#include <chrono>
 #include <memory>
 #include <variant>
 
@@ -73,14 +74,29 @@ void Manager::MainLoop() {
           CheckForOwnership(enemy, enemy.units[i].get(), actionDone);
         }
       }
-
-      // Every 10 frames
-      trainerManager.StartPolicy(map, player, enemy);
+      int framess = GetFrames();
+      if (framess % rlFrameCondition == 0 && framess != 0) {
+        trainerManager.StartPolicy(map, player, enemy);
+        std::cout << framess << std::endl;
+        std::cout << GetTime() << std::endl;
+      }
     }
   }
 }
 
 void Manager::CheckForMovement() {}
+
+int Manager::GetFrames() {
+  float oneFrameTimer = 16646279.99 / 1.0;
+  float a = GetTime();
+  auto diff = time - frameTimer;
+  if (diff.count() >= oneFrameTimer) {
+    frameTimer = time;
+    if (frames >= 60) frames = 0;
+    frames++;
+  }
+  return frames;
+}
 
 float Manager::GetTime() {
   time = std::chrono::high_resolution_clock::now();
