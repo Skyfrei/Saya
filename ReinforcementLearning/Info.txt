@@ -1,4 +1,17 @@
 1. Action space
 2. Environment space
 3. Rewards condition
-4. Episode end condition 
+4. Episode end condition
+
+
+
+
+
+Takes input the state, so the map, player and enemy.
+Returns output based on the amount of actions it can take per specific state. 
+In this case we have to have 
+1. Attack output
+2. Move output
+3. Farm gold output
+4. Recruit output
+5. Build output

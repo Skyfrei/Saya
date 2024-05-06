@@ -77,8 +77,6 @@ void Manager::MainLoop() {
       int framess = GetFrames();
       if (framess % rlFrameCondition == 0 && framess != 0) {
         trainerManager.StartPolicy(map, player, enemy);
-        std::cout << framess << std::endl;
-        std::cout << GetTime() << std::endl;
       }
     }
   }
