@@ -18,6 +18,18 @@ class Terrain {
     resourceLeft = 0;
   }
 
+  bool operator==(const Terrain& other) const {
+    if (other.resourceLeft != resourceLeft || structureOnTerrain != other.structureOnTerrain){
+      return false;
+    }
+    for (int i = 0; i < onTerrainLiving.size(); i++){
+      if (onTerrainLiving[i] != other.onTerrainLiving[i]){
+        return false;
+      }
+    }
+    return true;
+  }
+
  public:
   int GetResourceLeft() { return 0; }
   // std::unique_ptr<i><Living> ObjectsAtTerrain(Vec2 terr);

@@ -8,6 +8,7 @@ class Structure : public Living {
  public:
   Structure() {}
   virtual void FinishBuilding() = 0;
+  bool operator==(const Structure& other);
 
  public:
   StructureType is = OTHER;

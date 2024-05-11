@@ -18,6 +18,16 @@ class Map {
   std::vector<Living *> GetObjectsAtTerrain(Vec2);
   void RemoveOwnership(Living *, Vec2);
   void AddOwnership(Living *);
+  bool operator==(const Map& other) const {
+    for (int i = 0; i < terrain.size(); i++){
+      for (int j = 0; j < terrain.size(); j++){
+        if (terrain[i][j] != other.terrain[i][j]){
+          return false;
+        }
+      }
+    }
+    return true;
+  }
 
  public:
   std::vector<std::vector<Terrain>> terrain;

@@ -90,6 +90,7 @@ class Unit : public Living {
   void ResetActions();
   bool HasCommand();
   int GetActionQueueSize();
+  bool operator==(const Unit& other);
 
  private:
   bool IsMovable();

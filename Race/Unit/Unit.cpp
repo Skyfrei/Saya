@@ -14,6 +14,11 @@
 #include "Tools/Vec2.h"
 
 Unit::Unit() {}
+bool Unit::operator==(const Unit& other){
+  if (other.coordinate == coordinate && other.health == health && other.is == is)
+    return false;
+  return true;
+}
 void Unit::InsertAction(actionT v) {
   if (std::find(actionQueue.begin(), actionQueue.end(), v) ==
       actionQueue.end()) {

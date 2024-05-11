@@ -7,14 +7,16 @@
 
 #include "../Map/Map.h"
 #include "../State/Player.h"
+#include "ReplayMemory.h"
 
-class RLManager {
+class RlManager {
  public:
-  RLManager() {}
+  RlManager(){}
 
   void StartPolicy(Map &m, Player &player, Player &enemy);
-
- private:
+  
+  private:
+    ReplayMemory memory;
 };
 
 #endif

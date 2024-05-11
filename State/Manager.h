@@ -8,7 +8,7 @@
 #include "../Map/Map.h"
 #include "../Race/Structure/Structure.h"
 #include "../Race/Unit/Unit.h"
-#include "../ReinforcementLearning/RLManager.h"
+#include "../ReinforcementLearning/RlManager.h"
 #include "Player.h"
 
 using actionT = std::variant<std::monostate, AttackAction, MoveAction,
@@ -28,7 +28,7 @@ class Manager {
  public:
   Player player;
   Player enemy;
-  RLManager trainerManager;
+  RlManager trainerManager;
   Map map;
   std::chrono::high_resolution_clock::time_point time1 =
       std::chrono::high_resolution_clock::now();

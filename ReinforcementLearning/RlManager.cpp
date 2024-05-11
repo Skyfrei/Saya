@@ -1,3 +1,5 @@
-#include "RLManager.h"
+#include "RlManager.h"
 
-void RLManager::StartPolicy(Map &map, Player &player, Player &enemy) {}
+void RlManager::StartPolicy(Map &map, Player &player, Player &enemy) {
+  memory.CreateMemoryState(map, player, enemy);
+}

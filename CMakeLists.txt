@@ -24,7 +24,10 @@ set(CPPSRC main.cpp
         State/Player.cpp
         Living.cpp
         ReinforcementLearning/RLManager.cpp
-        ReinforcementLearning/RlManager.h)
+        ReinforcementLearning/RlManager.h
+        ReinforcementLearning/ReplayMemory.h
+        ReinforcementLearning/Transition.h
+        ReinforcementLearning/ReplayMemory.cpp)
 include_directories(./ include)
 
 add_executable(Final ${CPPSRC})
