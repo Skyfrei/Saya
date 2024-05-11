@@ -13,7 +13,7 @@ class RlManager {
  public:
   RlManager(){}
 
-  void StartPolicy(Map &m, Player &player, Player &enemy);
+  void StartPolicy(Map m, Player &player, Player &enemy);
   
   private:
     ReplayMemory memory;

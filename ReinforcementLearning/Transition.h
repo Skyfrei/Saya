@@ -41,6 +41,12 @@ struct NextState {
 };
 
 struct Transition {
+  void AddTransition(State s){
+    StateAction st(s);
+    NextState a;
+    a.reward = 1.0f;
+    trans[st] = a;
+  }
   std::map<StateAction, NextState> trans;
 };
 
