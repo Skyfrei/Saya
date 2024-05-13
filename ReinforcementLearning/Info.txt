@@ -4,6 +4,11 @@
 4. Episode end condition
 
 
+TO CHANGE
+Change to 20 or 30 frames per training
+Make a concise real win scenario.
+
+
 
 
 

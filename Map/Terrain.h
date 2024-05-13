@@ -7,6 +7,7 @@
 #include "../Tools/Vec2.h"
 
 #define MAP_SIZE 15
+class Unit;
 
 enum TerrainType { GROUND, GOLD };
 
@@ -18,17 +19,7 @@ class Terrain {
     resourceLeft = 0;
   }
 
-  bool operator==(const Terrain& other) const {
-    if (other.resourceLeft != resourceLeft || structureOnTerrain != other.structureOnTerrain){
-      return false;
-    }
-    for (int i = 0; i < onTerrainLiving.size(); i++){
-      if (onTerrainLiving[i] != other.onTerrainLiving[i]){
-        return false;
-      }
-    }
-    return true;
-  }
+  bool operator==(const Terrain& other) const;
 
  public:
   int GetResourceLeft() { return 0; }

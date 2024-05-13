@@ -201,6 +201,30 @@ Map/Map.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/Map/Map.cpp.s
 .PHONY : Map/Map.cpp.s
 
+Map/Terrain.o: Map/Terrain.cpp.o
+.PHONY : Map/Terrain.o
+
+# target to build an object file
+Map/Terrain.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/Map/Terrain.cpp.o
+.PHONY : Map/Terrain.cpp.o
+
+Map/Terrain.i: Map/Terrain.cpp.i
+.PHONY : Map/Terrain.i
+
+# target to preprocess a source file
+Map/Terrain.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/Map/Terrain.cpp.i
+.PHONY : Map/Terrain.cpp.i
+
+Map/Terrain.s: Map/Terrain.cpp.s
+.PHONY : Map/Terrain.s
+
+# target to generate assembly for a file
+Map/Terrain.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/Map/Terrain.cpp.s
+.PHONY : Map/Terrain.cpp.s
+
 Race/Structure/Barrack.o: Race/Structure/Barrack.cpp.o
 .PHONY : Race/Structure/Barrack.o
 
@@ -411,6 +435,9 @@ help:
 	@echo "... Map/Map.o"
 	@echo "... Map/Map.i"
 	@echo "... Map/Map.s"
+	@echo "... Map/Terrain.o"
+	@echo "... Map/Terrain.i"
+	@echo "... Map/Terrain.s"
 	@echo "... Race/Structure/Barrack.o"
 	@echo "... Race/Structure/Barrack.i"
 	@echo "... Race/Structure/Barrack.s"

@@ -22,7 +22,17 @@ struct State {
 };
 
 struct StateAction {
-  StateAction(State s) : state(s) {}
+  StateAction(State s) {
+    state.currentMap = s.currentMap;
+    state.enemyFood = s.enemyFood;
+    state.enemyGold = s.enemyGold;
+    state.enemyUnits = s.enemyUnits;
+    state.enemyStructures = s.enemyStructures;
+    state.playerFood = s.playerFood;
+    state.playerGold = s.playerGold;
+    state.playerUnits = s.playerUnits;
+    state.playerStructs = s.playerStructs;
+  }
 
   State state;
   actionT typeOfAction;

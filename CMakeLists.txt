@@ -14,6 +14,8 @@ set(CPPSRC main.cpp
         Living.h
         Map/Graph.cpp
         Map/Map.cpp
+        Map/Terrain.cpp
+        Map/Terrain.h
         Race/Structure/Barrack.cpp
         Race/Unit/Peasant.cpp
         Race/Unit/Unit.cpp

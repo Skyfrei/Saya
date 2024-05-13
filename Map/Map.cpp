@@ -21,6 +21,17 @@ Map::Map() {
   }
   graph = Graph(terrain);
 }
+
+bool Map::operator==(const Map& other) const {
+  for (int i = 0; i < terrain.size(); i++){
+    for (int j = 0; j < terrain.size(); j++){
+      if (terrain[i][j] != other.terrain[i][j]){
+        return false;
+      }
+    }
+  }
+  return true;
+}
 void Map::RemoveOwnership(Living *l, Vec2 v) {
   Terrain &terr = GetTerrainAtCoordinate(v);
   std::erase(terr.onTerrainLiving, l);

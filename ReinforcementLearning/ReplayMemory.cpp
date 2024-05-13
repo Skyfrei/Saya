@@ -5,7 +5,7 @@ void ReplayMemory::CreateMemoryState(Map map, Player& player, Player& enemy){
   st.currentMap = map;
   st.playerFood = player.food;
   st.playerGold = player.gold;
-
+  
   st.enemyGold = enemy.gold;
   st.enemyFood = enemy.food;
   for (int i = 0; i < player.units.size(); i++){
