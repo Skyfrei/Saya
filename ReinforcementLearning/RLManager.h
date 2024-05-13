@@ -1,13 +1,9 @@
 #ifndef RLMANAGER_H
 #define RLMANAGER_H
 
-#include <torch/autograd.h>
-#include <torch/nn.h>
-#include <torch/optim.h>
-
 #include "../Map/Map.h"
 #include "../State/Player.h"
-#include "ReplayMemory.h"
+#include "DQN.h"
 
 class RlManager {
  public:

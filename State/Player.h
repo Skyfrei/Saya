@@ -18,6 +18,13 @@
 using actionT = std::variant<std::monostate, AttackAction, MoveAction,
                              BuildAction, FarmGoldAction>;
 
+struct RecruitAction {
+  Unit *un;
+  bool operator==(const RecruitAction& other){
+    return *un == *other.un;
+  }
+};
+
 class Player {
  public:
   Player(Map &m);

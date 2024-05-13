@@ -24,6 +24,7 @@ struct Path {
   Vec2 comesFrom;
 };
 
+class Unit;
 struct MoveAction {
   Vec2 prevCoord;
   Vec2 destCoord;
@@ -72,6 +73,8 @@ struct FarmGoldAction {
 using actionT = std::variant<std::monostate, AttackAction, MoveAction,
                              BuildAction, FarmGoldAction>;
 
+enum ActionType { ATTACK, MOVE, BUILD, FARMGOLD, RECRUIT };
+
 class Unit : public Living {
  public:
   Unit();
@@ -90,7 +93,7 @@ class Unit : public Living {
   void ResetActions();
   bool HasCommand();
   int GetActionQueueSize();
-  bool operator==(const Unit& other);
+  bool operator==(const Unit &other) const;
 
  private:
   bool IsMovable();
