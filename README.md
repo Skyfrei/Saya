@@ -5,12 +5,8 @@ Game **will** not have any graphics for a long time if ever because the point of
 algorithms, following previously published licensed papers. At the end of the project the AI will be able to go toe to toe with a human enemy and make the best
 possible decisions to win the game.
 
-Work in progress:
-### Current progress: 2 / 3
-Classes and game structure is implemented. There needs to be implemented a game state and functions about classes. Following after will be
-the implementation of DeepRL.
-
-
-- Implementing a simplified version of warcraft3. Only human race will exist for the time being, with only footsoldiers, peasents and sorceresses(sorceresses
-may or may not stick in the game forever). 
-- Creating python bindings for cpp library (currently tested out with basic class and works)
+## What has currently been implemented
+- Game is fully finished and playable although not very interesting without graphics as its a real time strategy game.
+- Algorithm for reinforcement learning has been implemented
+- PyTorch has been sucessfully started running.
+- Currently changing the input of the game so it fits in my tensor model.
