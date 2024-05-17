@@ -24,11 +24,16 @@ struct Path {
   Vec2 comesFrom;
 };
 
-class Unit;
-struct MoveAction {
+class Action{
+  public:
+    virtual bool operator==(const Action& other) const = 0;
+};
+
+struct MoveAction : public Action {
   Vec2 prevCoord;
   Vec2 destCoord;
   MoveAction(Vec2 c) : destCoord(c) {}
+
   bool operator==(const MoveAction &b) const {
     if (destCoord.x == b.destCoord.x && destCoord.y == b.destCoord.y)
       return true;
@@ -72,8 +77,6 @@ struct FarmGoldAction {
 
 using actionT = std::variant<std::monostate, AttackAction, MoveAction,
                              BuildAction, FarmGoldAction>;
-
-enum ActionType { ATTACK, MOVE, BUILD, FARMGOLD, RECRUIT };
 
 class Unit : public Living {
  public:

@@ -297,6 +297,30 @@ Race/Unit/Unit.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/Race/Unit/Unit.cpp.s
 .PHONY : Race/Unit/Unit.cpp.s
 
+ReinforcementLearning/DQN.o: ReinforcementLearning/DQN.cpp.o
+.PHONY : ReinforcementLearning/DQN.o
+
+# target to build an object file
+ReinforcementLearning/DQN.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/ReinforcementLearning/DQN.cpp.o
+.PHONY : ReinforcementLearning/DQN.cpp.o
+
+ReinforcementLearning/DQN.i: ReinforcementLearning/DQN.cpp.i
+.PHONY : ReinforcementLearning/DQN.i
+
+# target to preprocess a source file
+ReinforcementLearning/DQN.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/ReinforcementLearning/DQN.cpp.i
+.PHONY : ReinforcementLearning/DQN.cpp.i
+
+ReinforcementLearning/DQN.s: ReinforcementLearning/DQN.cpp.s
+.PHONY : ReinforcementLearning/DQN.s
+
+# target to generate assembly for a file
+ReinforcementLearning/DQN.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/ReinforcementLearning/DQN.cpp.s
+.PHONY : ReinforcementLearning/DQN.cpp.s
+
 ReinforcementLearning/RLManager.o: ReinforcementLearning/RLManager.cpp.o
 .PHONY : ReinforcementLearning/RLManager.o
 
@@ -447,6 +471,9 @@ help:
 	@echo "... Race/Unit/Unit.o"
 	@echo "... Race/Unit/Unit.i"
 	@echo "... Race/Unit/Unit.s"
+	@echo "... ReinforcementLearning/DQN.o"
+	@echo "... ReinforcementLearning/DQN.i"
+	@echo "... ReinforcementLearning/DQN.s"
 	@echo "... ReinforcementLearning/RLManager.o"
 	@echo "... ReinforcementLearning/RLManager.i"
 	@echo "... ReinforcementLearning/RLManager.s"
