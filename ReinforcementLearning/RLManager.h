@@ -6,17 +6,9 @@
 
 #include "../Map/Map.h"
 #include "../State/Player.h"
+#include "../Race/Unit/Unit.h"
 #include "DQN.h"
 #include "Transition.h"
-
-enum PossibleActions{
-  ATTACK,
-  MOVE,
-  BUILD,
-  FARMGOLD,
-  RECRUIT,
-  NR_OF_ACTIONS
-};
 
 class RlManager {
  public:
@@ -31,8 +23,7 @@ class RlManager {
     policy_net.to(device);
 
     DQN target_net(inputSize, actionNumber);
-    target_net.to(device);
-    
+    target_net.to(device); 
   }
 
   void StartPolicy(Map m, Player &player, Player &enemy);
@@ -43,11 +34,6 @@ class RlManager {
     DQN target_net;
     int inputSize = 0;
     int actionNumber = NR_OF_ACTIONS;
-    DQN policyNet;
-    DQN targetNet;
-    
-
-    
 };
 
 #endif

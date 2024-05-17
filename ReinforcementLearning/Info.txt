@@ -3,20 +3,59 @@
 3. Rewards condition
 4. Episode end condition
 
-
 TO CHANGE
 Change to 20 or 30 frames per training
 Make a concise real win scenario.
 
+#include <torch/torch.h>
 
+// Define Vec2 struct
+struct Vec2 {
+    float x;
+    float y;
+};
 
+// Define Unit struct
+struct Unit {};
 
+// Define Structure struct
+struct Structure {};
 
-Takes input the state, so the map, player and enemy.
-Returns output based on the amount of actions it can take per specific state. 
-In this case we have to have 
-1. Attack output
-2. Move output
-3. Farm gold output
-4. Recruit output
-5. Build output
+// Define State struct
+struct State {
+    // Define Map and other members
+    // For simplicity, let's assume Map, Unit, and Structure are defined elsewhere
+
+    // Function to convert State to tensor
+    torch::Tensor toTensor() const {
+        // Create tensors for each member
+        torch::Tensor currentMapTensor = torch::tensor(currentMap); // Convert Map to tensor as needed
+        torch::Tensor playerGoldTensor = torch::tensor(playerGold);
+        torch::Tensor playerFoodTensor = torch::tensor({playerFood.x, playerFood.y});
+        torch::Tensor playerUnitsTensor = torch::zeros({static_cast<int64_t>(playerUnits.size())}); // Dummy tensor, replace with actual data
+        torch::Tensor playerStructsTensor = torch::zeros({static_cast<int64_t>(playerStructs.size())}); // Dummy tensor, replace with actual data
+        torch::Tensor enemyGoldTensor = torch::tensor(enemyGold);
+        torch::Tensor enemyFoodTensor = torch::tensor({enemyFood.x, enemyFood.y});
+        torch::Tensor enemyUnitsTensor = torch::zeros({static_cast<int64_t>(enemyUnits.size())}); // Dummy tensor, replace with actual data
+        torch::Tensor enemyStructsTensor = torch::zeros({static_cast<int64_t>(enemyStructures.size())}); // Dummy tensor, replace with actual data
+
+        // Concatenate all tensors into a single tensor
+        return torch::cat({currentMapTensor.flatten(), playerGoldTensor, playerFoodTensor,
+                           playerUnitsTensor.flatten(), playerStructsTensor.flatten(),
+                           enemyGoldTensor, enemyFoodTensor,
+                           enemyUnitsTensor.flatten(), enemyStructsTensor.flatten()});
+    }
+};
+
+int main() {
+    // Example: Create a State object
+    State state;
+    // Fill state with data
+
+    // Convert State to tensor
+    torch::Tensor x = state.toTensor();
+
+    // Use tensor x as needed
+
+    return 0;
+}

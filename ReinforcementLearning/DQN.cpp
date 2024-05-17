@@ -1,83 +1,134 @@
 #include "DQN.h"
-DQN::DQN(int inputSize, int actionNumber) {
+
+struct TensorStruct{
+  TensorStruct(State state){
+    currentMap = GetMapTensor(state.currentMap);
+    playerGold = torch::tensor(state.playerGold);
+    playerFood = GetVec(state.playerFood);
+    playerUnits = GetUnitsTensor(state.playerUnits);
+    playerStructs = GetStructuresTensor(state.playerStructs);
+
+    enemyGold = torch::tensor(state.enemyGold);
+    enemyFood = GetVec(state.enemyFood);
+    enemyUnits = GetUnitsTensor(state.enemyUnits);
+    enemyStructures = GetStructuresTensor(state.enemyStructures);
+  }
+  torch::Tensor currentMap;
+  torch::Tensor playerGold;
+  torch::Tensor playerFood;
+  torch::Tensor playerUnits;
+  torch::Tensor playerStructs;
+  torch::Tensor enemyGold;
+  torch::Tensor enemyFood;
+  torch::Tensor enemyUnits;
+  torch::Tensor enemyStructures;
+
+
+  torch::Tensor GetMapTensor(const Map& map) {
+    const int numPropertiesPerCell = 5;
+    std::vector<float> resourceLeftData;
+    std::vector<float> coordDataX;
+    std::vector<float> coordDataY;
+    std::vector<float> typeData;
+    std::vector<float> structureOnTerrainData;
+
+    for (const auto& row : map.terrain) {
+        for (const auto& cell : row) {
+            resourceLeftData.push_back(cell.resourceLeft);
+            coordDataX.push_back(cell.coord.x);
+            coordDataY.push_back(cell.coord.y);
+            typeData.push_back(static_cast<float>(cell.type));
+            structureOnTerrainData.push_back(cell.structureOnTerrain ? 1.0f : 0.0f);
+        }
+    }
+    std::vector<float> mapData;
+    for (size_t i = 0; i < resourceLeftData.size(); ++i) {
+        mapData.push_back(resourceLeftData[i]);
+        mapData.push_back(coordDataX[i]);
+        mapData.push_back(coordDataY[i]);
+        mapData.push_back(typeData[i]);
+        mapData.push_back(structureOnTerrainData[i]);
+    }
+    return torch::tensor(mapData).view({map.terrain.size(), map.terrain[0].size(), numPropertiesPerCell});
+  }
+
+
+  torch::Tensor GetVec(const Vec2 food) {
+    std::vector<float> data;
+    data.push_back(food.x);
+    data.push_back(food.y);
+    return torch::tensor(data).view({-1, 2});
+  }
+
+  torch::Tensor GetUnitsTensor(const std::vector<Unit *> &units) {
+    std::vector<float> data;
+    for (const auto &unit : units) {
+        // Extract health and coordinates from each structure
+        data.push_back(unit->health);
+        data.push_back(unit->coordinate.x);
+        data.push_back(unit->coordinate.y);
+        data.push_back(unit->is);
+        data.push_back(unit->attack);
+        data.push_back(unit->maxHealth);
+        data.push_back(unit->mana);
+        data.push_back(unit->maxMana);
+    }
+    return torch::tensor(data).view({-1, 8});
+  }
+
+  torch::Tensor GetStructuresTensor(const std::vector<Structure *> &structures) {
+    std::vector<float> structureData;
+    for (const auto &structure : structures) {
+        structureData.push_back(structure->health);
+        structureData.push_back(structure->coordinate.x);
+        structureData.push_back(structure->coordinate.y);
+        structureData.push_back(structure->is);
+    }
+    return torch::tensor(structureData).view({-1, 4});
+  }
+
+  torch::Tensor GetTensor(){
+    return torch::cat({currentMap, playerGold, playerFood, playerUnits, playerStructs, enemyGold, enemyFood, enemyUnits, enemyStructures});
+  }
+};
+
+DQN::DQN(int inpSize, int actionNum) {
+  inputSize = inpSize;
+  actionSize = actionNum;
+
   layer1 = register_module("layer1", torch::nn::Linear(inputSize, 128));
   layer2 = register_module("layer2", torch::nn::Linear(128, 128));
-  layer3 = register_module("layer3", torch::nn::Linear(128, actionNumber));
+  layer3 = register_module("layer3", torch::nn::Linear(128, actionSize));
 }
 
-torch::nn::Linear DQN::Forward(torch::Tensor x) {
-  x = torch::relu(layer1(x));
-  x = torch::relu(layer2(x));
-  return layer3;
+torch::Tensor DQN::Forward(torch::Tensor x) {
+  x = torch::relu(layer1->forward(x));
+  x = torch::relu(layer2->forward(x));
+  x = layer3->forward(x);  
+  return x;
 }
 
-void DQN::SelectAction(State state, DQN policy) {
+at::Tensor DQN::SelectAction(State state, DQN policy, torch::Device device) {
   std::random_device dev;
   std::mt19937 rng(dev());
   std::uniform_int_distribution<std::mt19937::result_type> dist1(0.0, 1.0);
-
 
   float epsilonThreshold = endEpsilon + (startEpsilon - endEpsilon) * std::exp(-1. * stepsDone / epsilonDecay);
   stepsDone++;  
   float sample = dist1(rng);
 
   if (sample > epsilonThreshold) {
-    action = policy->forward(state).max(1).indices().view({1, 1});
+    at::Tensor action = std::get<1>(policy.Forward(TurnStateInInput(state)).max(1)).view({1, 1});
+
     return action;
   } 
   else {
-    torch::Tensor action = torch::randint(0, actionSpaceSize - 1, {1}).to(torch::kLong).to(device);
+    at::Tensor action = torch::randint(0, actionSize - 1, {1}).to(torch::kLong).to(device);
     return action;
   }
 }
 
-//void DQN::OptimizeModel(){
-//    if (memory.size() < BATCH_SIZE) {
-//        return;
-//    }
-//    std::vector<Transition> transitions = sample_memory(BATCH_SIZE);
-//
-//    std::vector<torch::Tensor> states, actions, rewards, next_states;
-//    for (const auto& t : transitions) {
-//        states.push_back(t.state);
-//        actions.push_back(t.action);
-//        rewards.push_back(t.reward);
-//        next_states.push_back(t.next_state);
-//    }
-//
-//    torch::Tensor state_batch = torch::cat(states).to(device);
-//    torch::Tensor action_batch = torch::cat(actions).to(device);
-//    torch::Tensor reward_batch = torch::cat(rewards).to(device);
-//
-//    std::vector<torch::Tensor> non_final_next_states_vec;
-//    std::vector<int64_t> non_final_mask_vec;
-//    for (size_t i = 0; i < next_states.size(); ++i) {
-//        if (next_states[i].defined()) {
-//            non_final_next_states_vec.push_back(next_states[i]);
-//            non_final_mask_vec.push_back(1);
-//        } else {
-//            non_final_mask_vec.push_back(0);
-//        }
-//    }
-//
-//    torch::Tensor non_final_next_states = torch::cat(non_final_next_states_vec).to(device);
-//    torch::Tensor non_final_mask = torch::tensor(non_final_mask_vec, torch::TensorOptions().device(device).dtype(torch::kBool));
-//
-//    torch::Tensor state_action_values = policy_net->forward(state_batch).gather(1, action_batch);
-//
-//    torch::Tensor next_state_values = torch::zeros({BATCH_SIZE}, torch::TensorOptions().device(device));
-//    {
-//        torch::NoGradGuard no_grad;
-//        next_state_values.index_put_({non_final_mask}, target_net->forward(non_final_next_states).max(1).values());
-//    }
-//
-//    torch::Tensor expected_state_action_values = (next_state_values * GAMMA) + reward_batch;
-//
-//    torch::nn::SmoothL1Loss criterion;
-//    torch::Tensor loss = criterion(state_action_values, expected_state_action_values.unsqueeze(1));
-//
-//    optimizer->zero_grad();
-//    loss.backward();
-//    torch::nn::utils::clip_grad_value_(policy_net->parameters(), 100);
-//    optimizer->step();
-//}
+torch::Tensor DQN::TurnStateInInput(State state){
+  TensorStruct ts(state);
+  return ts.GetTensor();
+}

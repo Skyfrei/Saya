@@ -17,6 +17,8 @@ enum UnitType { FOOTMAN, PEASANT, ARCHMAGE, BLOODMAGE };
 
 enum MoveType { W, NW, N, NE, E, SE, S, SW, STAY };
 
+enum ActionType{MOVE, ATTACK, BUILD, FARMGOLD, RECRUIT, NR_OF_ACTIONS};
+
 struct Path {
   Path(int d, Vec2 l) : distance(d), comesFrom(l) {}
   Path() {}
@@ -26,13 +28,17 @@ struct Path {
 
 class Action{
   public:
-    virtual bool operator==(const Action& other) const = 0;
+    ActionType type;
+    virtual ActionType GetType() = 0;
 };
 
 struct MoveAction : public Action {
   Vec2 prevCoord;
   Vec2 destCoord;
+  ActionType type = MOVE;
   MoveAction(Vec2 c) : destCoord(c) {}
+
+  ActionType GetType() override {return type;}
 
   bool operator==(const MoveAction &b) const {
     if (destCoord.x == b.destCoord.x && destCoord.y == b.destCoord.y)
@@ -40,20 +46,26 @@ struct MoveAction : public Action {
     return false;
   }
 };
-struct AttackAction {
+struct AttackAction : public Action{
   AttackAction() {}
   AttackAction(Living *o) : object(o) {}
   Vec2 prevCoord;
+  ActionType type = ATTACK;
+  ActionType GetType() override {return type;}
 
   Living *object;
   constexpr bool operator==(const AttackAction &b) const {
     return object == b.object;
   }
 };
-struct BuildAction {
+struct BuildAction : public Action{
   Structure *stru;
   Vec2 prevCoord;
   BuildAction(Structure *s) : stru(s) {}
+  ActionType type = BUILD;
+  ActionType GetType() override {return type;}
+
+
   bool operator==(const BuildAction &b) const {
     if (stru->coordinate.x == b.stru->coordinate.x &&
         stru->coordinate.y == b.stru->coordinate.y && stru == b.stru)
@@ -61,7 +73,7 @@ struct BuildAction {
     return false;
   }
 };
-struct FarmGoldAction {
+struct FarmGoldAction : public Action {
   Vec2 dest;
   Vec2 prev;
   Terrain *terr;
@@ -69,6 +81,9 @@ struct FarmGoldAction {
   int gold = 0;
   FarmGoldAction(Vec2 v, Terrain *te, TownHall *t)
       : dest(v), terr(te), hall(t) {}
+
+  ActionType type = FARMGOLD;
+  ActionType GetType() override {return type;}
   bool operator==(const FarmGoldAction &a) const {
     if (a.dest.x == dest.x && a.dest.y == dest.y) return true;
     return false;
