@@ -24,34 +24,42 @@ struct TensorStruct{
   torch::Tensor enemyStructures;
 
 
-  torch::Tensor GetMapTensor(const Map& map) {
-    const int numPropertiesPerCell = 5;
-    std::vector<float> resourceLeftData;
-    std::vector<float> coordDataX;
-    std::vector<float> coordDataY;
-    std::vector<float> typeData;
-    std::vector<float> structureOnTerrainData;
+  torch::Tensor GetMapTensor(const Map &map) {
+    std::vector<float> data;
 
-    for (const auto& row : map.terrain) {
-        for (const auto& cell : row) {
-            resourceLeftData.push_back(cell.resourceLeft);
-            coordDataX.push_back(cell.coord.x);
-            coordDataY.push_back(cell.coord.y);
-            typeData.push_back(static_cast<float>(cell.type));
-            structureOnTerrainData.push_back(cell.structureOnTerrain ? 1.0f : 0.0f);
+    for (const auto &row : map.terrain) {
+        for (const auto &terrain : row) {
+          data.push_back(static_cast<float>(terrain.type)); 
+          data.push_back(static_cast<float>(terrain.resourceLeft));
+          data.push_back(terrain.coord.x);
+          data.push_back(terrain.coord.y);
+          for (const auto &unit1 : terrain.onTerrainLiving) {
+            Unit* unit = dynamic_cast<Unit*>(unit1);
+            data.push_back(unit->health);
+            data.push_back(unit->coordinate.x);
+            data.push_back(unit->coordinate.y);
+            data.push_back(unit->is);
+            data.push_back(unit->attack);
+            data.push_back(unit->maxHealth);
+            data.push_back(unit->mana);
+            data.push_back(unit->maxMana);
+          }
+        if (terrain.structureOnTerrain != nullptr) {
+          data.push_back(terrain.structureOnTerrain->health);
+          data.push_back(terrain.structureOnTerrain->coordinate.x);
+          data.push_back(terrain.structureOnTerrain->coordinate.y);
+          data.push_back(terrain.structureOnTerrain->is);
+        } 
+        else {
+          data.push_back(0.0f);  
+          data.push_back(0.0f); 
+          data.push_back(0.0f);  
+          data.push_back(0.0f); 
         }
+      }
     }
-    std::vector<float> mapData;
-    for (size_t i = 0; i < resourceLeftData.size(); ++i) {
-        mapData.push_back(resourceLeftData[i]);
-        mapData.push_back(coordDataX[i]);
-        mapData.push_back(coordDataY[i]);
-        mapData.push_back(typeData[i]);
-        mapData.push_back(structureOnTerrainData[i]);
-    }
-    return torch::tensor(mapData).view({map.terrain.size(), map.terrain[0].size(), numPropertiesPerCell});
+    return torch::tensor(data).view({-1, static_cast<int>(data.size() / map.terrain.size() / map.terrain[0].size())});
   }
-
 
   torch::Tensor GetVec(const Vec2 food) {
     std::vector<float> data;
