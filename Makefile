@@ -321,30 +321,6 @@ ReinforcementLearning/DQN.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/ReinforcementLearning/DQN.cpp.s
 .PHONY : ReinforcementLearning/DQN.cpp.s
 
-ReinforcementLearning/RLManager.o: ReinforcementLearning/RLManager.cpp.o
-.PHONY : ReinforcementLearning/RLManager.o
-
-# target to build an object file
-ReinforcementLearning/RLManager.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/ReinforcementLearning/RLManager.cpp.o
-.PHONY : ReinforcementLearning/RLManager.cpp.o
-
-ReinforcementLearning/RLManager.i: ReinforcementLearning/RLManager.cpp.i
-.PHONY : ReinforcementLearning/RLManager.i
-
-# target to preprocess a source file
-ReinforcementLearning/RLManager.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/ReinforcementLearning/RLManager.cpp.i
-.PHONY : ReinforcementLearning/RLManager.cpp.i
-
-ReinforcementLearning/RLManager.s: ReinforcementLearning/RLManager.cpp.s
-.PHONY : ReinforcementLearning/RLManager.s
-
-# target to generate assembly for a file
-ReinforcementLearning/RLManager.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Final.dir/build.make CMakeFiles/Final.dir/ReinforcementLearning/RLManager.cpp.s
-.PHONY : ReinforcementLearning/RLManager.cpp.s
-
 ReinforcementLearning/ReplayMemory.o: ReinforcementLearning/ReplayMemory.cpp.o
 .PHONY : ReinforcementLearning/ReplayMemory.o
 
@@ -474,9 +450,6 @@ help:
 	@echo "... ReinforcementLearning/DQN.o"
 	@echo "... ReinforcementLearning/DQN.i"
 	@echo "... ReinforcementLearning/DQN.s"
-	@echo "... ReinforcementLearning/RLManager.o"
-	@echo "... ReinforcementLearning/RLManager.i"
-	@echo "... ReinforcementLearning/RLManager.s"
 	@echo "... ReinforcementLearning/ReplayMemory.o"
 	@echo "... ReinforcementLearning/ReplayMemory.i"
 	@echo "... ReinforcementLearning/ReplayMemory.s"

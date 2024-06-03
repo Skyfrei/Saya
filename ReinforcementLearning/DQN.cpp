@@ -92,7 +92,9 @@ struct TensorStruct{
     torch::Tensor paddedStructsEnemy = torch::zeros({maxStructs - enemyStructures.size(0), enemyStructures.size(1)});
 
     torch::Tensor concatenatedTensor = torch::cat({currentMap, playerGold, playerFood, playerUnits, paddedUnits, playerStructs, paddedStructs, enemyGold, enemyFood, enemyUnits, paddedUnitsEnemy, enemyStructures, paddedStructsEnemy});
+    return concatenatedTensor;
   }
+  
   const int maxUnits = 50;
   const int maxStructs = 25;
 
@@ -107,17 +109,15 @@ struct TensorStruct{
   torch::Tensor enemyStructures;
 };
 
-DQN::DQN(int inpSize, int actionNum) {
-  inputSize = inpSize;
-  actionSize = actionNum;
-
+DQN::DQN(){
   layer1 = register_module("layer1", torch::nn::Linear(inputSize, 128));
   layer2 = register_module("layer2", torch::nn::Linear(128, 128));
   layer3 = register_module("layer3", torch::nn::Linear(128, actionSize));
 }
 
-DQN::DQN(){
-  inputSize = 2;
+void DQN::Initialize(State state){
+  TensorStruct ts(state);
+  inputSize = ts.GetTensor().size(1);
   actionSize = NR_OF_ACTIONS;
   layer1 = register_module("layer1", torch::nn::Linear(inputSize, 128));
   layer2 = register_module("layer2", torch::nn::Linear(128, 128));
@@ -132,6 +132,7 @@ torch::Tensor DQN::Forward(torch::Tensor x) {
 }
 
 actionT DQN::MapIndexToAction(int actionIndex) {
+  
     switch (actionIndex) {
       case 0:
           return MoveAction(Vec2(0, 0));

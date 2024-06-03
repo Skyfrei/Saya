@@ -15,25 +15,21 @@
 #include "Transition.h"
 
 class ReplayMemory {
- public:
-  ReplayMemory() {
-    torch::Device device(torch::kCPU);
-    if (torch::cuda::is_available()) {
-      device = torch::Device(torch::DeviceType::CUDA);
-    }
-    policy_net.to(device);
-    target_net.to(device);
+  public:
+    ReplayMemory(){}
+    
+    void InitializeDQN(Map map, Player &player, Player &enemy);
+    void Push(Transition &t) {}
+    void StartPolicy(Map m, Player& player, Player &enemy);
 
-    torch::optim::AdamW optimizer(
-        policy_net.parameters(),
-        torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
-  }
-  void CreateMemoryState(Map map, Player &player, Player &enemy);
-  void Push(Transition &t) {}
+  private:
+    State CreateMemoryState(Map map, Player &player, Player &enemy);
 
-  Transition transition;
-  DQN policy_net;
-  DQN target_net;
+  private: 
+    Transition transitions;
+    DQN policy_net;
+    DQN target_net;
+    bool calledMemOnce = false;
 };
 // n
 #endif
