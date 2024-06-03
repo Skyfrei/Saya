@@ -17,7 +17,7 @@
 
 class DQN : public torch::nn::Module {
  public:
-  DQN();
+  DQN(){}
   torch::Tensor Forward(torch::Tensor x);
   void Initialize(State state);
 

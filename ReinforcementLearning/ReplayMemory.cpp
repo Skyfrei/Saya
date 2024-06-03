@@ -22,6 +22,7 @@ void ReplayMemory::StartPolicy(Map map, Player &player, Player &enemy) {
     calledMemOnce = true;
   }
   auto egal = CreateMemoryState(map, player, enemy);
+  transitions.AddTransition(egal);
 }
 
 State ReplayMemory::CreateMemoryState(Map map, Player &player, Player &enemy) {
@@ -108,6 +109,5 @@ State ReplayMemory::CreateMemoryState(Map map, Player &player, Player &enemy) {
         break;
     }
   }
-  float rew = 0.004f;
   return st;
 }
