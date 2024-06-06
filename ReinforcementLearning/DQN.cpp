@@ -162,7 +162,7 @@ actionT DQN::MapIndexToAction(int actionIndex) {
     }
 }
 
-actionT DQN::SelectAction(State state, DQN policy, torch::Device device) {
+actionT DQN::SelectAction(State state) {
   std::random_device dev;
   std::mt19937 rng(dev());
   std::uniform_int_distribution<std::mt19937::result_type> dist1(0.0, 1.0);
@@ -172,7 +172,7 @@ actionT DQN::SelectAction(State state, DQN policy, torch::Device device) {
   float sample = dist1(rng);
 
   if (sample > epsilonThreshold) {
-    at::Tensor action = std::get<1>(policy.Forward(TurnStateInInput(state)).max(1)).view({1, 1});
+    at::Tensor action = std::get<1>(Forward(TurnStateInInput(state)).max(1)).view({1, 1});
     actionT result = MapIndexToAction(action.item<int>());
     return result;
   } 
@@ -184,10 +184,12 @@ actionT DQN::SelectAction(State state, DQN policy, torch::Device device) {
   }
 }
 
-void DQN::OptimizeModel(Transition& tran) {
-    if (tran.trans.size() < batchSize) {
+void DQN::OptimizeModel(Transition& transition) {
+    if (transition.trans.size() < batchSize) {
         return;
     }
+
+
 }
 
 torch::Tensor DQN::TurnStateInInput(State state){

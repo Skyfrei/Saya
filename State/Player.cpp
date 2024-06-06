@@ -19,6 +19,21 @@ Player::Player(Map &m) : map(m) {
   Initialize();
   food.y = 10;
 }
+void Player::TakeAction(actionT action){
+  // if (std::holds_alternative<MoveAction>(action)) {
+  //   MoveAction &a = std::get<MoveAction>(action);
+  //   Move(a.unit, a.v);
+  // } else if (std::holds_alternative<AttackAction>(action)) {
+  //   AttackAction &a = std::get<AttackAction>(action);
+  //   Attack(a.unit, a.l);
+  // } else if (std::holds_alternative<BuildAction>(action)) {
+  //   BuildAction &a = std::get<BuildAction>(action);
+  //   Build(a.p, a.type, a.v);
+  // } else if (std::holds_alternative<FarmGoldAction>(action)) {
+  //   FarmGoldAction &a = std::get<FarmGoldAction>(action);
+  //   FarmGold(a.p, a.v, a.hall);
+  // }
+}
 void Player::Move(Unit *u, Vec2 v) {
   actionT t = MoveAction(v);
   u->InsertAction(t);

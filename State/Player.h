@@ -37,12 +37,15 @@ class Player {
   void UpdateGold(int g);
   std::unique_ptr<Structure> ChooseToBuild(StructureType structType);
   std::unique_ptr<Unit> ChooseToRecruit(UnitType);
-  void RecruitSoldier(UnitType unitType, Structure *);
   std::vector<std::unique_ptr<Unit>> SelectUnits();
+  void TakeAction(actionT action);
   void Move(Unit *, Vec2);
   void Attack(Unit *, Living *);
   void Build(Peasant *, StructureType, Vec2);
   void FarmGold(Peasant *, Vec2, TownHall *);
+  void RecruitSoldier(UnitType unitType, Structure *);
+  
+
 
  public:
   int gold = 300;

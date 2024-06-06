@@ -19,14 +19,16 @@ class ReplayMemory {
     ReplayMemory(){}
     
     void InitializeDQN(Map map, Player &player, Player &enemy);
-    void Push(Transition &t) {}
     void StartPolicy(Map m, Player& player, Player &enemy);
+    std::vector<Transition> Sample(size_t batch_size);
+    size_t Size() const { return memory.size(); }
 
   private:
-    State CreateMemoryState(Map map, Player &player, Player &enemy);
+    State CreateCurrentState(Map map, Player &player, Player &enemy);
+    Transition CreateTransition(State s, actionT a, NextState nextS);
 
   private: 
-    Transition transitions;
+    std::deque<Transition> memory;
     DQN policy_net;
     DQN target_net;
     bool calledMemOnce = false;

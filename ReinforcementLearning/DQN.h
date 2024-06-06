@@ -22,8 +22,8 @@ class DQN : public torch::nn::Module {
   void Initialize(State state);
 
  private:
-  void OptimizeModel(Transition& tran);
-  actionT SelectAction(State state, DQN policy, torch::Device device); // gotta return an action
+  void OptimizeModel(Transition& transition);
+  actionT SelectAction(State state); // gotta return an action
   torch::Tensor TurnStateInInput(State state);
   actionT MapIndexToAction(int actionIndex);
 

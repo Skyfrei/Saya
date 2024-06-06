@@ -22,7 +22,7 @@ struct State {
 };
 
 struct StateAction {
-  StateAction(State s) {
+  StateAction(State s, actionT action) {
     state.currentMap = s.currentMap;
     state.enemyFood = s.enemyFood;
     state.enemyGold = s.enemyGold;
@@ -32,6 +32,7 @@ struct StateAction {
     state.playerGold = s.playerGold;
     state.playerUnits = s.playerUnits;
     state.playerStructs = s.playerStructs;
+    typeOfAction = action;
   }
 
   State state;
@@ -46,18 +47,16 @@ struct StateAction {
 };
 
 struct NextState {
+  NextState(State s, float r) : state(s), reward(r){}
   State state;
   float reward = 0.0f;
 };
 
 struct Transition {
-  void AddTransition(State s){
-    StateAction st(s);
-    NextState a;
-    a.reward = 1.0f;
-    trans[st] = a;
-  }
-  std::map<StateAction, NextState> trans;
+  Transition(State s, actionT action, NextState n) : stateAction(s, action), nextState(n){}
+
+  StateAction stateAction;
+  NextState nextState;
 };
 
 #endif  // !TRANSITION_H

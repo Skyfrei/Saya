@@ -6,7 +6,6 @@ void ReplayMemory::InitializeDQN(Map map, Player &player, Player &enemy){
   policy_net.Initialize(st);
   target_net.Initialize(st);
 
-
   torch::Device device(torch::kCPU);
   if (torch::cuda::is_available()) {
     device = torch::Device(torch::DeviceType::CUDA);
@@ -21,11 +20,37 @@ void ReplayMemory::StartPolicy(Map map, Player &player, Player &enemy) {
     InitializeDQN(map, player, enemy);
     calledMemOnce = true;
   }
-  auto egal = CreateMemoryState(map, player, enemy);
-  transitions.AddTransition(egal);
+  State currentState = CreateCurrentState(map, player, enemy);
+  action_t playerAction = policy_net.SelectAction(currentState);
+  action_t enemyAction = policy_net.SelectAction(currentState);
+
+  // Here i want to do the parameter of player Take actioon random.
+  // This player and enemy will be deepcopies of the parameter player and enemy.
+  player.TakeAction(actionOfState);
+  enemy.TakeAction(actionOfState);
+
+  State nextState = CreateCurrentState(map, player, enemy);
+  NextState next = NextState(nextState, 0.0f);
+
+  Transition egal = CreateTransition(currentState, playerAction, next);
+
+  memory.push_back(egal);
 }
 
-State ReplayMemory::CreateMemoryState(Map map, Player &player, Player &enemy) {
+Transition ReplayMemory::CreateTransition(State s, actionT a, NextState nextS) {
+  Transition t(s, a, nextS);
+  return t;
+}
+
+std::vector<Transition> ReplayMemory::Sample(size_t batch_size) {
+    std::vector<Transition> batch;
+    std::sample(memory.begin(), memory.end(), std::back_inserter(batch), batch_size, std::mt19937{std::random_device{}()});
+    return batch;
+}
+
+
+
+State ReplayMemory::CreateCurrentState(Map map, Player &player, Player &enemy) {
   State st;
   st.currentMap = map;
   st.playerFood = player.food;
