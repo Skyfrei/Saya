@@ -97,6 +97,7 @@ class Unit : public Living {
  public:
   Unit();
   virtual ~Unit() = default;
+  virtual std::unique_ptr<Unit> Clone() const = 0;
 
  public:
   void Move(Vec2 terr);

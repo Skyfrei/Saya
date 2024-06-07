@@ -37,6 +37,9 @@ class Peasant : public Unit {
   void Build(Structure *);
   void FarmGold(Terrain &terr, TownHall &hall, int &g);
   std::string GetDescription() override { return "Slave."; }
+  std::unique_ptr<Unit> Clone() const override{
+    return std::make_unique<Peasant>(*this);
+  }
 
  public:
   int goldInventory = 0;

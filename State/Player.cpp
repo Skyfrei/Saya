@@ -19,6 +19,20 @@ Player::Player(Map &m) : map(m) {
   Initialize();
   food.y = 10;
 }
+Player::Player(const Player& other) : map(other.map){
+    gold = other.gold;
+    food = other.food;
+    
+    // Deep copy structures
+    for (const auto &structure : other.structures) {
+        structures.push_back(structure->Clone());
+    }
+    
+    // Deep copy units
+    for (const auto &unit : other.units) {
+        units.push_back(unit->Clone());
+    }
+}
 void Player::TakeAction(actionT action){
   // if (std::holds_alternative<MoveAction>(action)) {
   //   MoveAction &a = std::get<MoveAction>(action);

@@ -151,18 +151,13 @@ actionT DQN::MapIndexToAction(int actionIndex) {
     switch (actionIndex) {
       case 0:
           return MoveAction(Vec2(0, 0));
-      case 1:
-          return AttackAction(nullptr); 
-      case 2:
-          return BuildAction(nullptr);
-      case 3:
-          return FarmGoldAction(Vec2(0, 0), nullptr, nullptr);
+          
       default:
           return std::monostate{};
     }
 }
 
-actionT DQN::SelectAction(State state) {
+actionT DQN::SelectAction(State state) { 
   std::random_device dev;
   std::mt19937 rng(dev());
   std::uniform_int_distribution<std::mt19937::result_type> dist1(0.0, 1.0);
@@ -184,8 +179,8 @@ actionT DQN::SelectAction(State state) {
   }
 }
 
-void DQN::OptimizeModel(Transition& transition) {
-    if (transition.trans.size() < batchSize) {
+void DQN::OptimizeModel(std::deque<Transition> memory) {
+    if (memory.size() < batchSize) {
         return;
     }
 

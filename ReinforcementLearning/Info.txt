@@ -1,3 +1,0 @@
-Whats left here
-- Gotta change the selectAction from returning an integer to return an actual action
-- Gotta finish the optimizeModel function which is part of training my model

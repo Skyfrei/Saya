@@ -20,6 +20,9 @@ class Farm : public Structure {
  public:
   std::string GetDescription() override { return description; }
   void FinishBuilding() override {}
+  std::unique_ptr<Structure> Clone() const override{
+    return std::make_unique<Farm>(*this);
+  }
 
  public:
   int GetFood() { return 5; }

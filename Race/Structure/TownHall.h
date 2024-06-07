@@ -24,5 +24,8 @@ class TownHall : public Structure {
 
   };
   void FinishBuilding() override {}
+  std::unique_ptr<Structure> Clone() const override{
+    return std::make_unique<TownHall>(*this);
+  }
   std::string GetDescription() override { return "Town hall."; }
 };

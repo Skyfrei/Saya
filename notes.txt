@@ -3,12 +3,6 @@ output of the tensor:
 to self:
 	map size = map_size * map_size
 
-
-
-
-FINISH DEEP COPY FOR PLAYER FIRST
-
-
 Move -> unit size * map size
 Recruit -> (enum size) unitType * barrack size
 Attack -> unit size * (enemy structure size + unit size)

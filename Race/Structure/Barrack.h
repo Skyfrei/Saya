@@ -26,6 +26,9 @@ class Barrack : public Structure {
 
  public:
   void FinishBuilding() override {}
+  std::unique_ptr<Structure> Clone() const override{
+    return std::make_unique<Barrack>(*this);
+  }
   std::string GetDescription() override { return "Recruit soldiers."; }
   void CreateUnit(std::vector<std::unique_ptr<Unit>> &units, int &playerGold,
                   UnitType type);

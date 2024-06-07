@@ -20,4 +20,8 @@ class Footman : public Unit {
     is = FOOTMAN;
   }
   std::string GetDescription() override { return "Footman."; };
+  std::unique_ptr<Unit> Clone() const override{
+    return std::make_unique<Footman>(*this);
+  }
+
 };

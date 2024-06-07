@@ -1,7 +1,7 @@
 #include "ReplayMemory.h"
 
 void ReplayMemory::InitializeDQN(Map map, Player &player, Player &enemy){
-  State st = CreateMemoryState(map, player, enemy);
+  State st = CreateCurrentState(map, player, enemy);
 
   policy_net.Initialize(st);
   target_net.Initialize(st);
@@ -21,13 +21,10 @@ void ReplayMemory::StartPolicy(Map map, Player &player, Player &enemy) {
     calledMemOnce = true;
   }
   State currentState = CreateCurrentState(map, player, enemy);
-  action_t playerAction = policy_net.SelectAction(currentState);
-  action_t enemyAction = policy_net.SelectAction(currentState);
-
-  // Here i want to do the parameter of player Take actioon random.
-  // This player and enemy will be deepcopies of the parameter player and enemy.
-  player.TakeAction(actionOfState);
-  enemy.TakeAction(actionOfState);
+  actionT playerAction = policy_net.SelectAction(currentState);
+  player.TakeAction(playerAction);
+  actionT enemyAction = policy_net.SelectAction(currentState);
+  enemy.TakeAction(enemyAction);
 
   State nextState = CreateCurrentState(map, player, enemy);
   NextState next = NextState(nextState, 0.0f);

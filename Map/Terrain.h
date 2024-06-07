@@ -6,7 +6,7 @@
 #include "../Race/Structure/Structure.h"
 #include "../Tools/Vec2.h"
 
-#define MAP_SIZE 15
+#define MAP_SIZE 5
 class Unit;
 
 enum TerrainType { GROUND, GOLD };

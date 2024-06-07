@@ -28,6 +28,8 @@ struct RecruitAction {
 class Player {
  public:
   Player(Map &m);
+	
+	Player(const Player& other);
   void Initialize();
   void SetInitialCoordinates(Vec2 v);
   bool HasStructure(StructureType structType);

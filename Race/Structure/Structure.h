@@ -7,6 +7,7 @@ enum StructureType { HALL, BARRACK, FARM, OTHER };
 class Structure : public Living {
  public:
   Structure() {}
+  virtual std::unique_ptr<Structure> Clone() const = 0;
   virtual void FinishBuilding() = 0;
   bool operator==(const Structure& other);
 

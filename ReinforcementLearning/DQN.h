@@ -20,10 +20,10 @@ class DQN : public torch::nn::Module {
   DQN(){}
   torch::Tensor Forward(torch::Tensor x);
   void Initialize(State state);
+  actionT SelectAction(State state); // gotta return an action
 
  private:
-  void OptimizeModel(Transition& transition);
-  actionT SelectAction(State state); // gotta return an action
+  void OptimizeModel(std::deque<Transition> memory);
   torch::Tensor TurnStateInInput(State state);
   actionT MapIndexToAction(int actionIndex);
 
