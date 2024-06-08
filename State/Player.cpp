@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <cmath>
 
 #include "Map/Terrain.h"
 #include "Race/Structure/Barrack.h"

@@ -22,7 +22,7 @@ class Manager {
   void ManageLiving(Player &pl);
   float GetTime();
   void CheckForMovement();
-  int GetFrames();
+  bool Is10thSecond();
   void CheckForOwnership(Player &p, Living *, actionT);
 
  public:
@@ -37,7 +37,6 @@ class Manager {
 
  private:
   int frames = 0;
-  const int rlFrameCondition = 10;
   std::chrono::high_resolution_clock::time_point frameTimer =
       std::chrono::high_resolution_clock::now();
 };
