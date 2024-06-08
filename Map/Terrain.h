@@ -1,6 +1,7 @@
 #ifndef TERRAIN_H
 #define TERRAIN_H
 #include <memory>
+#include <vector>
 
 #include "../Living.h"
 #include "../Race/Structure/Structure.h"

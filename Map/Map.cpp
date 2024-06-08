@@ -1,4 +1,6 @@
 #include "Map.h"
+#include <algorithm>
+#include <vector>
 
 #include "Map/Terrain.h"
 
