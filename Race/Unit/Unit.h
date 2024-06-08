@@ -13,7 +13,7 @@
 #include "Race/Structure/TownHall.h"
 using namespace std::chrono;
 
-enum UnitType { FOOTMAN, PEASANT, ARCHMAGE, BLOODMAGE };
+enum UnitType { FOOTMAN, PEASANT, NR_OF_UNITS, ARCHMAGE, BLOODMAGE };
 
 enum MoveType { W, NW, N, NE, E, SE, S, SW, STAY };
 

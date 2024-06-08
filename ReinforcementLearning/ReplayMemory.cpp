@@ -16,15 +16,18 @@ void ReplayMemory::InitializeDQN(Map map, Player &player, Player &enemy){
 }
 
 void ReplayMemory::StartPolicy(Map map, Player &player, Player &enemy) {
-  if (!calledMemOnce) {
+  if (calledMemOnce == false) {
     InitializeDQN(map, player, enemy);
     calledMemOnce = true;
   }
+
   State currentState = CreateCurrentState(map, player, enemy);
   actionT playerAction = policy_net.SelectAction(currentState);
   player.TakeAction(playerAction);
   actionT enemyAction = policy_net.SelectAction(currentState);
   enemy.TakeAction(enemyAction);
+
+  std::cout<<"==============="<<std::endl;
 
   State nextState = CreateCurrentState(map, player, enemy);
   NextState next = NextState(nextState, 0.0f);

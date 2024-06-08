@@ -24,10 +24,12 @@ void Barrack::CreateUnit(std::vector<std::unique_ptr<Unit>>& units, int& playerG
         case BLOODMAGE:
             unit = std::make_unique<BloodMage>();
             break;
+        default:
+            unit =  std::make_unique<Peasant>();
+            break;
     }
     if (HasEnoughGold(playerGold, unit->goldCost))
     {
-        //std::cout<<playerGold - unit->goldCost;
         playerGold -= unit->goldCost;
         units.emplace_back(std::move(unit));
     }

@@ -86,26 +86,13 @@ struct TensorStruct{
   }
 
   torch::Tensor GetTensor(){
-    torch::Tensor paddedUnits = torch::zeros({1, (maxUnits - playerUnits.size(1) / unitVar) * unitVar});
-    torch::Tensor paddedStructs = torch::zeros({1, (maxStructs - playerStructs.size(1) / strucVar) * strucVar});
-    torch::Tensor paddedUnitsEnemy = torch::zeros({1, (maxUnits - enemyUnits.size(1) / unitVar) * unitVar});
-    torch::Tensor paddedStructsEnemy = torch::zeros({1, (maxStructs - enemyStructures.size(1) / strucVar) * strucVar});
+    torch::Tensor paddedUnits = torch::zeros({1, (MAX_UNITS - playerUnits.size(1) / unitVar) * unitVar});
+    torch::Tensor paddedStructs = torch::zeros({1, (MAX_STRUCTS - playerStructs.size(1) / strucVar) * strucVar});
+    torch::Tensor paddedUnitsEnemy = torch::zeros({1, (MAX_UNITS - enemyUnits.size(1) / unitVar) * unitVar});
+    torch::Tensor paddedStructsEnemy = torch::zeros({1, (MAX_STRUCTS - enemyStructures.size(1) / strucVar) * strucVar});
 
 
-    std::cout << "currentMap size: " << currentMap.sizes() << std::endl;
-    std::cout << "playerGold size: " << playerGold.sizes() << std::endl;
-    std::cout << "playerFood size: " << playerFood.sizes() << std::endl;
     std::cout << "playerUnits size: " << playerUnits.sizes() << std::endl;
-    std::cout << "paddedUnits size: " << paddedUnits.sizes() << std::endl;
-    std::cout << "playerStructs size: " << playerStructs.sizes() << std::endl;
-    std::cout << "paddedStructs size: " << paddedStructs.sizes() << std::endl;
-    std::cout << "enemyGold size: " << enemyGold.sizes() << std::endl;
-    std::cout << "enemyFood size: " << enemyFood.sizes() << std::endl;
-    std::cout << "enemyUnits size: " << enemyUnits.sizes() << std::endl;
-    std::cout << "paddedUnitsEnemy size: " << paddedUnitsEnemy.sizes() << std::endl;
-    std::cout << "enemyStructures size: " << enemyStructures.sizes() << std::endl;
-    std::cout << "paddedStructsEnemy size: " << paddedStructsEnemy.sizes() << std::endl;
-    
     std::vector<torch::Tensor> tensors = {currentMap, playerGold, playerFood, playerUnits, paddedUnits, playerStructs, paddedStructs, enemyGold, enemyFood, enemyUnits, paddedUnitsEnemy, enemyStructures, paddedStructsEnemy};
     
     torch::Tensor concatenatedTensor = torch::cat(tensors, 1);
@@ -113,8 +100,7 @@ struct TensorStruct{
     return concatenatedTensor;
   }
   
-  const int maxUnits = 50;
-  const int maxStructs = 25;
+
   const int unitVar = 8;
   const int strucVar = 4;
 
@@ -130,13 +116,13 @@ struct TensorStruct{
 };
 
 void DQN::Initialize(State state){
-  
   TensorStruct ts(state);
   inputSize = ts.GetTensor().size(1);
-  actionSize = NR_OF_ACTIONS;
+  actionSize = recruitAction;
   layer1 = register_module("layer1", torch::nn::Linear(inputSize, 128));
   layer2 = register_module("layer2", torch::nn::Linear(128, 128));
   layer3 = register_module("layer3", torch::nn::Linear(128, actionSize));
+
 }
 
 torch::Tensor DQN::Forward(torch::Tensor x) {
@@ -147,14 +133,23 @@ torch::Tensor DQN::Forward(torch::Tensor x) {
 }
 
 actionT DQN::MapIndexToAction(int actionIndex) {
-  
-    switch (actionIndex) {
-      case 0:
-          return MoveAction(Vec2(0, 0));
-          
-      default:
-          return std::monostate{};
-    }
+  if (actionIndex < moveAction ) {
+
+  }
+  else if(actionIndex < attackAction){
+    
+  }
+  else if (actionIndex < buildAction){
+
+  }
+  else if (actionIndex < farmAction){
+
+  }
+  else if (actionIndex < recruitAction){
+
+  }
+
+  return std::monostate();
 }
 
 actionT DQN::SelectAction(State state) { 
@@ -183,8 +178,6 @@ void DQN::OptimizeModel(std::deque<Transition> memory) {
     if (memory.size() < batchSize) {
         return;
     }
-
-
 }
 
 torch::Tensor DQN::TurnStateInInput(State state){
