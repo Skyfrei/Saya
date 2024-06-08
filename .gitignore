@@ -1,5 +1,10 @@
+CMakeCache.txt
 CMakeFiles/*
 cmake-build-debug/*
 build/*
 .vscode/*
 .DS_Store
+Final
+.cache/
+.clang-format
+Makefile
