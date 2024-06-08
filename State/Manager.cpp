@@ -74,8 +74,7 @@ void Manager::MainLoop() {
           CheckForOwnership(enemy, enemy.units[i].get(), actionDone);
         }
       }
-      int framess = GetFrames();
-      if (framess % rlFrameCondition == 0 && framess != 0) {
+      if (Is10thSecond()) {
         trainerManager.StartPolicy(map, player, enemy);
       }
     }
@@ -84,16 +83,17 @@ void Manager::MainLoop() {
 
 void Manager::CheckForMovement() {}
 
-int Manager::GetFrames() {
-  float oneFrameTimer = 16646279.99 / 1.0;
-  float a = GetTime();
-  auto diff = time - frameTimer;
-  if (diff.count() >= oneFrameTimer) {
-    frameTimer = time;
-    if (frames >= 60) frames = 0;
-    frames++;
+bool Manager::Is10thSecond() {
+  std::chrono::high_resolution_clock::time_point frameTimer1 =
+  std::chrono::high_resolution_clock::now();
+      
+
+  std::chrono::duration<float> diff = frameTimer1 - frameTimer;
+  if (diff.count() >= 0.1f) {
+    frameTimer = std::chrono::high_resolution_clock::now();
+    return true;
   }
-  return frames;
+  return false;
 }
 
 float Manager::GetTime() {
