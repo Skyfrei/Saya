@@ -35,8 +35,11 @@ class Action{
 struct MoveAction : public Action {
   Vec2 prevCoord;
   Vec2 destCoord;
+  Unit* unit;
   ActionType type = MOVE;
+
   MoveAction(Vec2 c) : destCoord(c) {}
+  MoveAction(Unit* un, Vec2 c) : destCoord(c), unit(un){}
 
   ActionType GetType() override {return type;}
 
@@ -49,7 +52,9 @@ struct MoveAction : public Action {
 struct AttackAction : public Action{
   AttackAction() {}
   AttackAction(Living *o) : object(o) {}
+  AttackAction(Unit* un, Living* o) : object(o), unit(un){}
   Vec2 prevCoord;
+  Unit* unit;
   ActionType type = ATTACK;
   ActionType GetType() override {return type;}
 
@@ -61,7 +66,11 @@ struct AttackAction : public Action{
 struct BuildAction : public Action{
   Structure *stru;
   Vec2 prevCoord;
+  StructureType struType;
+  Vec2 coordinate;
+  Peasant *peasant;
   BuildAction(Structure *s) : stru(s) {}
+  BuildAction(Peasant* p, StructureType s, Vec2 c) : peasant(p), struType(s), coordinate(c){} 
   ActionType type = BUILD;
   ActionType GetType() override {return type;}
 
@@ -78,9 +87,11 @@ struct FarmGoldAction : public Action {
   Vec2 prev;
   Terrain *terr;
   TownHall *hall;
+  Peasant* peasant;
   int gold = 0;
   FarmGoldAction(Vec2 v, Terrain *te, TownHall *t)
       : dest(v), terr(te), hall(t) {}
+  FarmGoldAction(Peasant *p, Vec2 v, TownHall *h) : peasant(p), dest(v), hall(h){}
 
   ActionType type = FARMGOLD;
   ActionType GetType() override {return type;}
@@ -88,6 +99,12 @@ struct FarmGoldAction : public Action {
     if (a.dest.x == dest.x && a.dest.y == dest.y) return true;
     return false;
   }
+};
+
+struct RecruitSoldierAction : public Action{
+  UnitType unitType;
+  Structure *s;
+  RecruitSoldierAction(Unit type, Structure* stru) : unitType(type), stru(s){}
 };
 
 using actionT = std::variant<std::monostate, AttackAction, MoveAction,

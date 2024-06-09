@@ -75,7 +75,9 @@ void Manager::MainLoop() {
         }
       }
       if (Is10thSecond()) {
-        trainerManager.StartPolicy(map, player, enemy);
+        Player pl(player);
+        Player en(enemy);
+        trainerManager.StartPolicy(map, pl, en);
       }
     }
   }

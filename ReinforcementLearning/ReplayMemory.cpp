@@ -1,6 +1,6 @@
 #include "ReplayMemory.h"
 
-void ReplayMemory::InitializeDQN(Map map, Player &player, Player &enemy){
+void ReplayMemory::InitializeDQN(Map map, Player player, Player enemy){
   State st = CreateCurrentState(map, player, enemy);
 
   policy_net.Initialize(st);
@@ -15,20 +15,19 @@ void ReplayMemory::InitializeDQN(Map map, Player &player, Player &enemy){
   torch::optim::AdamW optimizer(policy_net.parameters(), torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
 }
 
-void ReplayMemory::StartPolicy(Map map, Player &player, Player &enemy) {
+void ReplayMemory::StartPolicy(Map map, Player player, Player enemy) {
   if (calledMemOnce == false) {
     InitializeDQN(map, player, enemy);
     calledMemOnce = true;
   }
 
   State currentState = CreateCurrentState(map, player, enemy);
+
   actionT playerAction = policy_net.SelectAction(currentState);
   player.TakeAction(playerAction);
   actionT enemyAction = policy_net.SelectAction(currentState);
   enemy.TakeAction(enemyAction);
-
-  std::cout<<"==============="<<std::endl;
-
+  
   State nextState = CreateCurrentState(map, player, enemy);
   NextState next = NextState(nextState, 0.0f);
 
@@ -50,7 +49,7 @@ std::vector<Transition> ReplayMemory::Sample(size_t batch_size) {
 
 
 
-State ReplayMemory::CreateCurrentState(Map map, Player &player, Player &enemy) {
+State ReplayMemory::CreateCurrentState(Map map, Player player, Player enemy) {
   State st;
   st.currentMap = map;
   st.playerFood = player.food;

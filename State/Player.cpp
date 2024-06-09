@@ -28,7 +28,6 @@ Player::Player(const Player& other) : map(other.map){
     for (const auto &structure : other.structures) {
         structures.push_back(structure->Clone());
     }
-    
     // Deep copy units
     for (const auto &unit : other.units) {
         units.push_back(unit->Clone());

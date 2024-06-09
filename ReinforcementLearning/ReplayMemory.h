@@ -18,13 +18,13 @@ class ReplayMemory {
   public:
     ReplayMemory(){}
     
-    void InitializeDQN(Map map, Player &player, Player &enemy);
-    void StartPolicy(Map m, Player& player, Player &enemy);
+    void InitializeDQN(Map map, Player player, Player enemy);
+    void StartPolicy(Map m, Player player, Player enemy);
     std::vector<Transition> Sample(size_t batch_size);
     size_t Size() const { return memory.size(); }
 
   private:
-    State CreateCurrentState(Map map, Player &player, Player &enemy);
+    State CreateCurrentState(Map map, Player player, Player enemy);
     Transition CreateTransition(State s, actionT a, NextState nextS);
 
   private: 

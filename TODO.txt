@@ -4,8 +4,6 @@ to self:
 	map size = map_size * map_size
 
 
-
-
 FINISH DEEP COPY FOR PLAYER FIRST
 
 
