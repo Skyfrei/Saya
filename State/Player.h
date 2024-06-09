@@ -16,7 +16,7 @@
 #include "Race/Structure/Structure.h"
 
 using actionT = std::variant<std::monostate, AttackAction, MoveAction,
-                             BuildAction, FarmGoldAction>;
+                             BuildAction, FarmGoldAction, RecruitSoldierAction>;
 
 struct RecruitAction {
   Unit *un;

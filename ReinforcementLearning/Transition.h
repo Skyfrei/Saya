@@ -22,7 +22,7 @@ struct State {
 };
 
 struct StateAction {
-  StateAction(State s, actionT action) {
+  StateAction(State s, actionT a) {
     state.currentMap = s.currentMap;
     state.enemyFood = s.enemyFood;
     state.enemyGold = s.enemyGold;
@@ -32,14 +32,14 @@ struct StateAction {
     state.playerGold = s.playerGold;
     state.playerUnits = s.playerUnits;
     state.playerStructs = s.playerStructs;
-    typeOfAction = action;
+    action = a;
   }
 
   State state;
-  actionT typeOfAction;
+  actionT action;
   bool operator<(const StateAction& other) const {
     if (state.currentMap == other.state.currentMap &&
-        typeOfAction == other.typeOfAction){
+        action == other.action){
           return false;
         }
     return true;

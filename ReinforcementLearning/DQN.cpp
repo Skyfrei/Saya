@@ -175,9 +175,23 @@ actionT DQN::SelectAction(State state) {
 }
 
 void DQN::OptimizeModel(std::deque<Transition> memory) {
-    if (memory.size() < batchSize) {
-        return;
-    }
+  if (memory.size() < batchSize) {
+      return;
+  }
+  std::vector<Transition> samples;
+  std::sample(memory.begin(), memory.end(), std::back_inserter(samples), batchSize, std::mt19937{std::random_device{}()});
+
+  std::vector<torch::Tensor> state_batch, action_batch, reward_batch, next_state_batch;
+  for (const auto& t : samples) {
+      state_batch.push_back(t.stateAction.state);
+      action_batch.push_back(t.stateAction.action);
+      reward_batch.push_back(t.reward);
+      if (t.next_state.has_value()) {
+          next_state_batch.push_back(t.next_state.value());
+      }
+  }
+  
+
 }
 
 torch::Tensor DQN::TurnStateInInput(State state){

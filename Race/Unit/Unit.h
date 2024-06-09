@@ -68,9 +68,9 @@ struct BuildAction : public Action{
   Vec2 prevCoord;
   StructureType struType;
   Vec2 coordinate;
-  Peasant *peasant;
+  Unit* peasant;
   BuildAction(Structure *s) : stru(s) {}
-  BuildAction(Peasant* p, StructureType s, Vec2 c) : peasant(p), struType(s), coordinate(c){} 
+  BuildAction(Unit* p, StructureType s, Vec2 c) : peasant(p), struType(s), coordinate(c){} 
   ActionType type = BUILD;
   ActionType GetType() override {return type;}
 
@@ -87,11 +87,11 @@ struct FarmGoldAction : public Action {
   Vec2 prev;
   Terrain *terr;
   TownHall *hall;
-  Peasant* peasant;
+  Unit* peasant;
   int gold = 0;
   FarmGoldAction(Vec2 v, Terrain *te, TownHall *t)
       : dest(v), terr(te), hall(t) {}
-  FarmGoldAction(Peasant *p, Vec2 v, TownHall *h) : peasant(p), dest(v), hall(h){}
+  FarmGoldAction(Unit *p, Vec2 v, TownHall *h) : peasant(p), dest(v), hall(h){}
 
   ActionType type = FARMGOLD;
   ActionType GetType() override {return type;}
@@ -103,12 +103,19 @@ struct FarmGoldAction : public Action {
 
 struct RecruitSoldierAction : public Action{
   UnitType unitType;
-  Structure *s;
-  RecruitSoldierAction(Unit type, Structure* stru) : unitType(type), stru(s){}
+  Structure *stru;
+  ActionType type = RECRUIT;
+  ActionType GetType() override {return type;}
+  bool operator==(const RecruitSoldierAction &a) const {
+    if (stru == a.stru && unitType == a.unitType) return true;
+    return false;
+    
+  }
+  RecruitSoldierAction(UnitType type, Structure* s) : unitType(type), stru(s){}
 };
 
 using actionT = std::variant<std::monostate, AttackAction, MoveAction,
-                             BuildAction, FarmGoldAction>;
+                             BuildAction, FarmGoldAction, RecruitSoldierAction>;
 
 class Unit : public Living {
  public:

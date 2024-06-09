@@ -12,7 +12,7 @@
 #include "Player.h"
 
 using actionT = std::variant<std::monostate, AttackAction, MoveAction,
-                             BuildAction, FarmGoldAction>;
+                             BuildAction, FarmGoldAction, RecruitSoldierAction>;
 
 class Manager {
  public:
