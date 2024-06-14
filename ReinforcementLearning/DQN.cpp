@@ -132,21 +132,64 @@ torch::Tensor DQN::Forward(torch::Tensor x) {
   return x;
 }
 
+  // int mapSize = MAP_SIZE * MAP_SIZE;
+  // int moveAction = mapSize + MAX_UNITS;
+  // int attackAction = moveAction + MAX_UNITS * (MAX_STRUCTS + MAX_UNITS);
+  // int buildAction = attackAction + PEASANT_INDEX_IN_UNITS * NR_OF_STRUCTS * mapSize;
+  // int farmAction = buildAction + PEASANT_INDEX_IN_UNITS * mapSize * HALL_INDEX_IN_STRCTS; // town hall size multipled here as well
+  // int recruitAction = farmAction + NR_OF_UNITS * BARRACK_INDEX_IN_STRUCTS; // barrack size
+
+
+// mapSize = 3 * 3 = 9
+// MAP_SIZE = 3
 actionT DQN::MapIndexToAction(int actionIndex) {
   if (actionIndex < moveAction ) {
+    int col = actionIndex % MAP_SIZE;
+    int row = (actionIndex / MAP_SIZE) % MAP_SIZE;
+    int unitIndex = (actionIndex / (mapSize)) % MAX_UNITS;
 
+    // TODO
   }
   else if(actionIndex < attackAction){
-    
+    int offset = actionIndex - moveAction;
+    int playerUnit = (offset / (MAX_STRUCTS + MAX_UNITS)) % MAX_UNITS;
+    int targetIndex = offset % (MAX_STRUCTS + MAX_UNITS);
+    if (targetIndex < MAX_STRUCTS - 1){
+      // pass enemy struct
+    }else{
+      int temp = targetIndex - MAX_STRUCTS;
+      // pass enemy unit
+    }
   }
   else if (actionIndex < buildAction){
+    int offset = actionIndex - attackAction;
+    int unit = offset / (NR_OF_STRUCTS * mapSize);
+    int struSelect = (offset / mapSize) % NR_OF_STRUCTS;
+    int mapSelect = offset % mapSize;
+    int col = mapSelect % MAP_SIZE;
+    int row = mapSelect / MAP_SIZE;
+
+    // Pass build action here.
+
 
   }
   else if (actionIndex < farmAction){
+    int offset = actionIndex - buildAction;
+    int peasantIndex = offset / (mapSize * HALL_INDEX_IN_STRCTS);
+    int hallIndex = (offset / mapSize) % HALL_INDEX_IN_STRCTS;
+    int mapSelect = offset % mapSize;
 
+    int col = mapSelect % MAP_SIZE;
+    int row = mapSelect / MAP_SIZE;
+
+    // pass farm action here
   }
   else if (actionIndex < recruitAction){
-
+    int offset = actionIndex - farmAction;
+    int unitType = offset / BARRACK_INDEX_IN_STRUCTS;
+    int barrackIndex = offset % BARRACK_INDEX_IN_STRUCTS;
+    
+    // pass recruitAction here
   }
 
   return std::monostate();

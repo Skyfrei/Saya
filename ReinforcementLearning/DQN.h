@@ -45,7 +45,7 @@ class DQN : public torch::nn::Module {
   const int batchSize = 32;
   
   int mapSize = MAP_SIZE * MAP_SIZE;
-  int moveAction = mapSize + MAX_UNITS;
+  int moveAction = mapSize * MAX_UNITS;
   int attackAction = moveAction + MAX_UNITS * (MAX_STRUCTS + MAX_UNITS);
   int buildAction = attackAction + PEASANT_INDEX_IN_UNITS * NR_OF_STRUCTS * mapSize;
   int farmAction = buildAction + PEASANT_INDEX_IN_UNITS * mapSize * HALL_INDEX_IN_STRCTS; // town hall size multipled here as well
