@@ -1,4 +1,5 @@
-#pragma once
+#ifndef FOOTMAN_H
+#define FOOTMAN_H
 #include <string>
 
 #include "Unit.h"
@@ -25,3 +26,4 @@ class Footman : public Unit {
   }
 
 };
+#endif

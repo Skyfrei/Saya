@@ -3,10 +3,11 @@
 
 #include <iostream>
 #include <vector>
-
+#include <algorithm>
 #include "../Tools/Vec2.h"
 #include "Graph.h"
-#include "Terrain.h"
+
+class Terrain;
 
 class Map {
  public:

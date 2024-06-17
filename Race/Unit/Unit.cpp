@@ -3,14 +3,6 @@
 //
 #include "Unit.h"
 
-
-#include <cstddef>
-#include <variant>
-
-#include "Race/Unit/Peasant.h"
-#include "State/Manager.h"
-#include "Tools/Vec2.h"
-
 Unit::Unit() {}
 bool Unit::operator==(const Unit& other)const{
   if (other.coordinate == coordinate && other.health == health && other.is == is)
@@ -78,10 +70,6 @@ actionT Unit::TakeAction() {
 }
 int Unit::GetActionQueueSize() { return actionQueue.size(); }
 
-void Unit::MoveDij(Vec2 dest, Map &map) {
-  std::vector<Node *> nextDestination =
-      map.GetClosestDestNode(coordinate, dest);
-}
 void Unit::Move(Vec2 terr) {
   if (!IsMovable()) {
     return;

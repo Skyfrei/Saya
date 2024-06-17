@@ -13,7 +13,7 @@
 #include "../Race/Unit/Peasant.h"
 #include "../Race/Unit/Unit.h"
 #include "../Tools/Vec2.h"
-#include "Race/Structure/Structure.h"
+#include "../Race/Structure/Structure.h"
 
 using actionT = std::variant<std::monostate, AttackAction, MoveAction,
                              BuildAction, FarmGoldAction, RecruitSoldierAction>;

@@ -5,7 +5,7 @@
 
 #include <memory>
 
-#include "Race/Unit/Unit.h"
+
 void Peasant::Build(Structure *str) {
   if (WithinDistance(str->coordinate)) {
     if (CanAttack()) {

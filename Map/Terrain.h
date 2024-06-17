@@ -3,14 +3,13 @@
 #include <memory>
 #include <vector>
 
-#include "../Living.h"
-#include "../Race/Structure/Structure.h"
-#include "../Tools/Vec2.h"
+#include "../Tools/Vec2.h"  
 
 #define MAP_SIZE 5
-class Unit;
-
 enum TerrainType { GROUND, GOLD };
+
+class Living;
+class Structure;
 
 class Terrain {
  public:

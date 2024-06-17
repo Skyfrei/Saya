@@ -19,6 +19,7 @@ set(CPPSRC main.cpp
         Race/Structure/Barrack.cpp
         Race/Unit/Peasant.cpp
         Race/Unit/Unit.cpp
+        Race/Unit/Action.h
         
         State/Manager.cpp
         State/Manager.h
@@ -30,7 +31,7 @@ set(CPPSRC main.cpp
         ReinforcementLearning/ReplayMemory.cpp
         ReinforcementLearning/DQN.h
         ReinforcementLearning/DQN.cpp)
-include_directories(./ include)
+#include_directories(./ include)
 
 add_executable(Final ${CPPSRC})
 

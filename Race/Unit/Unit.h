@@ -1,23 +1,21 @@
-#pragma once
+#ifndef UNIT_H
+#define UNIT_H
+
 #include <chrono>
 #include <cstddef>
 #include <variant>
 #include <vector>
 
 #include "../../Living.h"
-#include "../../Map/Map.h"
-#include "../../Tools/Vec2.h"
 #include "../Spells/Spell.h"
-#include "Map/Terrain.h"
-#include "Race/Structure/Structure.h"
-#include "Race/Structure/TownHall.h"
+
 using namespace std::chrono;
 
-enum UnitType { FOOTMAN, PEASANT, NR_OF_UNITS, ARCHMAGE, BLOODMAGE };
-
-enum MoveType { W, NW, N, NE, E, SE, S, SW, STAY };
-
-enum ActionType{MOVE, ATTACK, BUILD, FARMGOLD, RECRUIT, NR_OF_ACTIONS};
+class Structure;
+class TownHall;
+class Farm;
+class Barrack;
+class Unit;
 
 struct Path {
   Path(int d, Vec2 l) : distance(d), comesFrom(l) {}
@@ -127,7 +125,6 @@ class Unit : public Living {
   void Move(Vec2 terr);
   void Attack(Living &un);
   void RegenHealth();
-  void MoveDij(Vec2 dest, Map &map);
   bool WithinDistance(Vec2 terr);
   bool CanAttack();
   Vec2 FindDifference(Vec2 terr);
@@ -164,3 +161,5 @@ class Unit : public Living {
   high_resolution_clock::time_point moveTime = high_resolution_clock::now();
   std::vector<actionT> actionQueue;
 };
+
+#endif

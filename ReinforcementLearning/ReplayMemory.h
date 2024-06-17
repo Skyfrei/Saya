@@ -6,13 +6,20 @@
 #include <torch/torch.h>
 
 #include <deque>
+#include <chrono>
+#include <memory>
+#include <variant>
 
 #include "../Map/Map.h"
 #include "../Race/Structure/Structure.h"
 #include "../Race/Unit/Unit.h"
+#include "../Race/Unit/Peasant.h"
 #include "../State/Player.h"
+#include "../Race/Structure/TownHall.h"
 #include "DQN.h"
 #include "Transition.h"
+
+
 
 class ReplayMemory {
   public:
@@ -22,6 +29,7 @@ class ReplayMemory {
     void StartPolicy(Map m, Player player, Player enemy);
     std::vector<Transition> Sample(size_t batch_size);
     size_t Size() const { return memory.size(); }
+    void OptimizeModel(std::deque<Transition> memory);
 
   private:
     State CreateCurrentState(Map map, Player player, Player enemy);
@@ -31,7 +39,9 @@ class ReplayMemory {
     std::deque<Transition> memory;
     DQN policy_net;
     DQN target_net;
+    float gamma = 0.92f;
     bool calledMemOnce = false;
+    const int batchSize = 32;
 };
 // n
 #endif

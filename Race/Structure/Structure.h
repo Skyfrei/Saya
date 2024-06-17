@@ -2,7 +2,8 @@
 #define STRUCTURE_H
 
 #include "../../Living.h"
-enum StructureType { HALL, BARRACK, FARM, NR_OF_STRUCTS, OTHER };
+
+
 
 class Structure : public Living {
  public:

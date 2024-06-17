@@ -3,15 +3,6 @@
 //
 #include "Manager.h"
 
-#include <chrono>
-#include <memory>
-#include <variant>
-
-#include "Race/Structure/Structure.h"
-#include "Race/Structure/TownHall.h"
-#include "Race/Unit/Peasant.h"
-#include "Race/Unit/Unit.h"
-
 Manager::Manager() : player(map), enemy(map) {
   // game start
 

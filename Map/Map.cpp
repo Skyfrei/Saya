@@ -1,9 +1,7 @@
 #include "Map.h"
-#include <algorithm>
-#include <vector>
 
-#include "Map/Terrain.h"
-
+#include "../Race/Structure/Structure.h"
+#include "Terrain.h"
 Map::Map() {
   std::vector<Terrain> tempTerr;
   for (int i = 0; i < MAP_SIZE; i++) {

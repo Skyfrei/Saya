@@ -47,6 +47,50 @@ std::vector<Transition> ReplayMemory::Sample(size_t batch_size) {
     return batch;
 }
 
+void ReplayMemory::OptimizeModel(std::deque<Transition> memory) {
+  if (memory.size() < batchSize) {
+      return;
+  }
+  std::vector<Transition> samples;
+  std::sample(memory.begin(), memory.end(), std::back_inserter(samples), batchSize, std::mt19937{std::random_device{}()});
+
+  std::vector<torch::Tensor> state_batch, action_batch, reward_batch, next_state_batch;
+  for (const auto& t : samples) {
+    TensorStruct s(t.stateAction.state);
+    TensorStruct ns(t.nextState.state);
+    state_batch.push_back(s.GetTensor());
+    //action_batch.push_back(torch::tensor(t.stateAction.action, torch::kFloat32)); // fix this shit
+    reward_batch.push_back(torch::tensor(t.nextState.reward, torch::kFloat32));
+    next_state_batch.push_back(ns.GetTensor());
+  }
+
+  torch::Tensor state_tensor = torch::stack(state_batch);
+  torch::Tensor action_tensor = torch::stack(action_batch);
+  torch::Tensor reward_tensor = torch::stack(reward_batch);
+  torch::Tensor next_state_tensor = torch::stack(next_state_batch);
+
+  auto state_action_values = policy_net.Forward(state_tensor).gather(1, action_tensor);
+  torch::Tensor next_state_values = torch::zeros({batchSize}, torch::kFloat32);
+  {
+      torch::NoGradGuard no_grad; // Disable gradient computation
+      torch::Tensor non_final_mask = torch::ones({batchSize}, torch::kBool);
+      for (int i = 0; i < batchSize; ++i) {
+          if (!next_state_tensor[i].defined()) {
+              non_final_mask[i] = false;
+          }
+      }
+      auto next_state_values_tensor = target_net.Forward(next_state_tensor);
+      next_state_values.index_put_({non_final_mask}, next_state_values_tensor.max(1).values.index({non_final_mask}));
+      next_state_values = next_state_values.detach();
+  }
+  torch::Tensor expected_state_action_values = (next_state_values * gamma) + reward_tensor;
+  torch::nn::SmoothL1Loss criterion;
+  torch::Tensor loss = criterion->forward(state_action_values, expected_state_action_values.unsqueeze(1));
+  optimizer.zero_grad();
+  loss.backward();
+  optimizer.step();
+}
+
 
 
 State ReplayMemory::CreateCurrentState(Map map, Player player, Player enemy) {
