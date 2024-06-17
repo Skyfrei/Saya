@@ -2,6 +2,9 @@
 // Created by Klavio Tarka on 14.12.23.
 //
 #include "Unit.h"
+#include "Peasant.h"
+#include <iostream>
+
 
 Unit::Unit() {}
 bool Unit::operator==(const Unit& other)const{

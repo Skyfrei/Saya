@@ -7,15 +7,16 @@
 #include <memory>
 #include <cmath>
 
-#include "Map/Terrain.h"
-#include "Race/Structure/Barrack.h"
-#include "Race/Structure/Farm.h"
-#include "Race/Structure/Structure.h"
-#include "Race/Structure/TownHall.h"
-#include "Race/Unit/Footman.h"
-#include "Race/Unit/Hero/Archmage.h"
-#include "Race/Unit/Hero/BloodMage.h"
-#include "Race/Unit/Peasant.h"
+#include "../Map/Terrain.h"
+#include "../Race/Structure/Barrack.h"
+#include "../Race/Structure/Farm.h"
+#include "../Race/Structure/TownHall.h"
+#include "../Race/Unit/Footman.h"
+#include "../Race/Unit/Hero/Archmage.h"
+#include "../Race/Unit/Hero/BloodMage.h"
+#include "../Race/Unit/Peasant.h"
+
+#include "../Race/Structure/Structure.h"
 Player::Player(Map &m) : map(m) {
   Initialize();
   food.y = 10;

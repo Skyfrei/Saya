@@ -6,24 +6,15 @@
 
 #include "../Living.h"
 #include "../Map/Map.h"
-#include "../Race/Structure/Barrack.h"
-#include "../Race/Structure/Farm.h"
-#include "../Race/Structure/TownHall.h"
-#include "../Race/Unit/Footman.h"
-#include "../Race/Unit/Peasant.h"
-#include "../Race/Unit/Unit.h"
 #include "../Tools/Vec2.h"
-#include "../Race/Structure/Structure.h"
+#include "../Race/Unit/Unit.h"
 
-using actionT = std::variant<std::monostate, AttackAction, MoveAction,
-                             BuildAction, FarmGoldAction, RecruitSoldierAction>;
-
-struct RecruitAction {
-  Unit *un;
-  bool operator==(const RecruitAction& other){
-    return *un == *other.un;
-  }
-};
+class Peasant;
+class Structure;
+class Footman;
+class TownHall;
+class Barrack;
+class Farm;
 
 class Player {
  public:
@@ -46,8 +37,6 @@ class Player {
   void Build(Peasant *, StructureType, Vec2);
   void FarmGold(Peasant *, Vec2, TownHall *);
   void RecruitSoldier(UnitType unitType, Structure *);
-  
-
 
  public:
   int gold = 300;

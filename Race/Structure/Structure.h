@@ -3,8 +3,6 @@
 
 #include "../../Living.h"
 
-
-
 class Structure : public Living {
  public:
   Structure() {}

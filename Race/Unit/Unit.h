@@ -7,11 +7,12 @@
 #include <vector>
 
 #include "../../Living.h"
+#include "../Structure/Structure.h"
 #include "../Spells/Spell.h"
+#include "../../Map/Terrain.h"
 
 using namespace std::chrono;
 
-class Structure;
 class TownHall;
 class Farm;
 class Barrack;
@@ -110,6 +111,12 @@ struct RecruitSoldierAction : public Action{
     
   }
   RecruitSoldierAction(UnitType type, Structure* s) : unitType(type), stru(s){}
+};
+struct RecruitAction {
+  Unit *un;
+  bool operator==(const RecruitAction& other){
+    return un == other.un;
+  }
 };
 
 using actionT = std::variant<std::monostate, AttackAction, MoveAction,

@@ -19,7 +19,6 @@ set(CPPSRC main.cpp
         Race/Structure/Barrack.cpp
         Race/Unit/Peasant.cpp
         Race/Unit/Unit.cpp
-        Race/Unit/Action.h
         
         State/Manager.cpp
         State/Manager.h

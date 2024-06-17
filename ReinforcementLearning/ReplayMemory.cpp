@@ -70,28 +70,26 @@ void ReplayMemory::OptimizeModel(std::deque<Transition> memory) {
   torch::Tensor next_state_tensor = torch::stack(next_state_batch);
 
   auto state_action_values = policy_net.Forward(state_tensor).gather(1, action_tensor);
-  torch::Tensor next_state_values = torch::zeros({batchSize}, torch::kFloat32);
-  {
-      torch::NoGradGuard no_grad; // Disable gradient computation
-      torch::Tensor non_final_mask = torch::ones({batchSize}, torch::kBool);
-      for (int i = 0; i < batchSize; ++i) {
-          if (!next_state_tensor[i].defined()) {
-              non_final_mask[i] = false;
-          }
-      }
-      auto next_state_values_tensor = target_net.Forward(next_state_tensor);
-      next_state_values.index_put_({non_final_mask}, next_state_values_tensor.max(1).values.index({non_final_mask}));
-      next_state_values = next_state_values.detach();
-  }
-  torch::Tensor expected_state_action_values = (next_state_values * gamma) + reward_tensor;
-  torch::nn::SmoothL1Loss criterion;
-  torch::Tensor loss = criterion->forward(state_action_values, expected_state_action_values.unsqueeze(1));
-  optimizer.zero_grad();
-  loss.backward();
-  optimizer.step();
+  // torch::Tensor next_state_values = torch::zeros({batchSize}, torch::kFloat32);
+  // {
+  //     torch::NoGradGuard no_grad; // Disable gradient computation
+  //     torch::Tensor non_final_mask = torch::ones({batchSize}, torch::kBool);
+  //     for (int i = 0; i < batchSize; ++i) {
+  //         if (!next_state_tensor[i].defined()) {
+  //             non_final_mask[i] = false;
+  //         }
+  //     }
+  //     auto next_state_values_tensor = target_net.Forward(next_state_tensor);
+  //     next_state_values.index_put_({non_final_mask}, next_state_values_tensor.max(1).values.index({non_final_mask}));
+  //     next_state_values = next_state_values.detach();
+  // }
+  // torch::Tensor expected_state_action_values = (next_state_values * gamma) + reward_tensor;
+  // torch::nn::SmoothL1Loss criterion;
+  // torch::Tensor loss = criterion->forward(state_action_values, expected_state_action_values.unsqueeze(1));
+  // optimizer.zero_grad();
+  // loss.backward();
+  // optimizer.step();
 }
-
-
 
 State ReplayMemory::CreateCurrentState(Map map, Player player, Player enemy) {
   State st;
