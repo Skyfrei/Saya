@@ -118,19 +118,18 @@ Vec2 Unit::FindDifference(Vec2 terr) {
 void Unit::Attack(Living &un) {
   if (WithinDistance(un.coordinate)) {
     if (CanAttack()) {
-      un.health -= attack;
-      std::cout << un.health;
+        un.health -= attack;
+        std::cout << un.health;
     }
   } else
     Move(un.coordinate);
 }
 
 bool Unit::CanAttack() {
-  auto currentCd =
-      duration_cast<seconds>(high_resolution_clock::now() - attackTime);
-
+  auto currentCd = high_resolution_clock::now() - attackTime;
   if (currentCd >= attackCooldown) {
     attackTime = high_resolution_clock::now();
+    std::cout<<"ok";
     return true;
   }
   return false;
@@ -138,7 +137,7 @@ bool Unit::CanAttack() {
 
 bool Unit::IsMovable() {
   auto currentCd =
-      duration_cast<seconds>(high_resolution_clock::now() - moveTime);
+      duration_cast<milliseconds>(high_resolution_clock::now() - moveTime);
   if (currentCd >= moveCooldown) {
     moveTime = high_resolution_clock::now();
     return true;

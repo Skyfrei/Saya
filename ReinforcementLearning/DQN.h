@@ -31,7 +31,6 @@ class DQN : public torch::nn::Module {
   torch::Tensor TurnStateInInput(State state);
   actionT MapIndexToAction(int actionIndex);
 
-
  private:
   
   int episodeNumber = 50;

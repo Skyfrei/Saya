@@ -154,9 +154,9 @@ class Unit : public Living {
   int maxMana = 100;
   float attackRange{};
   int movementSpeed = 1;
-  duration<float> attackCooldown = duration<float>(0.40f);
-  duration<float> hpCooldown = duration<float>(0.35f);
-  duration<float> moveCooldown = duration<float>(0.35f);
+  duration<float> attackCooldown = std::chrono::milliseconds(400);
+  duration<float> hpCooldown = std::chrono::milliseconds(350);
+  duration<float> moveCooldown = std::chrono::milliseconds(350);
   float manaRegen = 0.25f;
   float hpRegen = 0.25f;
 

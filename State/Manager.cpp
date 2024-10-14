@@ -56,25 +56,32 @@ void Manager::MainLoop() {
          (enemy.HasUnit(PEASANT) && enemy.HasStructure(HALL))) {
     for (int i = 0; i < player.units.size(); i++) {
       if (player.units[i]->GetActionQueueSize() > 0) {
-        actionT actionDone = player.units[i]->TakeAction();
-        CheckForOwnership(player, player.units[i].get(), actionDone);
+        //actionT actionDone = player.units[i]->TakeAction();
+        //CheckForOwnership(player, player.units[i].get(), actionDone);
       }
       for (int i = 0; i < enemy.units.size(); i++) {
         if (enemy.units[i]->GetActionQueueSize() > 0) {
-          actionT actionDone = enemy.units[i]->TakeAction();
-          CheckForOwnership(enemy, enemy.units[i].get(), actionDone);
+          //actionT actionDone = enemy.units[i]->TakeAction();
+          //CheckForOwnership(enemy, enemy.units[i].get(), actionDone);
         }
       }
-      if (Is10thSecond()) {
-        Player pl(player);
-        Player en(enemy);
-        trainerManager.StartPolicy(map, pl, en);
-      }
+
+      player.units[0]->Attack(*enemy.units[0]);
+      //PrintVector(enemy.units[0]->coordinate);
+//      if (Is10thSecond()) {
+  //      Player pl(player);
+    //    Player en(enemy);
+      //  trainerManager.StartPolicy(map, pl, en);
+      //}
     }
   }
 }
 
 void Manager::CheckForMovement() {}
+
+void Manager::PrintVector(Vec2 a){
+    std::cout<<"\n"<<a.x<<" " << a.y << "\n";
+}
 
 bool Manager::Is10thSecond() {
   std::chrono::high_resolution_clock::time_point frameTimer1 =

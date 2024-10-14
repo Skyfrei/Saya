@@ -24,7 +24,7 @@ class Manager {
   void CheckForMovement();
   bool Is10thSecond();
   void CheckForOwnership(Player &p, Living *, actionT);
-
+  void PrintVector(Vec2 a);
  public:
   Player player;
   Player enemy;
