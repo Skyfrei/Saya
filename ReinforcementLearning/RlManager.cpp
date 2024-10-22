@@ -23,10 +23,10 @@ void RlManager::StartPolicy(Map map, Player player, Player enemy) {
   enemy.TakeAction(enemyAction);
   
   State nextState = CreateCurrentState(map, player, enemy);
-  NextState next = NextState(nextState, 0.0f);
+  State next = State(nextState);
 
   Transition egal = CreateTransition(currentState, playerAction, next);
-  target_net.PrintWeight();
+  //target_net.PrintWeight();
   memory.push_back(egal);
 }
 
@@ -132,7 +132,7 @@ State RlManager::CreateCurrentState(Map map, Player player, Player enemy) {
   return st;
 }
 
-Transition RlManager::CreateTransition(State s, actionT a, NextState nextS) {
+Transition RlManager::CreateTransition(State s, actionT a, State nextS) {
   Transition t(s, a, nextS);
   return t;
 }
@@ -152,7 +152,7 @@ void RlManager::OptimizeModel(std::deque<Transition> memory) {
 
   std::vector<torch::Tensor> state_batch, action_batch, reward_batch, next_state_batch;
   for (const auto& t : samples) {
-    TensorStruct s(t.stateAction.state);
+    TensorStruct s(t.state.state);
     TensorStruct ns(t.nextState.state);
     state_batch.push_back(s.GetTensor());
     //action_batch.push_back(torch::tensor(t.stateAction.action, torch::kFloat32)); // fix this shit

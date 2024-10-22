@@ -30,7 +30,7 @@ actionT Unit::TakeAction() {
     AttackAction &action = std::get<AttackAction>(actionQueue[0]);
     if (action.object->health <= 0) {
       actionQueue.erase(actionQueue.begin());
-      return action;
+      return {};
     }
     action.prevCoord = coordinate;
     Attack(*action.object);
@@ -52,7 +52,7 @@ actionT Unit::TakeAction() {
     BuildAction &action = std::get<BuildAction>(actionQueue[0]);
     if (action.stru->health >= action.stru->maxHealth) {
       actionQueue.erase(actionQueue.begin());
-      return action;
+      return {};
     }
     action.prevCoord = coordinate;
     Peasant &p = static_cast<Peasant &>(*this);

@@ -156,7 +156,7 @@ class Unit : public Living {
   int movementSpeed = 1;
   duration<float, std::milli> attackCooldown = std::chrono::milliseconds(200);
   duration<float, std::milli> hpCooldown = std::chrono::milliseconds(1000);
-  duration<float, std::milli> moveCooldown = std::chrono::milliseconds(1500);
+  duration<float, std::milli> moveCooldown = std::chrono::milliseconds(100);
   float manaRegen = 0.25f;
   float hpRegen = 0.25f;
 
@@ -166,6 +166,7 @@ class Unit : public Living {
   high_resolution_clock::time_point hpTime = high_resolution_clock::now();
   high_resolution_clock::time_point attackTime = high_resolution_clock::now();
   high_resolution_clock::time_point moveTime = high_resolution_clock::now();
+ public:
   std::vector<actionT> actionQueue;
 };
 

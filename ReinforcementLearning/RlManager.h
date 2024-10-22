@@ -35,7 +35,7 @@ class RlManager {
 
   private:
     State CreateCurrentState(Map map, Player player, Player enemy);
-    Transition CreateTransition(State s, actionT a, NextState nextS);
+    Transition CreateTransition(State s, actionT a, State nextS);
 
   private: 
     std::deque<Transition> memory;

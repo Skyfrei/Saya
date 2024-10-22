@@ -9,40 +9,40 @@ Manager::Manager() : player(map, PLAYER), enemy(map, ENEMY) {
   player.SetInitialCoordinates(Vec2(8, 2));
   enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 2));
 
-  Peasant &p = static_cast<Peasant &>(*player.units[0].get());
-  TownHall &h = static_cast<TownHall &>(*player.structures[0].get());
-  player.FarmGold(&p, Vec2(10, 10), &h);
+  //Peasant &p = static_cast<Peasant &>(*player.units[0].get());
+  //TownHall &h = static_cast<TownHall &>(*player.structures[0].get());
+  //player.FarmGold(&p, Vec2(10, 10), &h);
   MainLoop();
 }
 
 void Manager::CheckForOwnership(Player &p, Living *l, actionT actionTaken) {
-  if (std::holds_alternative<AttackAction>(actionTaken)) {
+    if (std::holds_alternative<AttackAction>(actionTaken)) {
     AttackAction &action = std::get<AttackAction>(actionTaken);
+    //std::cout<<action.object->health<<std::endl;
     if (action.object->health <= 0) {
         map.RemoveOwnership(action.object, action.object->coordinate);
         if (p.side == PLAYER){
             for (auto it = enemy.units.begin(); it != enemy.units.end();){
-                if (*it->get() == *dynamic_cast<Unit*>(action.unit)){
+                if (it->get() == dynamic_cast<Unit*>(action.object)){
                     it = enemy.units.erase(it);
-                    //std::cout<<"BOMBA";
+                    std::cout<<"BOMBA\n";
                     break;
                 }else{
-                    it++;
+                    ++it;
                 }
             }
         }
         else{
             for (auto it = player.units.begin(); it != player.units.end();){
-                if (*it->get() == *dynamic_cast<Unit*>(action.unit)){
+                if (it->get() == dynamic_cast<Unit*>(action.object)){
                     it = player.units.erase(it); 
-                    std::cout<<"BOMBAPL";
+                    std::cout<<"Bombaclat\n";
                     break;
                 }else{
-                    it++;
+                    ++it;
                 }
             }
         }
-
     }
     if (l->coordinate.x != action.prevCoord.x ||
         l->coordinate.y != action.prevCoord.y) {
@@ -75,6 +75,9 @@ void Manager::CheckForOwnership(Player &p, Living *l, actionT actionTaken) {
 }
 
 void Manager::MainLoop() {
+//    player.Attack(player.units[0].get(), (Living*)enemy.units[0].get());
+  //  std::cout<<player.units[0]->actionQueue.size()<<std::endl;
+    
   while ((player.HasUnit(PEASANT) && player.HasStructure(HALL)) &&
          (enemy.HasUnit(PEASANT) && enemy.HasStructure(HALL))) {
     for (int i = 0; i < player.units.size(); i++) {
@@ -88,15 +91,11 @@ void Manager::MainLoop() {
          CheckForOwnership(enemy, enemy.units[i].get(), actionDone);
         }
       }
-
-      player.units[0]->Attack(*enemy.units[0]);
-
-      std::cout<<enemy.units.size()<<" " << enemy.units[0]->health<<"\n";
-
+      //player.Attack(player.units[0].get(), (Living*)enemy.units[0].get());
       if (Is10thSecond()) {
-        Player pl(player);
-        Player en(enemy);
-        trainerManager.StartPolicy(map, pl, en);
+        //Player pl(player);
+        //Player en(enemy);
+        //trainerManager.StartPolicy(map, pl, en);
       }
     }
   }
