@@ -4,8 +4,8 @@
 #include <memory>
 #include <vector>
 
-#include "../../Map/Map.h"
-#include "../../Map/Terrain.h"
+#include "../../State/Map.h"
+#include "../../State/Terrain.h"
 #include "../Structure/Barrack.h"
 #include "../Structure/Farm.h"
 #include "../Structure/Structure.h"

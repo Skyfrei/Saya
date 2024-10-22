@@ -7,7 +7,7 @@
 #include <memory>
 #include <cmath>
 
-#include "../Map/Terrain.h"
+#include "../State/Terrain.h"
 #include "../Race/Structure/Barrack.h"
 #include "../Race/Structure/Farm.h"
 #include "../Race/Structure/TownHall.h"
@@ -17,7 +17,7 @@
 #include "../Race/Unit/Peasant.h"
 
 #include "../Race/Structure/Structure.h"
-Player::Player(Map &m) : map(m) {
+Player::Player(Map &m, Side en) : map(m), side(en) {
   Initialize();
   food.y = 10;
 }
@@ -33,6 +33,8 @@ Player::Player(const Player& other) : map(other.map){
     for (const auto &unit : other.units) {
         units.push_back(unit->Clone());
     }
+
+    side = other.side;
 }
 void Player::TakeAction(actionT action){
   // if (std::holds_alternative<MoveAction>(action)) {

@@ -3,7 +3,7 @@
 
 #include <map>
 #include <vector> 
-#include "../Map/Map.h"
+#include "../State/Map.h"
 #include "../Race/Unit/Unit.h"
 #include "../Race/Structure/Structure.h"
 #include "../Tools/Vec2.h"

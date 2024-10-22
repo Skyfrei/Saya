@@ -5,10 +5,10 @@
 #include <variant>
 
 #include "../Living.h"
-#include "../Map/Map.h"
+#include "../State/Map.h"
 #include "../Race/Structure/Structure.h"
 #include "../Race/Unit/Unit.h"
-#include "../ReinforcementLearning/ReplayMemory.h"
+#include "../ReinforcementLearning/RlManager.h"
 #include "Player.h"
 
 using actionT = std::variant<std::monostate, AttackAction, MoveAction,
@@ -28,7 +28,7 @@ class Manager {
  public:
   Player player;
   Player enemy;
-  ReplayMemory trainerManager;
+  RlManager trainerManager;
   Map map;
   std::chrono::high_resolution_clock::time_point time1 =
       std::chrono::high_resolution_clock::now();
@@ -37,6 +37,8 @@ class Manager {
 
  private:
   int frames = 0;
-  std::chrono::high_resolution_clock::time_point frameTimer =
-      std::chrono::high_resolution_clock::now();
+
+  duration<float, std::milli> frameCooldown = std::chrono::milliseconds(4000);
+  high_resolution_clock::time_point frameTimer = high_resolution_clock::now();
+  
 };

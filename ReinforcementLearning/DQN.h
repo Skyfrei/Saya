@@ -24,13 +24,13 @@ class DQN : public torch::nn::Module {
   DQN(){}
   torch::Tensor Forward(torch::Tensor x);
   void Initialize(State state);
-  actionT SelectAction(State state); // gotta return an action
+  actionT SelectAction(State state); // gotta return an 
+  void PrintWeight();
 
  private:
   void OptimizeModel(std::deque<Transition> memory);
   torch::Tensor TurnStateInInput(State state);
   actionT MapIndexToAction(int actionIndex);
-
  private:
   
   int episodeNumber = 50;
@@ -48,8 +48,6 @@ class DQN : public torch::nn::Module {
   int buildAction = attackAction + PEASANT_INDEX_IN_UNITS * NR_OF_STRUCTS * mapSize;
   int farmAction = buildAction + PEASANT_INDEX_IN_UNITS * mapSize * HALL_INDEX_IN_STRCTS; // town hall size multipled here as well
   int recruitAction = farmAction + 2 * NR_OF_UNITS * BARRACK_INDEX_IN_STRUCTS; // barrack size
-  
-
 
   torch::nn::Linear layer1{nullptr}, layer2{nullptr}, layer3{nullptr};
 };
@@ -122,7 +120,6 @@ struct TensorStruct{
     torch::Tensor paddedUnitsEnemy = torch::zeros({1, (MAX_UNITS - enemyUnits.size(1) / unitVar) * unitVar});
     torch::Tensor paddedStructsEnemy = torch::zeros({1, (MAX_STRUCTS - enemyStructures.size(1) / strucVar) * strucVar});
 
-    std::cout << "playerUnits size: " << playerUnits.sizes() << std::endl;
     std::vector<torch::Tensor> tensors = {currentMap, playerGold, playerFood, playerUnits, paddedUnits, playerStructs, paddedStructs, enemyGold, enemyFood, enemyUnits, paddedUnitsEnemy, enemyStructures, paddedStructsEnemy};
     
     torch::Tensor concatenatedTensor = torch::cat(tensors, 1);

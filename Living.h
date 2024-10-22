@@ -17,7 +17,7 @@ class Living {
 
  public:
   bool HasEnoughGold(int playerGold, int cost);
-  bool Die();
+  bool IsDead();
 
  public:
   std::string name;

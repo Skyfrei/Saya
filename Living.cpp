@@ -7,4 +7,4 @@ bool Living::HasEnoughGold(int playerGold, int cost) {
   return playerGold >= cost;
 }
 
-bool Living::Die() { return health <= 0; }
+bool Living::IsDead() { return health <= 0; }

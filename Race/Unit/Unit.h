@@ -9,7 +9,7 @@
 #include "../../Living.h"
 #include "../Structure/Structure.h"
 #include "../Spells/Spell.h"
-#include "../../Map/Terrain.h"
+#include "../../State/Terrain.h"
 
 using namespace std::chrono;
 
@@ -154,9 +154,9 @@ class Unit : public Living {
   int maxMana = 100;
   float attackRange{};
   int movementSpeed = 1;
-  duration<float> attackCooldown = std::chrono::milliseconds(400);
-  duration<float> hpCooldown = std::chrono::milliseconds(350);
-  duration<float> moveCooldown = std::chrono::milliseconds(350);
+  duration<float, std::milli> attackCooldown = std::chrono::milliseconds(200);
+  duration<float, std::milli> hpCooldown = std::chrono::milliseconds(1000);
+  duration<float, std::milli> moveCooldown = std::chrono::milliseconds(1500);
   float manaRegen = 0.25f;
   float hpRegen = 0.25f;
 

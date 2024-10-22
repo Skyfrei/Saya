@@ -19,6 +19,7 @@ torch::Tensor DQN::Forward(torch::Tensor x) {
 // mapSize = 3 * 3 = 9
 // MAP_SIZE = 3
 actionT DQN::MapIndexToAction(int actionIndex) {
+
   if (actionIndex < moveAction ) {
     int col = actionIndex % MAP_SIZE;
     int row = (actionIndex / MAP_SIZE) % MAP_SIZE;
@@ -89,4 +90,9 @@ actionT DQN::SelectAction(State state) {
 torch::Tensor DQN::TurnStateInInput(State state){
   TensorStruct ts(state);
   return ts.GetTensor();
+}
+
+
+void DQN::PrintWeight(){
+    std::cout<<this->layer1->weight[0][0]<<std::endl;
 }

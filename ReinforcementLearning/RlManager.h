@@ -10,7 +10,7 @@
 #include <memory>
 #include <variant>
 
-#include "../Map/Map.h"
+#include "../State/Map.h"
 #include "../Race/Structure/Structure.h"
 #include "../Race/Unit/Unit.h"
 #include "../Race/Unit/Peasant.h"
@@ -21,15 +21,17 @@
 
 
 
-class ReplayMemory {
+class RlManager {
   public:
-    ReplayMemory(){}
+    RlManager(){}
     
     void InitializeDQN(Map map, Player player, Player enemy);
     void StartPolicy(Map m, Player player, Player enemy);
     std::vector<Transition> Sample(size_t batch_size);
     size_t Size() const { return memory.size(); }
     void OptimizeModel(std::deque<Transition> memory);
+    void SaveModel();
+    void LoadModel();
 
   private:
     State CreateCurrentState(Map map, Player player, Player enemy);

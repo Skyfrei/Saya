@@ -3,7 +3,7 @@
 //
 #include "Manager.h"
 
-Manager::Manager() : player(map), enemy(map) {
+Manager::Manager() : player(map, PLAYER), enemy(map, ENEMY) {
   // game start
 
   player.SetInitialCoordinates(Vec2(8, 2));
@@ -19,7 +19,30 @@ void Manager::CheckForOwnership(Player &p, Living *l, actionT actionTaken) {
   if (std::holds_alternative<AttackAction>(actionTaken)) {
     AttackAction &action = std::get<AttackAction>(actionTaken);
     if (action.object->health <= 0) {
-      map.RemoveOwnership(action.object, action.object->coordinate);
+        map.RemoveOwnership(action.object, action.object->coordinate);
+        if (p.side == PLAYER){
+            for (auto it = enemy.units.begin(); it != enemy.units.end();){
+                if (*it->get() == *dynamic_cast<Unit*>(action.unit)){
+                    it = enemy.units.erase(it);
+                    //std::cout<<"BOMBA";
+                    break;
+                }else{
+                    it++;
+                }
+            }
+        }
+        else{
+            for (auto it = player.units.begin(); it != player.units.end();){
+                if (*it->get() == *dynamic_cast<Unit*>(action.unit)){
+                    it = player.units.erase(it); 
+                    std::cout<<"BOMBAPL";
+                    break;
+                }else{
+                    it++;
+                }
+            }
+        }
+
     }
     if (l->coordinate.x != action.prevCoord.x ||
         l->coordinate.y != action.prevCoord.y) {
@@ -56,23 +79,25 @@ void Manager::MainLoop() {
          (enemy.HasUnit(PEASANT) && enemy.HasStructure(HALL))) {
     for (int i = 0; i < player.units.size(); i++) {
       if (player.units[i]->GetActionQueueSize() > 0) {
-        //actionT actionDone = player.units[i]->TakeAction();
-        //CheckForOwnership(player, player.units[i].get(), actionDone);
+        actionT actionDone = player.units[i]->TakeAction();
+        CheckForOwnership(player, player.units[i].get(), actionDone);
       }
       for (int i = 0; i < enemy.units.size(); i++) {
         if (enemy.units[i]->GetActionQueueSize() > 0) {
-          //actionT actionDone = enemy.units[i]->TakeAction();
-          //CheckForOwnership(enemy, enemy.units[i].get(), actionDone);
+         actionT actionDone = enemy.units[i]->TakeAction();
+         CheckForOwnership(enemy, enemy.units[i].get(), actionDone);
         }
       }
 
       player.units[0]->Attack(*enemy.units[0]);
-      //PrintVector(enemy.units[0]->coordinate);
-//      if (Is10thSecond()) {
-  //      Player pl(player);
-    //    Player en(enemy);
-      //  trainerManager.StartPolicy(map, pl, en);
-      //}
+
+      std::cout<<enemy.units.size()<<" " << enemy.units[0]->health<<"\n";
+
+      if (Is10thSecond()) {
+        Player pl(player);
+        Player en(enemy);
+        trainerManager.StartPolicy(map, pl, en);
+      }
     }
   }
 }
@@ -84,12 +109,9 @@ void Manager::PrintVector(Vec2 a){
 }
 
 bool Manager::Is10thSecond() {
-  std::chrono::high_resolution_clock::time_point frameTimer1 =
-  std::chrono::high_resolution_clock::now();
-      
+  auto currentCd = std::chrono::duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - frameTimer);
 
-  std::chrono::duration<float> diff = frameTimer1 - frameTimer;
-  if (diff.count() >= 0.1f) {
+  if (currentCd >= frameCooldown) {
     frameTimer = std::chrono::high_resolution_clock::now();
     return true;
   }

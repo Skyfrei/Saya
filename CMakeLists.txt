@@ -12,10 +12,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CPPSRC main.cpp
         Living.h
-        Map/Graph.cpp
-        Map/Map.cpp
-        Map/Terrain.cpp
-        Map/Terrain.h
+        State/Graph.cpp
+        State/Map.cpp
+        State/Terrain.cpp
+        State/Terrain.h
         Race/Structure/Barrack.cpp
         Race/Unit/Peasant.cpp
         Race/Unit/Unit.cpp
@@ -25,16 +25,18 @@ set(CPPSRC main.cpp
         State/Player.h
         State/Player.cpp
         Living.cpp
-        ReinforcementLearning/ReplayMemory.h
+        ReinforcementLearning/RlManager.h
         ReinforcementLearning/Transition.h
-        ReinforcementLearning/ReplayMemory.cpp
+        ReinforcementLearning/RlManager.cpp
         ReinforcementLearning/DQN.h
         ReinforcementLearning/DQN.cpp)
 #include_directories(./ include)
 add_executable(Final ${CPPSRC})
+target_precompile_headers(Final PRIVATE ReinforcementLearning/DQN.h)
+
 #target_compile_options(Final PRIVATE "-ftime-trace")
 target_link_libraries(Final "${TORCH_LIBRARIES}")
-
+target_include_directories(Final PRIVATE ReinforcementLearning/DQN.h)
 
 
 

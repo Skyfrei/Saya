@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "../Living.h"
-#include "../Map/Map.h"
+#include "../State/Map.h"
 #include "../Tools/Vec2.h"
 #include "../Race/Unit/Unit.h"
 
@@ -16,10 +16,15 @@ class TownHall;
 class Barrack;
 class Farm;
 
+enum Side{
+    PLAYER,
+    ENEMY
+};
+
+
 class Player {
  public:
-  Player(Map &m);
-	
+  Player(Map &m, Side en);	
 	Player(const Player& other);
   void Initialize();
   void SetInitialCoordinates(Vec2 v);
@@ -44,6 +49,7 @@ class Player {
   std::vector<std::unique_ptr<Unit>> units;
   std::vector<std::unique_ptr<Structure>> structures;
   Map &map;
+  Side side;
 };
 
 #endif

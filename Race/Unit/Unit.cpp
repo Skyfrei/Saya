@@ -1,4 +1,4 @@
-//
+
 // Created by Klavio Tarka on 14.12.23.
 //
 #include "Unit.h"
@@ -118,36 +118,36 @@ Vec2 Unit::FindDifference(Vec2 terr) {
 void Unit::Attack(Living &un) {
   if (WithinDistance(un.coordinate)) {
     if (CanAttack()) {
-        un.health -= attack;
-        std::cout << un.health;
+        if (!un.IsDead()){
+            un.health -= attack;
+        }
     }
   } else
     Move(un.coordinate);
 }
 
 bool Unit::CanAttack() {
-  auto currentCd = high_resolution_clock::now() - attackTime;
+  auto currentCd = std::chrono::duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - attackTime);
   if (currentCd >= attackCooldown) {
+    
     attackTime = high_resolution_clock::now();
-    std::cout<<"ok";
     return true;
   }
   return false;
 }
 
 bool Unit::IsMovable() {
-  auto currentCd =
-      duration_cast<milliseconds>(high_resolution_clock::now() - moveTime);
-  if (currentCd >= moveCooldown) {
-    moveTime = high_resolution_clock::now();
-    return true;
-  }
-  return false;
+    auto currentCd = std::chrono::duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - moveTime);
+
+    if (currentCd >= moveCooldown) {
+        moveTime = high_resolution_clock::now();
+        return true;
+    }
+    return false;
 }
 
 void Unit::RegenHealth() {
-  auto currentCd =
-      duration_cast<seconds>(high_resolution_clock::now() - hpTime);
+  auto currentCd =  std::chrono::duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - hpTime);
 
   if (currentCd >= hpCooldown) {
     if (health + hpRegen >= maxHealth) return;
