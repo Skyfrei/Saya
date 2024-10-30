@@ -35,45 +35,6 @@ void RlManager::LoadExperienceBuffer(){
     inFile.close();
 }
 
-void RlManager::Serialize(const State& state){
-    outFile.write(reinterpret_cast<const char*>(&state.playerGold), sizeof(int));
-    outFile.write(reinterpret_cast<const char*>(&state.enemyGold), sizeof(int));
-    outFile.write(reinterpret_cast<const char*>(&state.reward), sizeof(double));
-
-    size_t unitsSize = state.playerUnits.size();
-    outFile.write(reinterpret_cast<const char*>(&unitsSize), sizeof(size_t));
-    for (const auto& unit : state.playerUnits) {
-        unit->serialize(outFile);  // Assuming Unit has a serialize function
-    }
-
-    size_t structsSize = state.playerStructs.size();
-    outFile.write(reinterpret_cast<const char*>(&structsSize), sizeof(size_t));
-    for (const auto& structure : state.playerStructs) {
-        structure->serialize(outFile);  // Assuming Structure has a serialize function
-    }
-
-    unitsSize = state.enemyUnits.size();
-    outFile.write(reinterpret_cast<const char*>(&unitsSize), sizeof(size_t));
-    for (const auto& unit : state.enemyUnits) {
-        unit->serialize(outFile);
-    }
-
-    structsSize = state.enemyStructs.size();
-    outFile.write(reinterpret_cast<const char*>(&structsSize), sizeof(size_t));
-    for (const auto& structure : state.enemyStructs) {
-        structure->serialize(outFile);
-    }
-
-    state.currentMap.serialize(outFile);  // Assuming Map has a serialize function
-    state.enemyFood.serialize(outFile);   // Assuming Vec2 has a serialize function
-    state.playerFood.serialize(outFile);  // Assuming Vec2 has a serialize function
-    outFile.write(reinterpret_cast<const char*>(&state.action), sizeof(actionT));
-}
-
-void RlManager::Deserialize(const State& state){
-
-}
-
 double RlManager::CalculateStateReward(State state){
     double reward = 0.0;
 
@@ -266,5 +227,302 @@ void RlManager::OptimizeModel(std::deque<Transition> memory) {
   // loss.backward();
   // optimizer.step();
 }
+
+
+//========================================= Serialization and Deserialization for file saving ===================================================
+
+
+
+
+
+
+
+
+
+
+
+void RlManager::Serialize(const State& state) {
+    std::ofstream outFile(fileName, std::ios::binary); 
+    
+    outFile.write(reinterpret_cast<const char*>(&state.playerGold), sizeof(int));
+    outFile.write(reinterpret_cast<const char*>(&state.enemyGold), sizeof(int));
+    outFile.write(reinterpret_cast<const char*>(&state.reward), sizeof(double));
+
+    // Serialize player units
+    size_t unitsSize = state.playerUnits.size();
+    outFile.write(reinterpret_cast<const char*>(&unitsSize), sizeof(size_t));
+    for (const auto& unit : state.playerUnits) {
+        SerializeUnit(outFile, *unit);  // Using external serializeUnit function
+    }
+
+    // Serialize player structures
+    size_t structsSize = state.playerStructs.size();
+    outFile.write(reinterpret_cast<const char*>(&structsSize), sizeof(size_t));
+    for (const auto& structure : state.playerStructs) {
+        SerializeStructure(outFile, *structure);  // Using external serializeStructure function
+    }
+
+    // Serialize enemy units
+    unitsSize = state.enemyUnits.size();
+    outFile.write(reinterpret_cast<const char*>(&unitsSize), sizeof(size_t));
+    for (const auto& unit : state.enemyUnits) {
+        SerializeUnit(outFile, *unit);
+    }
+
+    // Serialize enemy structures
+    structsSize = state.enemyStructs.size();
+    outFile.write(reinterpret_cast<const char*>(&structsSize), sizeof(size_t));
+    for (const auto& structure : state.enemyStructs) {
+        SerializeStructure(outFile, *structure);
+    }
+
+    // Serialize map and other components
+    SerializeMap(outFile, state.currentMap);
+    SerializeVec2(outFile, state.enemyFood);
+    SerializeVec2(outFile, state.playerFood);
+    SerializeAction(outFile, state.action);
+}
+
+void RlManager::Deserialize(State& state) {
+    // DeSerialize primitive fields
+    std::ifstream inFile(fileName, std::ios::binary);
+    inFile.read(reinterpret_cast<char*>(&state.playerGold), sizeof(int));
+    inFile.read(reinterpret_cast<char*>(&state.enemyGold), sizeof(int));
+    inFile.read(reinterpret_cast<char*>(&state.reward), sizeof(double));
+
+    // DeSerialize player units
+    size_t unitsSize;
+    inFile.read(reinterpret_cast<char*>(&unitsSize), sizeof(size_t));
+    state.playerUnits.resize(unitsSize);
+    for (auto& unit : state.playerUnits) {
+        unit = new Unit();  // Ensure we allocate memory for the unit pointer
+        DeserializeUnit(inFile, *unit);  // Using external deserializeUnit function
+    }
+
+    // DeSerialize player structures
+    size_t structsSize;
+    inFile.read(reinterpret_cast<char*>(&structsSize), sizeof(size_t));
+    state.playerStructs.resize(structsSize);
+    for (auto& structure : state.playerStructs) {
+        structure = new Structure();
+        DeserializeStructure(inFile, *structure);  // Using external deserializeStructure function
+    }
+
+    // DeSerialize enemy units
+    inFile.read(reinterpret_cast<char*>(&unitsSize), sizeof(size_t));
+    state.enemyUnits.resize(unitsSize);
+    for (auto& unit : state.enemyUnits) {
+        unit = new Unit();
+        DeserializeUnit(inFile, *unit);
+    }
+
+    // DeSerialize enemy structures
+    inFile.read(reinterpret_cast<char*>(&structsSize), sizeof(size_t));
+    state.enemyStructs.resize(structsSize);
+    for (auto& structure : state.enemyStructs) {
+        structure = new Structure();
+        DeserializeStructure(inFile, *structure);
+    }
+
+    // DeSerialize map and other components
+    DeserializeMap(inFile, state.currentMap);
+    DeserializeVec2(inFile, state.enemyFood);
+    DeserializeVec2(inFile, state.playerFood);
+    DeserializeAction(inFile, state.action);
+}
+
+
+
+
+void SerializeVec2(std::ostream& out, const Vec2& vec) {
+    out.write(reinterpret_cast<const char*>(&vec.x), sizeof(int));
+    out.write(reinterpret_cast<const char*>(&vec.y), sizeof(int));
+}
+
+void DeserializeVec2(std::istream& in, Vec2& vec) {
+    in.read(reinterpret_cast<char*>(&vec.x), sizeof(int));
+    in.read(reinterpret_cast<char*>(&vec.y), sizeof(int));
+}
+
+// Serialization for Terrain
+void SerializeTerrain(std::ostream& out, const Terrain& terrain) {
+    SerializeVec2(out, terrain.coord);
+    out.write(reinterpret_cast<const char*>(&terrain.resourceLeft), sizeof(int));
+    out.write(reinterpret_cast<const char*>(&terrain.type), sizeof(TerrainType));
+
+    // Serialize living objects on terrain
+    size_t livingCount = terrain.onTerrainLiving.size();
+    out.write(reinterpret_cast<const char*>(&livingCount), sizeof(size_t));
+    for (const auto* living : terrain.onTerrainLiving) {
+        int livingId = (living != nullptr) ? living->GetID() : -1;  // Assuming Living has GetID()
+        out.write(reinterpret_cast<const char*>(&livingId), sizeof(int));
+    }
+
+    // Serialize Structure on Terrain
+    int structureId = (terrain.structureOnTerrain != nullptr) ? terrain.structureOnTerrain->GetID() : -1;
+    out.write(reinterpret_cast<const char*>(&structureId), sizeof(int));
+}
+
+void DeserializeTerrain(std::istream& in, Terrain& terrain) {
+    DeserializeVec2(in, terrain.coord);
+    in.read(reinterpret_cast<char*>(&terrain.resourceLeft), sizeof(int));
+    in.read(reinterpret_cast<char*>(&terrain.type), sizeof(TerrainType));
+
+    // DeSerialize living objects on terrain
+    size_t livingCount;
+    in.read(reinterpret_cast<char*>(&livingCount), sizeof(size_t));
+    terrain.onTerrainLiving.resize(livingCount);
+    for (auto& living : terrain.onTerrainLiving) {
+        int livingId;
+        in.read(reinterpret_cast<char*>(&livingId), sizeof(int));
+        living = (livingId != -1) ? findLivingById(livingId) : nullptr;  // Define findLivingById in RLManager
+    }
+
+    // DeSerialize Structure on Terrain
+    int structureId;
+    in.read(reinterpret_cast<char*>(&structureId), sizeof(int));
+    terrain.structureOnTerrain = (structureId != -1) ? findStructureById(structureId) : nullptr;  // Define findStructureById in RLManager
+}
+
+// Serialization for Map
+void SerializeMap(std::ostream& out, const Map& map) {
+    size_t rows = map.terrain.size();
+    size_t cols = rows > 0 ? map.terrain[0].size() : 0;
+    out.write(reinterpret_cast<const char*>(&rows), sizeof(size_t));
+    out.write(reinterpret_cast<const char*>(&cols), sizeof(size_t));
+
+    for (const auto& row : map.terrain) {
+        for (const auto& cell : row) {
+            SerializeTerrain(out, cell);
+        }
+    }
+}
+
+void DeserializeMap(std::istream& in, Map& map) {
+    size_t rows, cols;
+    in.read(reinterpret_cast<char*>(&rows), sizeof(size_t));
+    in.read(reinterpret_cast<char*>(&cols), sizeof(size_t));
+
+    map.terrain.resize(rows, std::vector<Terrain>(cols, Terrain(0, 0)));
+    for (auto& row : map.terrain) {
+        for (auto& cell : row) {
+            DeserializeTerrain(in, cell);
+        }
+    }
+}
+
+// Serialization for Structure
+void SerializeStructure(std::ostream& out, const Structure& structure) {
+    out.write(reinterpret_cast<const char*>(&structure.is), sizeof(StructureType));
+    out.write(reinterpret_cast<const char*>(&structure.isBeingBuilt), sizeof(bool));
+    SerializeVec2(out, structure.coordinate);
+}
+
+void DeserializeStructure(std::istream& in, Structure& structure) {
+    in.read(reinterpret_cast<char*>(&structure.is), sizeof(StructureType));
+    in.read(reinterpret_cast<char*>(&structure.isBeingBuilt), sizeof(bool));
+    DeserializeVec2(in, structure.coordinate);
+}
+
+// Serialization for Transition
+void SerializeTransition(std::ostream& out, const Transition& transition) {
+    SerializeState(out, transition.state);
+    SerializeState(out, transition.nextState);
+    out.write(reinterpret_cast<const char*>(&transition.done), sizeof(bool));
+}
+
+void DeserializeTransition(std::istream& in, Transition& transition) {
+    DeserializeState(in, transition.state);
+    DeserializeState(in, transition.nextState);
+    in.read(reinterpret_cast<char*>(&transition.done), sizeof(bool));
+}
+
+void SerializeState(std::ostream& out, const State& state) {
+    SerializeMap(out, state.currentMap);
+    out.write(reinterpret_cast<const char*>(&state.playerGold), sizeof(int));
+    SerializeVec2(out, state.playerFood);
+
+    // Serialize each player's units and structures
+    size_t unitsSize = state.playerUnits.size();
+    out.write(reinterpret_cast<const char*>(&unitsSize), sizeof(size_t));
+    for (const auto* unit : state.playerUnits) {
+        int unitId = (unit != nullptr) ? unit->GetID() : -1;
+        out.write(reinterpret_cast<const char*>(&unitId), sizeof(int));
+    }
+
+    size_t structsSize = state.playerStructs.size();
+    out.write(reinterpret_cast<const char*>(&structsSize), sizeof(size_t));
+    for (const auto* structure : state.playerStructs) {
+        SerializeStructure(out, *structure);  // Assuming Structure has serialize function
+    }
+
+    out.write(reinterpret_cast<const char*>(&state.enemyGold), sizeof(int));
+    SerializeVec2(out, state.enemyFood);
+
+    // Enemy units and structures
+    unitsSize = state.enemyUnits.size();
+    out.write(reinterpret_cast<const char*>(&unitsSize), sizeof(size_t));
+    for (const auto* unit : state.enemyUnits) {
+        int unitId = (unit != nullptr) ? unit->GetID() : -1;
+        out.write(reinterpret_cast<const char*>(&unitId), sizeof(int));
+    }
+
+    structsSize = state.enemyStructs.size();
+    out.write(reinterpret_cast<const char*>(&structsSize), sizeof(size_t));
+    for (const auto* structure : state.enemyStructs) {
+        SerializeStructure(out, *structure);
+    }
+
+    SerializeAction(out, state.action);
+    out.write(reinterpret_cast<const char*>(&state.reward), sizeof(double));
+}
+
+void DeserializeState(std::istream& in, State& state) {
+    DeserializeMap(in, state.currentMap);
+    in.read(reinterpret_cast<char*>(&state.playerGold), sizeof(int));
+    DeserializeVec2(in, state.playerFood);
+
+    // DeSerialize player's units and structures
+    size_t unitsSize;
+    in.read(reinterpret_cast<char*>(&unitsSize), sizeof(size_t));
+    state.playerUnits.resize(unitsSize);
+    for (auto& unit : state.playerUnits) {
+        int unitId;
+        in.read(reinterpret_cast<char*>(&unitId), sizeof(int));
+        unit = (unitId != -1) ? findUnitById(unitId) : nullptr;
+    }
+
+    size_t structsSize;
+    in.read(reinterpret_cast<char*>(&structsSize), sizeof(size_t));
+    state.playerStructs.resize(structsSize);
+    for (auto& structure : state.playerStructs) {
+        structure = new Structure();
+        DeserializeStructure(in, *structure);
+    }
+
+    in.read(reinterpret_cast<char*>(&state.enemyGold), sizeof(int));
+    DeserializeVec2(in, state.enemyFood);
+
+    // Enemy units and structures
+    in.read(reinterpret_cast<char*>(&unitsSize), sizeof(size_t));
+    state.enemyUnits.resize(unitsSize);
+    for (auto& unit : state.enemyUnits) {
+        int unitId;
+        in.read(reinterpret_cast<char*>(&unitId), sizeof(int));
+        unit = (unitId != -1) ? findUnitById(unitId) : nullptr;
+    }
+
+    in.read(reinterpret_cast<char*>(&structsSize), sizeof(size_t));
+    state.enemyStructs.resize(structsSize);
+    for (auto& structure : state.enemyStructs) {
+        structure = new Structure();
+        DeserializeStructure(in, *structure);
+    }
+
+    DeserializeAction(in, state.action);
+    in.read(reinterpret_cast<char*>(&state.reward), sizeof(double));
+}
+
+
 
 
