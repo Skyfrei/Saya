@@ -42,6 +42,18 @@ class RlManager {
   private:
     State CreateCurrentState(Map map, Player player, Player enemy);
     Transition CreateTransition(State s, actionT a, State nextS);
+    void SerializeVec2(std::ostream&, const Vec2&);
+    void DeserializeVec2(std::istream&, Vec2&);
+    void SerializeTerrain(std::ostream&, const Terrain&);
+    void DeserializeTerrain(std::istream&, Terrain&);
+    void SerializeMap(std::ostream&, const Map&);
+    void DeserializeMap(std::istream&, Map&);
+    void SerializeStructure(std::ostream&, const Structure&);
+    void DeserializeStructure(std::istream&, Structure&);
+    void SerializeTransition(std::ostream&, const Transition&);
+    void DeserializeTransition(std::istream&, Transition&);
+    void SerializeState(std::ostream&, const State&);
+    void DeserializeState(std::istream&, State&);
 
   private: 
     std::deque<Transition> memory;

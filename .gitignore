@@ -8,3 +8,4 @@ Final
 .cache/
 .clang-format
 Makefile
+ReinforcementLearning/memory.bin
