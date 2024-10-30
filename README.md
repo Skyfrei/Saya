@@ -1,4 +1,4 @@
-# Simplified Saya version with DeepRL
+# Simplified Saya version with DQN and PPO
 Sandbox Saya without any graphics. Trying to code a way to use reinforcement learning and MTCS in Real time strategy games.
 
 Game **will** not have any graphics for a long time if ever because the point of the project is to create an RTS game which can be deeplearned with different
