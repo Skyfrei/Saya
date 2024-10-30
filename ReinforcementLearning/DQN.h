@@ -12,6 +12,7 @@
 #include <map>
 #include "../Tools/Vec2.h"
 #include "Transition.h"
+#include "../State/Player.h"
 
 #define MAX_UNITS 40
 #define MAX_STRUCTS 30
@@ -26,6 +27,7 @@ class DQN : public torch::nn::Module {
   void Initialize(State state);
   actionT SelectAction(State state); // gotta return an 
   void PrintWeight();
+  void AttachAgent(Player& pl);
 
  private:
   void OptimizeModel(std::deque<Transition> memory);
@@ -53,7 +55,7 @@ class DQN : public torch::nn::Module {
 };
 
 struct TensorStruct{
-  TensorStruct(State state){
+  TensorStruct(const State& state){
     currentMap = GetMapTensor(state.currentMap);
     playerGold = torch::tensor(state.playerGold).view({-1, 1});
     playerFood = GetVec(state.playerFood);
@@ -63,7 +65,7 @@ struct TensorStruct{
     enemyGold = torch::tensor(state.enemyGold).view({-1, 1});
     enemyFood = GetVec(state.enemyFood);
     enemyUnits = GetUnitsTensor(state.enemyUnits);
-    enemyStructures = GetStructuresTensor(state.enemyStructures);
+    enemyStructs = GetStructuresTensor(state.enemyStructs);
   }
 
   torch::Tensor GetMapTensor(const Map &map) {
@@ -118,9 +120,9 @@ struct TensorStruct{
     torch::Tensor paddedUnits = torch::zeros({1, (MAX_UNITS - playerUnits.size(1) / unitVar) * unitVar});
     torch::Tensor paddedStructs = torch::zeros({1, (MAX_STRUCTS - playerStructs.size(1) / strucVar) * strucVar});
     torch::Tensor paddedUnitsEnemy = torch::zeros({1, (MAX_UNITS - enemyUnits.size(1) / unitVar) * unitVar});
-    torch::Tensor paddedStructsEnemy = torch::zeros({1, (MAX_STRUCTS - enemyStructures.size(1) / strucVar) * strucVar});
+    torch::Tensor paddedStructsEnemy = torch::zeros({1, (MAX_STRUCTS - enemyStructs.size(1) / strucVar) * strucVar});
 
-    std::vector<torch::Tensor> tensors = {currentMap, playerGold, playerFood, playerUnits, paddedUnits, playerStructs, paddedStructs, enemyGold, enemyFood, enemyUnits, paddedUnitsEnemy, enemyStructures, paddedStructsEnemy};
+    std::vector<torch::Tensor> tensors = {currentMap, playerGold, playerFood, playerUnits, paddedUnits, playerStructs, paddedStructs, enemyGold, enemyFood, enemyUnits, paddedUnitsEnemy, enemyStructs, paddedStructsEnemy};
     
     torch::Tensor concatenatedTensor = torch::cat(tensors, 1);
 
@@ -139,7 +141,7 @@ struct TensorStruct{
   torch::Tensor enemyGold;
   torch::Tensor enemyFood;
   torch::Tensor enemyUnits;
-  torch::Tensor enemyStructures;
+  torch::Tensor enemyStructs;
 };
 
 #endif

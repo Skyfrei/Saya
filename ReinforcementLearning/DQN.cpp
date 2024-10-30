@@ -92,7 +92,6 @@ torch::Tensor DQN::TurnStateInInput(State state){
   return ts.GetTensor();
 }
 
-
 void DQN::PrintWeight(){
     std::cout<<this->layer1->weight[0][0]<<std::endl;
 }

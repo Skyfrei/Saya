@@ -9,6 +9,7 @@
 #include <chrono>
 #include <memory>
 #include <variant>
+#include <fstream>
 
 #include "../State/Map.h"
 #include "../Race/Structure/Structure.h"
@@ -23,15 +24,20 @@
 
 class RlManager {
   public:
-    RlManager(){}
-    
+    RlManager(){SaveModel();}
     void InitializeDQN(Map map, Player player, Player enemy);
     void StartPolicy(Map m, Player player, Player enemy);
     std::vector<Transition> Sample(size_t batch_size);
+    void AddMemory(const Transition& experience);
     size_t Size() const { return memory.size(); }
     void OptimizeModel(std::deque<Transition> memory);
     void SaveModel();
     void LoadModel();
+    void Serialize(const State& state);
+    void Deserialize(const State& state);
+    void SaveExperienceBuffer();
+    void LoadExperienceBuffer();
+    double CalculateStateReward(State state);
 
   private:
     State CreateCurrentState(Map map, Player player, Player enemy);
@@ -41,9 +47,11 @@ class RlManager {
     std::deque<Transition> memory;
     DQN policy_net;
     DQN target_net;
+
     float gamma = 0.92f;
     bool calledMemOnce = false;
     const int batchSize = 32;
+    const int maxSize = 10000;
+    const std::string fileName = "memory.bin";
 };
-// n
 #endif

@@ -17,38 +17,34 @@ Manager::Manager() : player(map, PLAYER), enemy(map, ENEMY) {
 
 void Manager::CheckForOwnership(Player &p, Living *l, actionT actionTaken) {
     if (std::holds_alternative<AttackAction>(actionTaken)) {
-    AttackAction &action = std::get<AttackAction>(actionTaken);
-    //std::cout<<action.object->health<<std::endl;
-    if (action.object->health <= 0) {
-        map.RemoveOwnership(action.object, action.object->coordinate);
-        if (p.side == PLAYER){
-            for (auto it = enemy.units.begin(); it != enemy.units.end();){
-                if (it->get() == dynamic_cast<Unit*>(action.object)){
-                    it = enemy.units.erase(it);
-                    std::cout<<"BOMBA\n";
-                    break;
-                }else{
-                    ++it;
+        AttackAction &action = std::get<AttackAction>(actionTaken);
+
+        if (action.object->health <= 0) {
+            map.RemoveOwnership(action.object, action.object->coordinate);
+            if (p.side == PLAYER){
+                for (auto it = enemy.units.begin(); it != enemy.units.end();){
+                    if (it->get() == dynamic_cast<Unit*>(action.object)){
+                        it = enemy.units.erase(it);
+                        break;
+                    }else
+                        ++it;
+                }
+            }
+            else{
+                for (auto it = player.units.begin(); it != player.units.end();){
+                    if (it->get() == dynamic_cast<Unit*>(action.object)){
+                        it = player.units.erase(it); 
+                        break;
+                    }else
+                        ++it;
                 }
             }
         }
-        else{
-            for (auto it = player.units.begin(); it != player.units.end();){
-                if (it->get() == dynamic_cast<Unit*>(action.object)){
-                    it = player.units.erase(it); 
-                    std::cout<<"Bombaclat\n";
-                    break;
-                }else{
-                    ++it;
-                }
-            }
+        if (l->coordinate.x != action.prevCoord.x ||
+            l->coordinate.y != action.prevCoord.y) {
+            map.RemoveOwnership(l, action.prevCoord);
+            map.AddOwnership(l);
         }
-    }
-    if (l->coordinate.x != action.prevCoord.x ||
-        l->coordinate.y != action.prevCoord.y) {
-      map.RemoveOwnership(l, action.prevCoord);
-      map.AddOwnership(l);
-    }
   } else if (std::holds_alternative<MoveAction>(actionTaken)) {
     MoveAction &action = std::get<MoveAction>(actionTaken);
     map.RemoveOwnership(l, action.prevCoord);

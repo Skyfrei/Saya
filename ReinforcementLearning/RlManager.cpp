@@ -9,6 +9,82 @@ void RlManager::LoadModel(){
     //torch::jit::load(target_net, "player.pt");
 }
 
+void RlManager::SaveExperienceBuffer(){
+    std::ofstream outfile(fileName, std::ios::binary);
+    
+    if (!outfile) {
+        throw std::runtime_error("Failed to open file for saving experience buffer.");
+    }
+
+    for (const auto& transition : memory) {
+        outfile.write(reinterpret_cast<const char*>(&transition), sizeof(Transition));
+    }
+}
+
+void RlManager::LoadExperienceBuffer(){
+    std::ifstream inFile(fileName, std::ios::binary);
+    if (!inFile) {
+        throw std::runtime_error("Failed to open file for loading experience buffer.");
+    }
+
+    Transition transition;
+    while (inFile.read(reinterpret_cast<char*>(&transition), sizeof(Transition))) {
+        memory.push_back(transition);
+    }
+
+    inFile.close();
+}
+
+void RlManager::Serialize(const State& state){
+    outFile.write(reinterpret_cast<const char*>(&state.playerGold), sizeof(int));
+    outFile.write(reinterpret_cast<const char*>(&state.enemyGold), sizeof(int));
+    outFile.write(reinterpret_cast<const char*>(&state.reward), sizeof(double));
+
+    size_t unitsSize = state.playerUnits.size();
+    outFile.write(reinterpret_cast<const char*>(&unitsSize), sizeof(size_t));
+    for (const auto& unit : state.playerUnits) {
+        unit->serialize(outFile);  // Assuming Unit has a serialize function
+    }
+
+    size_t structsSize = state.playerStructs.size();
+    outFile.write(reinterpret_cast<const char*>(&structsSize), sizeof(size_t));
+    for (const auto& structure : state.playerStructs) {
+        structure->serialize(outFile);  // Assuming Structure has a serialize function
+    }
+
+    unitsSize = state.enemyUnits.size();
+    outFile.write(reinterpret_cast<const char*>(&unitsSize), sizeof(size_t));
+    for (const auto& unit : state.enemyUnits) {
+        unit->serialize(outFile);
+    }
+
+    structsSize = state.enemyStructs.size();
+    outFile.write(reinterpret_cast<const char*>(&structsSize), sizeof(size_t));
+    for (const auto& structure : state.enemyStructs) {
+        structure->serialize(outFile);
+    }
+
+    state.currentMap.serialize(outFile);  // Assuming Map has a serialize function
+    state.enemyFood.serialize(outFile);   // Assuming Vec2 has a serialize function
+    state.playerFood.serialize(outFile);  // Assuming Vec2 has a serialize function
+    outFile.write(reinterpret_cast<const char*>(&state.action), sizeof(actionT));
+}
+
+void RlManager::Deserialize(const State& state){
+
+}
+
+double RlManager::CalculateStateReward(State state){
+    double reward = 0.0;
+
+    if (state.enemyUnits.size() <= 0 && state.enemyStructs.size() <= 0)
+        reward = 1; 
+    else if (state.playerUnits.size() <= 0 && state.playerStructs.size() <= 0)
+        reward = -1;
+
+    return reward;
+}
+
 void RlManager::StartPolicy(Map map, Player player, Player enemy) {
   if (calledMemOnce == false) {
     InitializeDQN(map, player, enemy);
@@ -23,11 +99,10 @@ void RlManager::StartPolicy(Map map, Player player, Player enemy) {
   enemy.TakeAction(enemyAction);
   
   State nextState = CreateCurrentState(map, player, enemy);
-  State next = State(nextState);
+  nextState.reward = CalculateStateReward(nextState);
 
-  Transition egal = CreateTransition(currentState, playerAction, next);
-  //target_net.PrintWeight();
-  memory.push_back(egal);
+  //Transition egal = CreateTransition(currentState, playerAction, nextState);
+  //memory.push_back(egal);
 }
 
 void RlManager::InitializeDQN(Map map, Player player, Player enemy){
@@ -115,15 +190,15 @@ State RlManager::CreateCurrentState(Map map, Player player, Player enemy) {
     switch (enemy.structures[i]->is) {
       case BARRACK:
         barracks = dynamic_cast<Barrack *>(enemy.structures[i].get());
-        st.enemyStructures.push_back(new Barrack(*barracks));
+        st.enemyStructs.push_back(new Barrack(*barracks));
         break;
       case FARM:
         farm = dynamic_cast<Farm *>(enemy.structures[i].get());
-        st.enemyStructures.push_back(new Farm(*farm));
+        st.enemyStructs.push_back(new Farm(*farm));
         break;
       case HALL:
         townHall = dynamic_cast<TownHall *>(enemy.structures[i].get());
-        st.enemyStructures.push_back(new TownHall(*townHall));
+        st.enemyStructs.push_back(new TownHall(*townHall));
         break;
       default:
         break;
@@ -137,6 +212,12 @@ Transition RlManager::CreateTransition(State s, actionT a, State nextS) {
   return t;
 }
 
+void RlManager::AddMemory(const Transition& experience){
+    if (memory.size() >= maxSize) 
+        memory.pop_front();  // Remove oldest experience if full
+    memory.push_back(experience);
+}
+
 std::vector<Transition> RlManager::Sample(size_t batch_size) {
     std::vector<Transition> batch;
     std::sample(memory.begin(), memory.end(), std::back_inserter(batch), batch_size, std::mt19937{std::random_device{}()});
@@ -147,13 +228,12 @@ void RlManager::OptimizeModel(std::deque<Transition> memory) {
   if (memory.size() < batchSize) {
       return;
   }
-  std::vector<Transition> samples;
-  std::sample(memory.begin(), memory.end(), std::back_inserter(samples), batchSize, std::mt19937{std::random_device{}()});
+  std::vector<Transition> samples = Sample(batchSize);
 
   std::vector<torch::Tensor> state_batch, action_batch, reward_batch, next_state_batch;
   for (const auto& t : samples) {
-    TensorStruct s(t.state.state);
-    TensorStruct ns(t.nextState.state);
+    TensorStruct s(t.state);
+    TensorStruct ns(t.nextState);
     state_batch.push_back(s.GetTensor());
     //action_batch.push_back(torch::tensor(t.stateAction.action, torch::kFloat32)); // fix this shit
     reward_batch.push_back(torch::tensor(t.nextState.reward, torch::kFloat32));
