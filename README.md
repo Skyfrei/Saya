@@ -10,6 +10,7 @@ possible decisions to win the game.
 - Probably nulll pointer mem access here as i have implemented null pointers for actions.
 - Ideas on how to continue the Reinforcement learning and stuff i could add to it. Maybe additions to algorithms DQN and PPO and maybe ideas about adding SARSA too.
 - Better writing of structs and enums (this would actually be really helpful)
+- Structuing of header files and where classes go to, specifically the unit header. 
 
 
 ## What has currently been implemented
