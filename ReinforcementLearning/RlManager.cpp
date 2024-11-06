@@ -334,18 +334,18 @@ void RlManager::Deserialize(State& state) {
 
 
 
-void SerializeVec2(std::ostream& out, const Vec2& vec) {
+void RlManager::SerializeVec2(std::ostream& out, const Vec2& vec) {
     out.write(reinterpret_cast<const char*>(&vec.x), sizeof(int));
     out.write(reinterpret_cast<const char*>(&vec.y), sizeof(int));
 }
 
-void DeserializeVec2(std::istream& in, Vec2& vec) {
+void RlManager::DeserializeVec2(std::istream& in, Vec2& vec) {
     in.read(reinterpret_cast<char*>(&vec.x), sizeof(int));
     in.read(reinterpret_cast<char*>(&vec.y), sizeof(int));
 }
 
 // Serialization for Terrain
-void SerializeTerrain(std::ostream& out, const Terrain& terrain) {
+void RlManager::SerializeTerrain(std::ostream& out, const Terrain& terrain) {
     SerializeVec2(out, terrain.coord);
     out.write(reinterpret_cast<const char*>(&terrain.resourceLeft), sizeof(int));
     out.write(reinterpret_cast<const char*>(&terrain.type), sizeof(TerrainType));
@@ -363,7 +363,7 @@ void SerializeTerrain(std::ostream& out, const Terrain& terrain) {
     out.write(reinterpret_cast<const char*>(&structureId), sizeof(int));
 }
 
-void DeserializeTerrain(std::istream& in, Terrain& terrain) {
+void RlManager::DeserializeTerrain(std::istream& in, Terrain& terrain) {
     DeserializeVec2(in, terrain.coord);
     in.read(reinterpret_cast<char*>(&terrain.resourceLeft), sizeof(int));
     in.read(reinterpret_cast<char*>(&terrain.type), sizeof(TerrainType));
@@ -385,9 +385,9 @@ void DeserializeTerrain(std::istream& in, Terrain& terrain) {
 }
 
 // Serialization for Map
-void SerializeMap(std::ostream& out, const Map& map) {
+void RlManager::SerializeMap(std::ostream& out, const Map& map) {
     size_t rows = map.terrain.size();
-    size_t cols = rows > 0 ? map.terrain[0].size() : 0;
+    size_t cols = map.terrain[0].size(); 
     out.write(reinterpret_cast<const char*>(&rows), sizeof(size_t));
     out.write(reinterpret_cast<const char*>(&cols), sizeof(size_t));
 
@@ -398,7 +398,7 @@ void SerializeMap(std::ostream& out, const Map& map) {
     }
 }
 
-void DeserializeMap(std::istream& in, Map& map) {
+void RlManager::DeserializeMap(std::istream& in, Map& map) {
     size_t rows, cols;
     in.read(reinterpret_cast<char*>(&rows), sizeof(size_t));
     in.read(reinterpret_cast<char*>(&cols), sizeof(size_t));
@@ -412,13 +412,13 @@ void DeserializeMap(std::istream& in, Map& map) {
 }
 
 // Serialization for Structure
-void SerializeStructure(std::ostream& out, const Structure& structure) {
+void RlManager::SerializeStructure(std::ostream& out, const Structure& structure) {
     out.write(reinterpret_cast<const char*>(&structure.is), sizeof(StructureType));
     out.write(reinterpret_cast<const char*>(&structure.isBeingBuilt), sizeof(bool));
     SerializeVec2(out, structure.coordinate);
 }
 
-void DeserializeStructure(std::istream& in, Structure& structure) {
+void RlManager::DeserializeStructure(std::istream& in, Structure& structure) {
     in.read(reinterpret_cast<char*>(&structure.is), sizeof(StructureType));
     in.read(reinterpret_cast<char*>(&structure.isBeingBuilt), sizeof(bool));
     DeserializeVec2(in, structure.coordinate);
@@ -431,13 +431,13 @@ void SerializeTransition(std::ostream& out, const Transition& transition) {
     out.write(reinterpret_cast<const char*>(&transition.done), sizeof(bool));
 }
 
-void DeserializeTransition(std::istream& in, Transition& transition) {
+void RlManager::DeserializeTransition(std::istream& in, Transition& transition) {
     DeserializeState(in, transition.state);
     DeserializeState(in, transition.nextState);
     in.read(reinterpret_cast<char*>(&transition.done), sizeof(bool));
 }
 
-void SerializeState(std::ostream& out, const State& state) {
+void RlManager::SerializeState(std::ostream& out, const State& state) {
     SerializeMap(out, state.currentMap);
     out.write(reinterpret_cast<const char*>(&state.playerGold), sizeof(int));
     SerializeVec2(out, state.playerFood);
@@ -477,7 +477,7 @@ void SerializeState(std::ostream& out, const State& state) {
     out.write(reinterpret_cast<const char*>(&state.reward), sizeof(double));
 }
 
-void DeserializeState(std::istream& in, State& state) {
+void RlManager::DeserializeState(std::istream& in, State& state) {
     DeserializeMap(in, state.currentMap);
     in.read(reinterpret_cast<char*>(&state.playerGold), sizeof(int));
     DeserializeVec2(in, state.playerFood);
@@ -523,6 +523,27 @@ void DeserializeState(std::istream& in, State& state) {
     in.read(reinterpret_cast<char*>(&state.reward), sizeof(double));
 }
 
+void RlManager::SerializeUnit(std::ostream& out, const Unit* unit){
+    UnitType typeID = unit->is;  // Assume getUnitType() determines derived type
+    out.write(reinterpret_cast<const char*>(&typeID), sizeof(UnitTypeID));
+    unit.serialize(out);  // Polymorphic call to serialize derived unit
+}
 
+void RlManager::DeserializeUnit(std::istream& in, const Unit* unit){
+    UnitType typeID;
+    in.read(reinterpret_cast<char*>(&typeID), sizeof(UnitTypeID));
 
+    std::unique_ptr<Unit> unit;
+    switch (typeID) {
+        case UnitTypeID::Soldier:
+            unit = std::make_unique<Soldier>();
+            break;
+        case UnitTypeID::Peasant:
+            unit = std::make_unique<Peasant>();
+            break;
+        // Add other cases as needed
+    }
+    unit->deserialize(in);  // Call the derived deserialization
+    return unit;
+}
 

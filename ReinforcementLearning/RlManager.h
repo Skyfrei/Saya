@@ -54,6 +54,8 @@ class RlManager {
     void DeserializeTransition(std::istream&, Transition&);
     void SerializeState(std::ostream&, const State&);
     void DeserializeState(std::istream&, State&);
+    void SerializeUnit(std::ostream&, const Unit*);
+    void DeserializeUnit(std::istream&, const Unit*);
 
   private: 
     std::deque<Transition> memory;
