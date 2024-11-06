@@ -7,9 +7,10 @@ possible decisions to win the game.
 
 # How can you collaborate
 - Bug finding in the game in case i have missed something such as times when Id get undefined behaviours.
-- Probably safe here as i have implemented null pointers but just in case that would be nice to check.
-- Ideas on how to continue the Reinforcement learning and stuff i could add to it.
+- Probably nulll pointer mem access here as i have implemented null pointers for actions.
+- Ideas on how to continue the Reinforcement learning and stuff i could add to it. Maybe additions to algorithms DQN and PPO and maybe ideas about adding SARSA too.
 - Better writing of structs and enums (this would actually be really helpful)
+- Structuing of header files and where classes go to, specifically the unit header. 
 
 
 ## What has currently been implemented
