@@ -1,6 +1,4 @@
 cmake_minimum_required(VERSION 3.16)
-set(CMAKE_CXX_COMPILER_VERSION "10.5.0")
-set(CMAKE_BUILD_TYPE Debug)
 add_compile_options("-g")
 
 project(Final)

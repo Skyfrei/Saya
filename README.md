@@ -19,3 +19,15 @@ possible decisions to win the game.
 - PyTorch has been sucessfully started running.
 - Currently changing the input of the game so it fits in my tensor model.
 
+
+-   https://harichada.github.io/osbox/posts/reinforcement-learning-for-real-time-strategy-games/
+
+cmake -D CMAKE_CXX_COMPILER=g++-10 CMakeLists.txt
+export DYLD_LIBRARY_PATH=/opt/homebrew/opt/libomp/lib:$DYLD_LIBRARY_PATH
+https://pytorch.org/tutorials/intermediate/reinforcement_ppo.html
+
+
+
+fix cooldown of movement
+
+remove from array upon death
