@@ -2,8 +2,10 @@ cmake_minimum_required(VERSION 3.16)
 add_compile_options("-g")
 
 project(Final)
+set(TORCH_DIR "/home/sky/saya/libtorch")
 
-find_package(Torch REQUIRED PATHS ./libtorch/share/cmake/Torch)
+
+find_package(Torch REQUIRED PATHS ${TORCH_DIR})
 set(CMAKE_CXX_FLAGS ${TORCH_CXX_FLAGS})
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -34,6 +36,5 @@ add_executable(Final ${CPPSRC})
 #target_compile_options(Final PRIVATE "-ftime-trace")
 target_link_libraries(Final "${TORCH_LIBRARIES}")
 target_include_directories(Final PRIVATE src/ReinforcementLearning/)
-
 
 
