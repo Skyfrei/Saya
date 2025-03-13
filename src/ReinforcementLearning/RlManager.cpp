@@ -227,4 +227,3 @@ void RlManager::OptimizeModel(std::deque<Transition> memory) {
   // loss.backward();
   // optimizer.step();
 }
-
