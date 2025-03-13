@@ -31,7 +31,6 @@ void RlManager::LoadExperienceBuffer(){
     //while (inFile.read(reinterpret_cast<char*>(&transition), sizeof(Transition))) {
     //    memory.push_back(transition);
     //}
-
     inFile.close();
 }
 
