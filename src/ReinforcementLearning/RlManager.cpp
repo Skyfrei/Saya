@@ -27,51 +27,12 @@ void RlManager::LoadExperienceBuffer(){
         throw std::runtime_error("Failed to open file for loading experience buffer.");
     }
 
-    Transition transition;
-    while (inFile.read(reinterpret_cast<char*>(&transition), sizeof(Transition))) {
-        memory.push_back(transition);
-    }
+    //Transition transition;
+    //while (inFile.read(reinterpret_cast<char*>(&transition), sizeof(Transition))) {
+    //    memory.push_back(transition);
+    //}
 
     inFile.close();
-}
-
-void RlManager::Serialize(const State& state){
-    outFile.write(reinterpret_cast<const char*>(&state.playerGold), sizeof(int));
-    outFile.write(reinterpret_cast<const char*>(&state.enemyGold), sizeof(int));
-    outFile.write(reinterpret_cast<const char*>(&state.reward), sizeof(double));
-
-    size_t unitsSize = state.playerUnits.size();
-    outFile.write(reinterpret_cast<const char*>(&unitsSize), sizeof(size_t));
-    for (const auto& unit : state.playerUnits) {
-        unit->serialize(outFile);  // Assuming Unit has a serialize function
-    }
-
-    size_t structsSize = state.playerStructs.size();
-    outFile.write(reinterpret_cast<const char*>(&structsSize), sizeof(size_t));
-    for (const auto& structure : state.playerStructs) {
-        structure->serialize(outFile);  // Assuming Structure has a serialize function
-    }
-
-    unitsSize = state.enemyUnits.size();
-    outFile.write(reinterpret_cast<const char*>(&unitsSize), sizeof(size_t));
-    for (const auto& unit : state.enemyUnits) {
-        unit->serialize(outFile);
-    }
-
-    structsSize = state.enemyStructs.size();
-    outFile.write(reinterpret_cast<const char*>(&structsSize), sizeof(size_t));
-    for (const auto& structure : state.enemyStructs) {
-        structure->serialize(outFile);
-    }
-
-    state.currentMap.serialize(outFile);  // Assuming Map has a serialize function
-    state.enemyFood.serialize(outFile);   // Assuming Vec2 has a serialize function
-    state.playerFood.serialize(outFile);  // Assuming Vec2 has a serialize function
-    outFile.write(reinterpret_cast<const char*>(&state.action), sizeof(actionT));
-}
-
-void RlManager::Deserialize(const State& state){
-
 }
 
 double RlManager::CalculateStateReward(State state){
@@ -266,5 +227,4 @@ void RlManager::OptimizeModel(std::deque<Transition> memory) {
   // loss.backward();
   // optimizer.step();
 }
-
 

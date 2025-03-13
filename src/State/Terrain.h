@@ -33,4 +33,5 @@ class Terrain {
   std::vector<Living *> onTerrainLiving;
   Structure *structureOnTerrain = nullptr;
 };
+
 #endif
