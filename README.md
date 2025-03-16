@@ -14,6 +14,7 @@ possible decisions to win the game.
 
 
 ## What has currently been implemented
+### A DAMN UNIT TESTING FRAMEWORK
 - Game is fully finished and playable although not very interesting without graphics as its a real time strategy game.
 - Algorithm for reinforcement learning has been implemented
 - PyTorch has been sucessfully started running.
@@ -30,4 +31,4 @@ https://pytorch.org/tutorials/intermediate/reinforcement_ppo.html
 
 fix cooldown of movement
 
-remove from array upon death
+remove from array upon deat

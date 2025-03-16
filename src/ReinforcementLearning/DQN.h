@@ -22,37 +22,33 @@
 #define MAX_UNITS_TYPE 3
 
 class DQN : public torch::nn::Module {
- public:
-  DQN(){}
-  torch::Tensor Forward(torch::Tensor x);
-  void Initialize(State state);
-  actionT SelectAction(State state); // gotta return an 
-  void PrintWeight();
-  void AttachAgent(Player& pl);
+    public:
+        DQN(){}
+        torch::Tensor Forward(torch::Tensor x);
+        void Initialize(State state);
+        actionT SelectAction(State state); // gotta return an 
+        void PrintWeight();
+        void AttachAgent(Player& pl);
+        void Train();
+        void Test();
 
- private:
-  void OptimizeModel(std::deque<Transition> memory);
-  torch::Tensor TurnStateInInput(State state);
-  actionT MapIndexToAction(int actionIndex);
- private:
-  
-  int episodeNumber = 50;
-  int stepsDone = 0;
-  float startEpsilon = 0.9f;
-  float endEpsilon = 0.05f;
-  float epsilonDecay = 1000.0f;
-  float learningRate = 0.001f;
-  int actionSize = 0;
-  int inputSize = 0;
-  
-  int mapSize = MAP_SIZE * MAP_SIZE;
-  int moveAction = mapSize * MAX_UNITS;
-  int attackAction = moveAction + MAX_UNITS * (MAX_STRUCTS + MAX_UNITS);
-  int buildAction = attackAction + PEASANT_INDEX_IN_UNITS * NR_OF_STRUCTS * mapSize;
-  int farmAction = buildAction + PEASANT_INDEX_IN_UNITS * mapSize * HALL_INDEX_IN_STRCTS; // town hall size multipled here as well
-  int recruitAction = farmAction + 2 * NR_OF_UNITS * BARRACK_INDEX_IN_STRUCTS; // barrack size
+    private:
+        void OptimizeModel(std::deque<Transition> memory);
+        torch::Tensor TurnStateInInput(State state);
+        actionT MapIndexToAction(int actionIndex);
 
-  torch::nn::Linear layer1{nullptr}, layer2{nullptr}, layer3{nullptr};
+    private:
+        int episodeNumber = 50;
+        int stepsDone = 0;
+        int epochNumber = 100;
+        float startEpsilon = 0.9f;
+        float endEpsilon = 0.05f;
+        float epsilonDecay = 1000.0f;
+        float learningRate = 0.01f;
+        int actionSize = 0;
+        int inputSize = 0;
+        
+        torch::nn::Linear layer1{nullptr}, layer2{nullptr}, layer3{nullptr};
 };
 
 struct TensorStruct{

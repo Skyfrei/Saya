@@ -1,5 +1,13 @@
 #include "DQN.h"
 
+
+int mapSize = MAP_SIZE * MAP_SIZE;
+int moveAction = mapSize * MAX_UNITS;
+int attackAction = moveAction + MAX_UNITS * (MAX_STRUCTS + MAX_UNITS);
+int buildAction = attackAction + PEASANT_INDEX_IN_UNITS * NR_OF_STRUCTS * mapSize;
+int farmAction = buildAction + PEASANT_INDEX_IN_UNITS * mapSize * HALL_INDEX_IN_STRCTS; // town hall size multipled here as well
+int recruitAction = farmAction + 2 * NR_OF_UNITS * BARRACK_INDEX_IN_STRUCTS; // barrack size
+
 void DQN::Initialize(State state){
   TensorStruct ts(state);
   inputSize = ts.GetTensor().size(1);
@@ -15,6 +23,19 @@ torch::Tensor DQN::Forward(torch::Tensor x) {
   x = torch::relu(layer2->forward(x));
   x = layer3->forward(x);  
   return x;
+}
+
+void DQN::Train(){
+    torch::optim::SGD optimizer(this->parameters(), learningRate);
+    float loss = 0.0f;
+    
+    for (int i = 0; i < epochNumber; i++){
+        
+    }
+}
+
+void DQN::Test(){
+
 }
 // mapSize = 3 * 3 = 9
 // MAP_SIZE = 3

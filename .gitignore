@@ -10,3 +10,4 @@ Final
 Makefile
 ReinforcementLearning/memory.bin
 libtorch/
+SDL/

@@ -1,14 +1,16 @@
 cmake_minimum_required(VERSION 3.16)
 add_compile_options("-g")
 
-project(Final)
-set(TORCH_DIR "/home/sky/saya/libtorch")
+project(Saya)
+set(TORCH_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 
 find_package(Torch REQUIRED PATHS ${TORCH_DIR})
 set(CMAKE_CXX_FLAGS ${TORCH_CXX_FLAGS})
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_subdirectory(SDL EXCLUDE_FROM_ALL)
 
 set(CPPSRC src/main.cpp
         src/Living.h
@@ -29,12 +31,9 @@ set(CPPSRC src/main.cpp
         src/ReinforcementLearning/RlManager.cpp
         src/ReinforcementLearning/DQN.h
         src/ReinforcementLearning/DQN.cpp)
-#include_directories(./ include)
-add_executable(Final ${CPPSRC})
-#target_precompile_headers(Final PRIVATE src/ReinforcementLearning/DQN.h)
-
-#target_compile_options(Final PRIVATE "-ftime-trace")
-target_link_libraries(Final "${TORCH_LIBRARIES}")
-target_include_directories(Final PRIVATE src/ReinforcementLearning/)
+    add_executable(Saya WIN32 ${CPPSRC})
+target_link_libraries(Saya PRIVATE SDL3::SDL3)
+target_link_libraries(Saya PRIVATE "${TORCH_LIBRARIES}")
+target_include_directories(Saya PRIVATE src/ReinforcementLearning/)
 
 

@@ -1,5 +1,5 @@
 cd build/
 
-make 
+ninja
 
-
+mv Saya ..
