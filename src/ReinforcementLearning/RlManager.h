@@ -24,38 +24,18 @@
 
 class RlManager {
   public:
-    RlManager(){SaveModel();}
+    RlManager();
     void InitializeDQN(Map map, Player player, Player enemy);
     void StartPolicy(Map m, Player player, Player enemy);
-    std::vector<Transition> Sample(size_t batch_size);
     void AddMemory(const Transition& experience);
     size_t Size() const { return memory.size(); }
-    void OptimizeModel(std::deque<Transition> memory);
-    void SaveModel();
-    void LoadModel();
     void Serialize(const State& state);
     void Deserialize(const State& state);
-    void SaveExperienceBuffer();
-    void LoadExperienceBuffer();
     double CalculateStateReward(State state);
 
   private:
     State CreateCurrentState(Map map, Player player, Player enemy);
     Transition CreateTransition(State s, actionT a, State nextS);
-    void SerializeVec2(std::ostream&, const Vec2&);
-    void DeserializeVec2(std::istream&, Vec2&);
-    void SerializeTerrain(std::ostream&, const Terrain&);
-    void DeserializeTerrain(std::istream&, Terrain&);
-    void SerializeMap(std::ostream&, const Map&);
-    void DeserializeMap(std::istream&, Map&);
-    void SerializeStructure(std::ostream&, const Structure&);
-    void DeserializeStructure(std::istream&, Structure&);
-    void SerializeTransition(std::ostream&, const Transition&);
-    void DeserializeTransition(std::istream&, Transition&);
-    void SerializeState(std::ostream&, const State&);
-    void DeserializeState(std::istream&, State&);
-    void SerializeUnit(std::ostream&, const Unit*);
-    void DeserializeUnit(std::istream&, const Unit*);
 
   private: 
     std::deque<Transition> memory;
@@ -66,6 +46,5 @@ class RlManager {
     bool calledMemOnce = false;
     const int batchSize = 32;
     const int maxSize = 10000;
-    const std::string fileName = "memory.bin";
 };
 #endif

@@ -2,7 +2,7 @@
 #define REWARD_H
 
 #include "Transition.h"
-#include "Actions.h"  // Include necessary headers for Action variants
+//#include "Actions.h"  // Include necessary headers for Action variants
 
 enum RewardEvent { ATTACK_UNIT, DESTROY_HALL, FARM_GOLD, RECRUIT_SOLDIER, MOVE_UNIT, BUILD_STRUCTURE };
 

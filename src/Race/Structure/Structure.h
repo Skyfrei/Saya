@@ -2,6 +2,7 @@
 #define STRUCTURE_H
 
 #include "../../Living.h"
+#include <memory>
 
 class Structure : public Living {
  public:

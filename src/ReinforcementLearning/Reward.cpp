@@ -3,19 +3,19 @@
 float Reward::CalculateReward(const State& currentState, const actionT& action, const State& nextState) {
     float totalReward = 0.0f;
 
-    if (std::holds_alternative<AttackAction>(action)) {
-        if (IsUnitKilled(currentState, nextState)) {
-            totalReward += RewardForEvent(KILL_UNIT);
-        }
-    } else if (std::holds_alternative<BuildAction>(action)) {
-        if (IsStructureBuilt(currentState, nextState)) {
-            totalReward += RewardForEvent(RECRUIT_SOLDIER);
-        }
-    } else if (std::holds_alternative<FarmGoldAction>(action)) {
-        if (IsGoldFarmed(currentState, nextState)) {
-            totalReward += RewardForEvent(FARM_GOLD);
-        }
-    }
+//    if (std::holds_alternative<AttackAction>(action)) {
+//        if (IsUnitKilled(currentState, nextState)) {
+//            totalReward += RewardForEvent(KILL_UNIT);
+//        }
+//    } else if (std::holds_alternative<BuildAction>(action)) {
+//        if (IsStructureBuilt(currentState, nextState)) {
+//            totalReward += RewardForEvent(RECRUIT_SOLDIER);
+//        }
+//    } else if (std::holds_alternative<FarmGoldAction>(action)) {
+//        if (IsGoldFarmed(currentState, nextState)) {
+//            totalReward += RewardForEvent(FARM_GOLD);
+//        }
+//    }
 
     return totalReward;
 }

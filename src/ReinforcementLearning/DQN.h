@@ -32,6 +32,9 @@ class DQN : public torch::nn::Module {
         void Train();
         void Test();
 
+        void AddExperience(Transition trans);
+        void SaveMemory();
+
     private:
         void OptimizeModel(std::deque<Transition> memory);
         torch::Tensor TurnStateInInput(State state);
@@ -47,8 +50,10 @@ class DQN : public torch::nn::Module {
         float learningRate = 0.01f;
         int actionSize = 0;
         int inputSize = 0;
-        
         torch::nn::Linear layer1{nullptr}, layer2{nullptr}, layer3{nullptr};
+
+        std::vector<Transition> memory;
+        const std::string memory_file = "dqn_memory.bin";
 };
 
 struct TensorStruct{

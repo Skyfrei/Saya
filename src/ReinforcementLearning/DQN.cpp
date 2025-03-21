@@ -1,4 +1,5 @@
 #include "DQN.h"
+#include <fstream>
 
 
 int mapSize = MAP_SIZE * MAP_SIZE;
@@ -19,10 +20,24 @@ void DQN::Initialize(State state){
 }
 
 torch::Tensor DQN::Forward(torch::Tensor x) {
-  x = torch::relu(layer1->forward(x));
-  x = torch::relu(layer2->forward(x));
-  x = layer3->forward(x);  
-  return x;
+    x = torch::relu(layer1->forward(x));
+    x = torch::relu(layer2->forward(x));
+    x = layer3->forward(x);  
+    return x;
+}
+
+void DQN::AddExperience(Transition trans){
+    
+}
+void DQN::SaveMemory(){
+    std::string data_to_save = "";
+    for (int i = 0; i < memory.size(); i++){
+        data_to_save += memory[i].Parse() + "\n";
+    }
+    std::ofstream file;
+    file.open(memory_file);
+    file<<data_to_save;
+    file.close();
 }
 
 void DQN::Train(){

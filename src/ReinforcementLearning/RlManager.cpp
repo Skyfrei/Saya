@@ -1,37 +1,6 @@
 #include "RlManager.h"
 
-void RlManager::SaveModel(){
-    //torch::save(target_net, "player.pt"); 
-   // torch::save(policy_net, "enemy.pt");
-}
-
-void RlManager::LoadModel(){
-    //torch::jit::load(target_net, "player.pt");
-}
-
-void RlManager::SaveExperienceBuffer(){
-    std::ofstream outfile(fileName, std::ios::binary);
-    
-    if (!outfile) {
-        throw std::runtime_error("Failed to open file for saving experience buffer.");
-    }
-
-    for (const auto& transition : memory) {
-        outfile.write(reinterpret_cast<const char*>(&transition), sizeof(Transition));
-    }
-}
-
-void RlManager::LoadExperienceBuffer(){
-    std::ifstream inFile(fileName, std::ios::binary);
-    if (!inFile) {
-        throw std::runtime_error("Failed to open file for loading experience buffer.");
-    }
-
-    //Transition transition;
-    //while (inFile.read(reinterpret_cast<char*>(&transition), sizeof(Transition))) {
-    //    memory.push_back(transition);
-    //}
-    inFile.close();
+RlManager::RlManager(){
 }
 
 double RlManager::CalculateStateReward(State state){
@@ -172,57 +141,45 @@ Transition RlManager::CreateTransition(State s, actionT a, State nextS) {
   return t;
 }
 
-void RlManager::AddMemory(const Transition& experience){
-    if (memory.size() >= maxSize) 
-        memory.pop_front();  // Remove oldest experience if full
-    memory.push_back(experience);
-}
-
-std::vector<Transition> RlManager::Sample(size_t batch_size) {
-    std::vector<Transition> batch;
-    std::sample(memory.begin(), memory.end(), std::back_inserter(batch), batch_size, std::mt19937{std::random_device{}()});
-    return batch;
-}
-
-void RlManager::OptimizeModel(std::deque<Transition> memory) {
-  if (memory.size() < batchSize) {
-      return;
-  }
-  std::vector<Transition> samples = Sample(batchSize);
-
-  std::vector<torch::Tensor> state_batch, action_batch, reward_batch, next_state_batch;
-  for (const auto& t : samples) {
-    TensorStruct s(t.state);
-    TensorStruct ns(t.nextState);
-    state_batch.push_back(s.GetTensor());
-    //action_batch.push_back(torch::tensor(t.stateAction.action, torch::kFloat32)); // fix this shit
-    reward_batch.push_back(torch::tensor(t.nextState.reward, torch::kFloat32));
-    next_state_batch.push_back(ns.GetTensor());
-  }
-
-  torch::Tensor state_tensor = torch::stack(state_batch);
-  torch::Tensor action_tensor = torch::stack(action_batch);
-  torch::Tensor reward_tensor = torch::stack(reward_batch);
-  torch::Tensor next_state_tensor = torch::stack(next_state_batch);
-
-  auto state_action_values = policy_net.Forward(state_tensor).gather(1, action_tensor);
-  // torch::Tensor next_state_values = torch::zeros({batchSize}, torch::kFloat32);
-  // {
-  //     torch::NoGradGuard no_grad; // Disable gradient computation
-  //     torch::Tensor non_final_mask = torch::ones({batchSize}, torch::kBool);
-  //     for (int i = 0; i < batchSize; ++i) {
-  //         if (!next_state_tensor[i].defined()) {
-  //             non_final_mask[i] = false;
-  //         }
-  //     }
-  //     auto next_state_values_tensor = target_net.Forward(next_state_tensor);
-  //     next_state_values.index_put_({non_final_mask}, next_state_values_tensor.max(1).values.index({non_final_mask}));
-  //     next_state_values = next_state_values.detach();
-  // }
-  // torch::Tensor expected_state_action_values = (next_state_values * gamma) + reward_tensor;
-  // torch::nn::SmoothL1Loss criterion;
-  // torch::Tensor loss = criterion->forward(state_action_values, expected_state_action_values.unsqueeze(1));
-  // optimizer.zero_grad();
-  // loss.backward();
-  // optimizer.step();
-}
+//void RlManager::OptimizeModel(std::deque<Transition> memory) {
+//  if (memory.size() < batchSize) {
+//      return;
+//  }
+//  std::vector<Transition> samples = Sample(batchSize);
+//
+//  std::vector<torch::Tensor> state_batch, action_batch, reward_batch, next_state_batch;
+//  for (const auto& t : samples) {
+//    TensorStruct s(t.state);
+//    TensorStruct ns(t.nextState);
+//    state_batch.push_back(s.GetTensor());
+//    //action_batch.push_back(torch::tensor(t.stateAction.action, torch::kFloat32)); // fix this shit
+//    reward_batch.push_back(torch::tensor(t.nextState.reward, torch::kFloat32));
+//    next_state_batch.push_back(ns.GetTensor());
+//  }
+//
+//  torch::Tensor state_tensor = torch::stack(state_batch);
+//  torch::Tensor action_tensor = torch::stack(action_batch);
+//  torch::Tensor reward_tensor = torch::stack(reward_batch);
+//  torch::Tensor next_state_tensor = torch::stack(next_state_batch);
+//
+//  auto state_action_values = policy_net.Forward(state_tensor).gather(1, action_tensor);
+//  // torch::Tensor next_state_values = torch::zeros({batchSize}, torch::kFloat32);
+//  // {
+//  //     torch::NoGradGuard no_grad; // Disable gradient computation
+//  //     torch::Tensor non_final_mask = torch::ones({batchSize}, torch::kBool);
+//  //     for (int i = 0; i < batchSize; ++i) {
+//  //         if (!next_state_tensor[i].defined()) {
+//  //             non_final_mask[i] = false;
+//  //         }
+//  //     }
+//  //     auto next_state_values_tensor = target_net.Forward(next_state_tensor);
+//  //     next_state_values.index_put_({non_final_mask}, next_state_values_tensor.max(1).values.index({non_final_mask}));
+//  //     next_state_values = next_state_values.detach();
+//  // }
+//  // torch::Tensor expected_state_action_values = (next_state_values * gamma) + reward_tensor;
+//  // torch::nn::SmoothL1Loss criterion;
+//  // torch::Tensor loss = criterion->forward(state_action_values, expected_state_action_values.unsqueeze(1));
+//  // optimizer.zero_grad();
+//  // loss.backward();
+//  // optimizer.step();
+//}

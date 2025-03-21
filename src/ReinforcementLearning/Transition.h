@@ -7,17 +7,19 @@
 #include "../Race/Unit/Unit.h"
 #include "../Race/Structure/Structure.h"
 #include "../Tools/Vec2.h"
+#include <string>
 
 struct State {
     State(){}
     State(const State& s){
-        currentMap = s.currentMap;
         enemyFood = s.enemyFood;
         enemyGold = s.enemyGold;
-        enemyUnits = s.enemyUnits;
-        enemyStructs = s.enemyStructs;
         playerFood = s.playerFood;
         playerGold = s.playerGold;
+        currentMap = s.currentMap;
+
+        enemyUnits = s.enemyUnits;
+        enemyStructs = s.enemyStructs;
         playerUnits = s.playerUnits;
         playerStructs = s.playerStructs;
     }
@@ -49,11 +51,11 @@ struct State {
 
 struct Transition {
     Transition(State s, actionT action, State n) : state(s, action), nextState(n){}
-
-
+    Transition();
     State state;
     State nextState;
     bool done = false;
+    std::string Parse();
 };
 
 #endif  // !TRANSITION_H
