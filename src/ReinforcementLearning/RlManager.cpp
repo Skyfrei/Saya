@@ -1,5 +1,13 @@
 #include "RlManager.h"
 
+#include <chrono>
+#include <memory>
+#include <variant>
+
+#include "../Race/Unit/Unit.h"
+#include "../Race/Unit/Peasant.h"
+#include "../Race/Structure/TownHall.h"
+
 RlManager::RlManager(){
 }
 

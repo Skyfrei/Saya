@@ -7,9 +7,6 @@
 #include <vector>
 
 #include "../Race/Unit/Unit.h"
-#include <cmath>
-#include <random>
-#include <map>
 #include "../Tools/Vec2.h"
 #include "Transition.h"
 #include "../State/Player.h"
@@ -53,6 +50,7 @@ class DQN : public torch::nn::Module {
         torch::nn::Linear layer1{nullptr}, layer2{nullptr}, layer3{nullptr};
 
         std::vector<Transition> memory;
+        int memory_size = 1000;
         const std::string memory_file = "dqn_memory.bin";
 };
 

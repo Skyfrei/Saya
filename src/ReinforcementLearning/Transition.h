@@ -1,56 +1,37 @@
 #ifndef TRANSITION_H
 #define TRANSITION_H
 
-#include <map>
 #include <vector> 
+#include <string>
 #include "../State/Map.h"
 #include "../Race/Unit/Unit.h"
 #include "../Race/Structure/Structure.h"
 #include "../Tools/Vec2.h"
-#include <string>
+
 
 struct State {
-    State(){}
-    State(const State& s){
-        enemyFood = s.enemyFood;
-        enemyGold = s.enemyGold;
-        playerFood = s.playerFood;
-        playerGold = s.playerGold;
-        currentMap = s.currentMap;
+    State();
+    State(const State& s);
+    State(const State& s, actionT a);
+    bool operator<(const State& other) const;
 
-        enemyUnits = s.enemyUnits;
-        enemyStructs = s.enemyStructs;
-        playerUnits = s.playerUnits;
-        playerStructs = s.playerStructs;
-    }
-    State(const State& s, actionT a) : State(s) {
-        action = a;
-    }
-    
+    Map currentMap;
+    int playerGold;
+    Vec2 playerFood;
+    std::vector<Unit*> playerUnits;
+    std::vector<Structure*> playerStructs;
 
- bool operator<(const State& other) const {
-    if (currentMap == other.currentMap && action == other.action)
-          return false;
-    return true;
-  }
+    int enemyGold;
+    Vec2 enemyFood;
+    std::vector<Unit*> enemyUnits;
+    std::vector<Structure*> enemyStructs;
 
-  Map currentMap;
-  int playerGold;
-  Vec2 playerFood;
-  std::vector<Unit*> playerUnits;
-  std::vector<Structure*> playerStructs;
-
-  int enemyGold;
-  Vec2 enemyFood;
-  std::vector<Unit*> enemyUnits;
-  std::vector<Structure*> enemyStructs;
-
-  actionT action;
-  double reward = 0.0f;
+    actionT action;
+    double reward = 0.0f;
 };
 
 struct Transition {
-    Transition(State s, actionT action, State n) : state(s, action), nextState(n){}
+    Transition(State s, actionT action, State n);
     Transition();
     State state;
     State nextState;

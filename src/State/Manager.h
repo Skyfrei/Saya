@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MANAGER_H
+#define MANAGER_H
 
 #include <chrono>
 #include <memory>
@@ -42,3 +43,5 @@ class Manager {
   high_resolution_clock::time_point frameTimer = high_resolution_clock::now();
   
 };
+
+#endif

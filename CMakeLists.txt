@@ -41,7 +41,7 @@ target_include_directories(Saya PRIVATE src/ReinforcementLearning/)
 
 find_package(Catch2 3 REQUIRED)
 # These tests can use the Catch2-provided main
-add_executable(tester tests/test.cpp)
+add_executable(tester ${CPPSRC} tests/test.cpp)
 target_link_libraries(tester PRIVATE Catch2::Catch2WithMain)
 target_link_libraries(tester PRIVATE "${TORCH_LIBRARIES}")
 

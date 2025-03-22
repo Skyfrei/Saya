@@ -10,23 +10,23 @@
 class Terrain;
 
 class Map {
- public:
-  Map();
+    public:
+        Map();
 
-  void TurnMatrixToGraph();
-  std::vector<Node *> GetClosestDestNode(Vec2 &coord, Vec2 &dest);
-  Terrain &GetTerrainAtCoordinate(Vec2);
-  std::vector<Living *> GetObjectsAtTerrain(Vec2);
-  void RemoveOwnership(Living *, Vec2);
-  void AddOwnership(Living *);
-  bool operator==(const Map& other) const;
+        void TurnMatrixToGraph();
+        std::vector<Node *> GetClosestDestNode(Vec2 &coord, Vec2 &dest);
+        Terrain &GetTerrainAtCoordinate(Vec2);
+        std::vector<Living *> GetObjectsAtTerrain(Vec2);
+        void RemoveOwnership(Living *, Vec2);
+        void AddOwnership(Living *);
+        bool operator==(const Map& other) const;
 
- public:
-  std::vector<std::vector<Terrain>> terrain;
+    public:
+        std::vector<std::vector<Terrain>> terrain;
 
- private:
-  std::vector<Node *> GetAllNodes();
-  Graph graph;
+    private:
+        std::vector<Node *> GetAllNodes();
+        Graph graph;
 };
 
 #endif

@@ -1,6 +1,8 @@
 #include "DQN.h"
 #include <fstream>
-
+#include <cmath>
+#include <random>
+#include <map>
 
 int mapSize = MAP_SIZE * MAP_SIZE;
 int moveAction = mapSize * MAX_UNITS;
@@ -27,6 +29,10 @@ torch::Tensor DQN::Forward(torch::Tensor x) {
 }
 
 void DQN::AddExperience(Transition trans){
+    if(memory.size() >= memory_size){
+        memory.erase(memory.begin());
+    }
+    memory.push_back(trans);
     
 }
 void DQN::SaveMemory(){

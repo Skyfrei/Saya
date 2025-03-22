@@ -1,5 +1,10 @@
 #include "Transition.h"
 
+Transition::Transition(State s, actionT action, State n)
+                        : state(s, action), nextState(n){}
+
+Transition::Transition(){}
+
 std::string Transition::Parse(){
     std::string result;
     result += std::to_string(state.playerGold) + " ";
@@ -38,4 +43,31 @@ std::string Transition::Parse(){
         result += std::to_string(type) + " " + std::to_string(health) + " " + std::to_string(x) + " " + std::to_string(y) + " ";
     }
     return result;
+}
+
+State::State(){
+    currentMap = Map();
+}
+
+State::State(const State& s){
+    enemyFood = s.enemyFood;
+    enemyGold = s.enemyGold;
+    playerFood = s.playerFood;
+    playerGold = s.playerGold;
+    currentMap = s.currentMap;
+    
+    enemyUnits = s.enemyUnits;
+    enemyStructs = s.enemyStructs;
+    playerUnits = s.playerUnits;
+    playerStructs = s.playerStructs;
+}
+
+State::State(const State& s, actionT a) : State(s) {
+    action = a;
+}
+
+bool State::operator<(const State& other) const{
+    if (currentMap == other.currentMap && action == other.action)
+          return false;
+    return true;
 }

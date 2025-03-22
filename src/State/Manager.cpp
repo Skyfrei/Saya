@@ -2,6 +2,7 @@
 // Created by Klavio Tarka on 13.12.23.
 //
 #include "Manager.h"
+#include "../Race/Unit/Peasant.h"
 
 Manager::Manager() : player(map, PLAYER), enemy(map, ENEMY) {
   // game start
