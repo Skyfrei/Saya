@@ -5,7 +5,7 @@
 #include "../src/Race/Structure/TownHall.h"
 #include "../src/Race/Unit/Peasant.h"
 
-TEST_CASE("Parsing and saving transition works", "[DQN]") {
+std::string SaveTransition(){
     State s;
     s.enemyFood.x = 2;
     s.enemyFood.y = 10;
@@ -29,6 +29,12 @@ TEST_CASE("Parsing and saving transition works", "[DQN]") {
     Transition trans(s, act, s);
     DQN obj;  // Create an instance of your class
     // Test cases
-    obj.AddExperience(trans);
-    //obj.SaveMemory(); 
+    for(int i = 0; i < 1000; i++)
+        obj.AddExperience(trans);
+    obj.SaveMemory(); 
+    return "";
+}
+
+TEST_CASE("Parsing and saving transition works", "[SaveTransition]") {
+    REQUIRE(SaveTransition() == "");
 }

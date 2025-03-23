@@ -27,16 +27,17 @@ struct State {
     std::vector<Structure*> enemyStructs;
 
     actionT action;
-    double reward = 0.0f;
 };
 
 struct Transition {
     Transition(State s, actionT action, State n);
     Transition();
+    std::string Parse();
     State state;
     State nextState;
     bool done = false;
-    std::string Parse();
+    double reward = 0.0;
+    
 };
 
 #endif  // !TRANSITION_H

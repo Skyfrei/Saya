@@ -31,6 +31,7 @@ class DQN : public torch::nn::Module {
 
         void AddExperience(Transition trans);
         void SaveMemory();
+        void LoadMemory();
 
     private:
         void OptimizeModel(std::deque<Transition> memory);

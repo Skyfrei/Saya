@@ -8,6 +8,9 @@
 
 class TownHall;
 class Unit;
+class Living;
+class Structure;
+class Terrain;
 struct MoveAction;
 struct AttackAction;
 struct FarmGoldAction;
@@ -16,22 +19,16 @@ struct BuildAction;
 
 using actionT = std::variant<std::monostate, AttackAction, MoveAction,
                              BuildAction, FarmGoldAction, RecruitSoldierAction>;
-
 class Action{
     public:
         ActionType type;
         virtual ActionType GetType() = 0;
 };
-
 struct MoveAction : public Action {
     MoveAction(Vec2 c);
     MoveAction(Unit* un, Vec2 c);
     ActionType GetType() override;
-    constexpr bool operator==(const MoveAction &b) const {
-        if (destCoord.x == b.destCoord.x && destCoord.y == b.destCoord.y)
-            return true;
-          return false;
-    }
+    bool operator==(const MoveAction &b) const;
 
     ActionType type = MOVE;
     Vec2 prevCoord;
@@ -39,34 +36,24 @@ struct MoveAction : public Action {
     Unit* unit;
 
 };
-
 struct AttackAction : public Action{
     AttackAction();
     AttackAction(Living* o);
     AttackAction(Unit* un, Living* o);
     ActionType GetType() override;
-    constexpr bool operator==(const AttackAction &b) const {
-        return object == b.object;
-    }
+    bool operator==(const AttackAction &b) const;
 
     Vec2 prevCoord;
     Living *object;
     Unit* unit;
     ActionType type = ATTACK;
-    
-
 };
 struct BuildAction : public Action{
     BuildAction(Structure *s);
     BuildAction(Unit* p, StructureType s, Vec2 c);
     ActionType type = BUILD;
     ActionType GetType() override;
-    constexpr bool operator==(const BuildAction &b) const {
-        if (stru->coordinate.x == b.stru->coordinate.x &&
-            stru->coordinate.y == b.stru->coordinate.y && stru == b.stru)
-            return true;
-        return false;
-    }
+    bool operator==(const BuildAction &b) const;
 
     Structure *stru;
     Vec2 prevCoord;
@@ -80,10 +67,8 @@ struct FarmGoldAction : public Action {
     FarmGoldAction(Unit *p, Vec2 v, TownHall *h);    
     ActionType type = FARMGOLD;
     ActionType GetType() override;
-    constexpr bool operator==(const FarmGoldAction &a) const {
-        if (a.dest.x == dest.x && a.dest.y == dest.y) return true;
-        return false;
-    }
+    bool operator==(const FarmGoldAction &a) const;
+
     Vec2 dest;
     Vec2 prev;
     Terrain *terr;
@@ -91,23 +76,13 @@ struct FarmGoldAction : public Action {
     Unit* peasant;
     int gold = 0;
 };
-
 struct RecruitSoldierAction : public Action{
     
     RecruitSoldierAction(UnitType type, Structure* s);
     ActionType GetType() override;
-    constexpr bool operator==(const RecruitSoldierAction &a) const {
-        if (stru == a.stru && unitType == a.unitType) return true;
-        return false;
-    }
+    bool operator==(const RecruitSoldierAction &a) const;
     UnitType unitType;
     Structure *stru;
     ActionType type = RECRUIT;
-};
-struct RecruitAction {
-    Unit *un;
-    constexpr bool operator==(const RecruitAction& other){
-      return un == other.un;
-    }
 };
 #endif

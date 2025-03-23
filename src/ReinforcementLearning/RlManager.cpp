@@ -36,9 +36,7 @@ void RlManager::StartPolicy(Map map, Player player, Player enemy) {
   enemy.TakeAction(enemyAction);
   
   State nextState = CreateCurrentState(map, player, enemy);
-  nextState.reward = CalculateStateReward(nextState);
-
-  //Transition egal = CreateTransition(currentState, playerAction, nextState);
+    //Transition egal = CreateTransition(currentState, playerAction, nextState);
   //memory.push_back(egal);
 }
 

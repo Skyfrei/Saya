@@ -46,6 +46,12 @@ void DQN::SaveMemory(){
     file.close();
 }
 
+void DQN::LoadMemory(){
+    
+}
+
+
+
 void DQN::Train(){
     torch::optim::SGD optimizer(this->parameters(), learningRate);
     float loss = 0.0f;
