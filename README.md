@@ -6,6 +6,7 @@ algorithms, following previously published licensed papers. At the end of the pr
 possible decisions to win the game.
 
 # How can you collaborate
+## MAYBE USE A CIRCULAR BUFFER INSTEAD OF A VECTOR 
 - Bug finding in the game in case i have missed something such as times when Id get undefined behaviours.
 - Probably nulll pointer mem access here as i have implemented null pointers for actions.
 - Ideas on how to continue the Reinforcement learning and stuff i could add to it. Maybe additions to algorithms DQN and PPO and maybe ideas about adding SARSA too.

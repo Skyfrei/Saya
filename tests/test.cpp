@@ -29,7 +29,7 @@ std::string SaveTransition(){
     Transition trans(s, act, s);
     DQN obj;  // Create an instance of your class
     // Test cases
-    for(int i = 0; i < 1000; i++)
+    for(int i = 0; i < 3000; i++)
         obj.AddExperience(trans);
     obj.SaveMemory(); 
     return "";
