@@ -25,11 +25,10 @@ std::string SaveTransition(){
         s.enemyUnits[i]->coordinate.x = 10;
         s.enemyUnits[i]->coordinate.y = 10;
     }
-    actionT act = MoveAction(Vec2(3, 4));
+    actionT act = MoveAction(s.playerUnits[0], Vec2(3, 4));
     Transition trans(s, act, s);
-    DQN obj;  // Create an instance of your class
-    // Test cases
-    for(int i = 0; i < 3000; i++)
+    DQN obj;  
+    for(int i = 0; i < 1000; i++)
         obj.AddExperience(trans);
     obj.SaveMemory(); 
     return "";

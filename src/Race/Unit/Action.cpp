@@ -63,16 +63,19 @@ std::string Action::Serialize(){
 actionT Action::Deserialize(){
 
 }
-MoveAction::MoveAction(Vec2 c) : destCoord(c) {}
-MoveAction::MoveAction(Unit* un, Vec2 c) : destCoord(c), unit(un){}
-AttackAction::AttackAction(){}
-AttackAction::AttackAction(Living* o) : object(o){}
-AttackAction::AttackAction(Unit* un, Living* o) : object(o), unit(un){}
-BuildAction::BuildAction(Structure *s) : stru(s) {}
-BuildAction::BuildAction(Unit* p, StructureType s, Vec2 c) : peasant(p), struType(s), coordinate(c){} 
-FarmGoldAction::FarmGoldAction(Vec2 v, Terrain *te, TownHall *t) : destCoord(v), terr(te), hall(t){}
-FarmGoldAction::FarmGoldAction(Unit *p, Vec2 v, TownHall *h) : peasant(p), destCoord(v), hall(h){}
-RecruitSoldierAction::RecruitSoldierAction(UnitType type, Structure* s) : unitType(type), stru(s){}
+MoveAction::MoveAction(Vec2 c) : destCoord(c) {type = MOVE;}
+MoveAction::MoveAction(Unit* un, Vec2 c) : destCoord(c), unit(un){
+    type = MOVE;
+    prevCoord = un->coordinate;
+}
+AttackAction::AttackAction(){type = ATTACK;}
+AttackAction::AttackAction(Living* o) : object(o){type = ATTACK;}
+AttackAction::AttackAction(Unit* un, Living* o) : object(o), unit(un){type = ATTACK;}
+BuildAction::BuildAction(Structure *s) : stru(s) {type = BUILD;}
+BuildAction::BuildAction(Unit* p, StructureType s, Vec2 c) : peasant(p), struType(s), coordinate(c){type = BUILD;} 
+FarmGoldAction::FarmGoldAction(Vec2 v, Terrain *te, TownHall *t) : destCoord(v), terr(te), hall(t){type = FARMGOLD;}
+FarmGoldAction::FarmGoldAction(Unit *p, Vec2 v, TownHall *h) : peasant(p), destCoord(v), hall(h){type = FARMGOLD;}
+RecruitSoldierAction::RecruitSoldierAction(UnitType typeOfUnit, Structure* s) : unitType(typeOfUnit), stru(s){type = RECRUIT;}
 bool MoveAction::operator==(const MoveAction &b) const {
     if (destCoord.x == b.destCoord.x && destCoord.y == b.destCoord.y)
         return true;

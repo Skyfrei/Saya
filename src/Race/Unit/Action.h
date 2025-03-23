@@ -33,8 +33,6 @@ struct MoveAction : public Action {
     MoveAction(Unit* un, Vec2 c);
     ActionType GetType() override;
     bool operator==(const MoveAction &b) const;
-
-    ActionType type = MOVE;
     Vec2 prevCoord;
     Vec2 destCoord;
     Unit* unit;
@@ -46,16 +44,13 @@ struct AttackAction : public Action{
     AttackAction(Unit* un, Living* o);
     ActionType GetType() override;
     bool operator==(const AttackAction &b) const;
-
     Vec2 prevCoord;
     Living *object;
     Unit* unit;
-    ActionType type = ATTACK;
 };
 struct BuildAction : public Action{
     BuildAction(Structure *s);
     BuildAction(Unit* p, StructureType s, Vec2 c);
-    ActionType type = BUILD;
     ActionType GetType() override;
     bool operator==(const BuildAction &b) const;
 
@@ -69,7 +64,6 @@ struct BuildAction : public Action{
 struct FarmGoldAction : public Action {
     FarmGoldAction(Vec2 v, Terrain *te, TownHall *t);
     FarmGoldAction(Unit *p, Vec2 v, TownHall *h);    
-    ActionType type = FARMGOLD;
     ActionType GetType() override;
     bool operator==(const FarmGoldAction &a) const;
 
@@ -83,11 +77,10 @@ struct FarmGoldAction : public Action {
 };
 struct RecruitSoldierAction : public Action{
     
-    RecruitSoldierAction(UnitType type, Structure* s);
+    RecruitSoldierAction(UnitType typeOfUnit, Structure* s);
     ActionType GetType() override;
     bool operator==(const RecruitSoldierAction &a) const;
     UnitType unitType;
     Structure *stru;
-    ActionType type = RECRUIT;
 };
 #endif

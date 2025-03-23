@@ -30,7 +30,7 @@ torch::Tensor DQN::Forward(torch::Tensor x) {
 
 void DQN::AddExperience(Transition trans){
     if(memory.size() >= memory_size){
-        memory.erase(memory.begin());
+        memory.pop_back();
     }
     memory.push_back(trans);
     

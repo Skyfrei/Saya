@@ -4,7 +4,7 @@
 #include <torch/nn.h>
 #include <torch/optim.h>
 #include <torch/torch.h>
-#include <vector>
+#include <deque>
 
 #include "../Race/Unit/Unit.h"
 #include "../Tools/Vec2.h"
@@ -50,7 +50,7 @@ class DQN : public torch::nn::Module {
         int inputSize = 0;
         torch::nn::Linear layer1{nullptr}, layer2{nullptr}, layer3{nullptr};
 
-        std::vector<Transition> memory;
+        std::deque<Transition> memory;
         int memory_size = 1000;
         const std::string memory_file = "dqn_memory.bin";
 };
