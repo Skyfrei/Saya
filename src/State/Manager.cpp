@@ -3,6 +3,7 @@
 //
 #include "Manager.h"
 #include "../Race/Unit/Peasant.h"
+#include "../Race/Structure/TownHall.h"
 
 Manager::Manager() : player(map, PLAYER), enemy(map, ENEMY) {
   // game start
@@ -60,8 +61,8 @@ void Manager::CheckForOwnership(Player &p, Living *l, actionT actionTaken) {
   } else if (std::holds_alternative<FarmGoldAction>(actionTaken)) {
     FarmGoldAction &action = std::get<FarmGoldAction>(actionTaken);
     auto s = static_cast<Peasant *>(l);
-    if (l->coordinate.x != action.prev.x || l->coordinate.y != action.prev.y) {
-      map.RemoveOwnership(l, action.prev);
+    if (l->coordinate.x != action.prevCoord.x || l->coordinate.y != action.prevCoord.y) {
+      map.RemoveOwnership(l, action.prevCoord);
       map.AddOwnership(l);
     }
     if (s->WithinDistance(action.hall->coordinate)) {

@@ -2,8 +2,13 @@
 // Created by Klavio Tarka on 13.12.23.
 //
 #include "Peasant.h"
+#include "../../State/Map.h"
+#include "../../State/Terrain.h"
+#include "../Structure/Barrack.h"
+#include "../Structure/Farm.h"
+#include "../Structure/Structure.h"
+#include "../Structure/TownHall.h"
 
-#include <memory>
 
 
 void Peasant::Build(Structure *str) {

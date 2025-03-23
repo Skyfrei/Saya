@@ -5,6 +5,7 @@
 #include <variant>
 #include "../../Tools/Enums.h"
 #include "../../Tools/Vec2.h"
+#include <string>
 
 class TownHall;
 class Unit;
@@ -17,12 +18,15 @@ struct FarmGoldAction;
 struct RecruitSoldierAction;
 struct BuildAction;
 
-using actionT = std::variant<std::monostate, AttackAction, MoveAction,
+using actionT = std::variant<AttackAction, MoveAction,
                              BuildAction, FarmGoldAction, RecruitSoldierAction>;
 class Action{
     public:
         ActionType type;
         virtual ActionType GetType() = 0;
+        std::string Serialize();
+        actionT Deserialize();
+        
 };
 struct MoveAction : public Action {
     MoveAction(Vec2 c);
@@ -69,11 +73,12 @@ struct FarmGoldAction : public Action {
     ActionType GetType() override;
     bool operator==(const FarmGoldAction &a) const;
 
-    Vec2 dest;
-    Vec2 prev;
+    Vec2 destCoord;
+    Vec2 prevCoord;
+    Unit* peasant;
     Terrain *terr;
     TownHall *hall;
-    Unit* peasant;
+    
     int gold = 0;
 };
 struct RecruitSoldierAction : public Action{

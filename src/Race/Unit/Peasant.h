@@ -1,15 +1,8 @@
 #ifndef PEASANT_H
 #define PEASANT_H
-#include <deque>
 #include <memory>
-#include <vector>
 
-#include "../../State/Map.h"
-#include "../../State/Terrain.h"
-#include "../Structure/Barrack.h"
-#include "../Structure/Farm.h"
-#include "../Structure/Structure.h"
-#include "../Structure/TownHall.h"
+#include "../../Tools/Enums.h"
 #include "Unit.h"
 
 class Peasant : public Unit {

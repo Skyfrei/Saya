@@ -8,7 +8,6 @@
 #include "../Race/Structure/Structure.h"
 #include "../Tools/Vec2.h"
 
-
 struct State {
     State();
     State(const State& s);
@@ -30,14 +29,16 @@ struct State {
 };
 
 struct Transition {
-    Transition(State s, actionT action, State n);
+    Transition(State s, actionT act, State n);
     Transition();
-    std::string Parse();
+    std::string Serialize();
+    Transition Deserialize(std::string& trans);
+
     State state;
     State nextState;
+    actionT action;
     bool done = false;
     double reward = 0.0;
-    
 };
 
 #endif  // !TRANSITION_H

@@ -11,6 +11,20 @@ bool Unit::operator==(const Unit& other)const{
     return false;
   return true;
 }
+
+std::string Unit::Serialize(){
+    std::string result;
+    int type = static_cast<int>(is);
+    int x = coordinate.x;
+    int y = coordinate.y;
+    result += std::to_string(type) + "," + std::to_string(health) + "," + std::to_string(mana) + "," + std::to_string(x) + "," + std::to_string(y);
+    return result;
+}
+
+Unit* Unit::Deserialize(){
+
+}
+
 void Unit::InsertAction(actionT v) {
   if (std::find(actionQueue.begin(), actionQueue.end(), v) ==
       actionQueue.end()) {
@@ -64,7 +78,7 @@ actionT Unit::TakeAction() {
       actionQueue.erase(actionQueue.begin());
       return {};
     }
-    action.prev = coordinate;
+    action.prevCoord = coordinate;
     p.FarmGold(*action.terr, *action.hall, action.gold);
     return action;
   }

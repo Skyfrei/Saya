@@ -99,7 +99,7 @@ void Player::RecruitSoldier(UnitType unitType, Structure *stru) {
   }
 }
 void Player::Initialize() {
-  structures.push_back(std::make_unique<TownHall>());
+  structures.push_back(std::make_unique<TownHall>(Vec2(0, 0)));
   for (int i = 0; i < 5; i++) {
     units.push_back(std::make_unique<Peasant>());
     units[i]->coordinate = structures[0]->coordinate;
@@ -176,15 +176,15 @@ std::unique_ptr<Structure> Player::ChooseToBuild(StructureType structType) {
   std::unique_ptr<Structure> str;
   switch (structType) {
     case HALL:
-      str = std::make_unique<TownHall>();
+      str = std::make_unique<TownHall>(Vec2(0, 0));
       break;
 
     case BARRACK:
-      str = std::make_unique<Barrack>();
+      str = std::make_unique<Barrack>(Vec2(0,0));
       break;
 
     case FARM:
-      str = std::make_unique<Farm>();
+      str = std::make_unique<Farm>(Vec2(0,0));
       break;
 
     default:

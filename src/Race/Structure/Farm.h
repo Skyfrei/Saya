@@ -5,7 +5,7 @@
 
 class Farm : public Structure {
  public:
-  Farm() {
+  Farm(Vec2 coord) {
     name = "Farm";
     description = "Gives 6 food.";
     health = 500;
@@ -15,6 +15,7 @@ class Farm : public Structure {
 
     buildTime = 10;
     is = FARM;
+    coordinate = coord;
   }
 
  public:

@@ -6,6 +6,9 @@
 
 #include "../Race/Unit/Unit.h"
 #include "../Race/Unit/Peasant.h"
+#include "../Race/Unit/Footman.h"
+#include "../Race/Structure/Farm.h"
+#include "../Race/Structure/Barrack.h"
 #include "../Race/Structure/TownHall.h"
 
 RlManager::RlManager(){

@@ -10,10 +10,9 @@
 #include "../Race/Structure/Structure.h"
 #include "../Race/Unit/Unit.h"
 #include "../ReinforcementLearning/RlManager.h"
-#include "Player.h"
+#include "../ReinforcementLearning/Transition.h"
 
-using actionT = std::variant<std::monostate, AttackAction, MoveAction,
-                             BuildAction, FarmGoldAction, RecruitSoldierAction>;
+#include "Player.h"
 
 class Manager {
  public:

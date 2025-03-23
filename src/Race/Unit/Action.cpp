@@ -1,7 +1,68 @@
 #include "Action.h"
 #include "../../Living.h"
 #include "../Structure/Structure.h"
+#include "Unit.h"
+#include "../Structure/TownHall.h"
 
+std::string Action::Serialize(){
+    int actionType = static_cast<int>(type);
+    std::string result = std::to_string(actionType) + ",";
+
+    switch(type){
+        case MOVE:{
+            MoveAction* action = dynamic_cast<MoveAction*>(this);
+            result += std::to_string(action->prevCoord.x) + "," +
+                    std::to_string(action->prevCoord.y) + "," +
+                    std::to_string(action->destCoord.x) + ","+
+                    std::to_string(action->destCoord.y);
+            break;
+        }
+
+        case ATTACK:{
+            AttackAction* action = dynamic_cast<AttackAction*>(this);
+            result += std::to_string(action->prevCoord.x) + "," +
+                    std::to_string(action->prevCoord.y) + "," +
+                    action->unit->Serialize() + ","; // not done
+            break;
+        }
+
+        case BUILD:{
+            BuildAction* action = dynamic_cast<BuildAction*>(this);
+            result += std::to_string(action->prevCoord.x) + "," +
+                    std::to_string(action->prevCoord.y) + "," +
+                    action->stru->Serialize() + "," +
+                    action->peasant->Serialize();
+            break;
+        }
+
+        case FARMGOLD:{
+            FarmGoldAction* action = dynamic_cast<FarmGoldAction*>(this);
+            result += std::to_string(action->prevCoord.x) + "," +
+                    std::to_string(action->prevCoord.y) + "," +
+                    std::to_string(action->destCoord.x) + "," +
+                    std::to_string(action->destCoord.y) + "," +
+                    action->peasant->Serialize() + "," +
+                    action->hall->Serialize() + ",";
+                    //not done, gold and terrain missing
+
+            break;
+        }
+
+        case RECRUIT:{
+            RecruitSoldierAction* action = dynamic_cast<RecruitSoldierAction*>(this);
+
+            int uType = static_cast<int>(action->unitType);
+            result += std::to_string(uType) + "," + 
+                    action->stru->Serialize() + ",";
+            break;
+        }
+    }
+
+    return result;
+}
+actionT Action::Deserialize(){
+
+}
 MoveAction::MoveAction(Vec2 c) : destCoord(c) {}
 MoveAction::MoveAction(Unit* un, Vec2 c) : destCoord(c), unit(un){}
 AttackAction::AttackAction(){}
@@ -9,8 +70,8 @@ AttackAction::AttackAction(Living* o) : object(o){}
 AttackAction::AttackAction(Unit* un, Living* o) : object(o), unit(un){}
 BuildAction::BuildAction(Structure *s) : stru(s) {}
 BuildAction::BuildAction(Unit* p, StructureType s, Vec2 c) : peasant(p), struType(s), coordinate(c){} 
-FarmGoldAction::FarmGoldAction(Vec2 v, Terrain *te, TownHall *t) : dest(v), terr(te), hall(t){}
-FarmGoldAction::FarmGoldAction(Unit *p, Vec2 v, TownHall *h) : peasant(p), dest(v), hall(h){}
+FarmGoldAction::FarmGoldAction(Vec2 v, Terrain *te, TownHall *t) : destCoord(v), terr(te), hall(t){}
+FarmGoldAction::FarmGoldAction(Unit *p, Vec2 v, TownHall *h) : peasant(p), destCoord(v), hall(h){}
 RecruitSoldierAction::RecruitSoldierAction(UnitType type, Structure* s) : unitType(type), stru(s){}
 bool MoveAction::operator==(const MoveAction &b) const {
     if (destCoord.x == b.destCoord.x && destCoord.y == b.destCoord.y)
@@ -27,7 +88,7 @@ bool BuildAction::operator==(const BuildAction &b) const {
     return false;
 }
 bool FarmGoldAction::operator==(const FarmGoldAction &a) const {
-    if (a.dest.x == dest.x && a.dest.y == dest.y) return true;
+    if (a.destCoord.x == destCoord.x && a.destCoord.y == destCoord.y) return true;
     return false;
 }
 bool RecruitSoldierAction::operator==(const RecruitSoldierAction& a) const {

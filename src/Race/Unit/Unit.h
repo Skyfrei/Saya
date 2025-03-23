@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <variant>
 #include <vector>
+#include <string>
 
 #include "../../Living.h"
 #include "../Structure/Structure.h"
@@ -43,6 +44,8 @@ class Unit : public Living {
         void ResetActions();
         bool HasCommand();
         int GetActionQueueSize();
+        std::string Serialize();
+        Unit* Deserialize();
         bool operator==(const Unit &other) const;
     
     private:

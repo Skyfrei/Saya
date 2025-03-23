@@ -14,7 +14,7 @@
 
 class Barrack : public Structure {
  public:
-  Barrack() {
+  Barrack(Vec2 coord) {
     name = "Barrack";
     description = "Can create units.";
     health = 1500;
@@ -22,6 +22,7 @@ class Barrack : public Structure {
     goldCost = 220;
     is = BARRACK;
     buildTime = 70;
+    coordinate = coord;
   }
 
  public:

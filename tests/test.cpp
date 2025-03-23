@@ -13,13 +13,13 @@ std::string SaveTransition(){
     s.playerFood.y = 4;
     s.enemyGold = 100;
     s.playerGold = 100;
-    s.playerStructs.push_back(new TownHall());
+    s.playerStructs.push_back(new TownHall(Vec2(10, 2)));
     for (int i = 0; i < 5; i++) {
         s.playerUnits.push_back(new Peasant());
         s.playerUnits[i]->coordinate.x = 0;
         s.playerUnits[i]->coordinate.y = 0;
     }
-    s.enemyStructs.push_back(new TownHall());
+    s.enemyStructs.push_back(new TownHall(Vec2(10, 2)));
     for (int i = 0; i < 5; i++) {
         s.enemyUnits.push_back(new Peasant());
         s.enemyUnits[i]->coordinate.x = 10;
