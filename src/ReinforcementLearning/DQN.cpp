@@ -56,15 +56,11 @@ void DQN::LoadMemory(){
         return;
     }
     while (std::getline(file, line)) {
-        lines.push_back(line);
-    }
-    
-    for (int i = 0; i < lines.size(); i++){
         Transition trans;
-        trans = trans.Deserialize(lines[i]);
-        memory.push_back(trans);
+        trans.Deserialize(line);
+       // trans = trans.Deserialize(line);
+       // memory.push_back(trans);
     }
-    
     file.close();
 }
 

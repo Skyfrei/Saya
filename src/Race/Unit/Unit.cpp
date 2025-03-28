@@ -21,7 +21,7 @@ std::string Unit::Serialize(){
     return result;
 }
 
-Unit* Unit::Deserialize(){
+Unit* Unit::Deserialize(std::string& info){
 
 }
 

@@ -45,7 +45,7 @@ class Unit : public Living {
         bool HasCommand();
         int GetActionQueueSize();
         std::string Serialize();
-        Unit* Deserialize();
+        Unit* Deserialize(std::string& info);
         bool operator==(const Unit &other) const;
     
     private:

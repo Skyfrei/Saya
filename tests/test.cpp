@@ -31,6 +31,7 @@ std::string SaveTransition(){
     for(int i = 0; i < 1000; i++)
         obj.AddExperience(trans);
     obj.SaveMemory(); 
+    obj.LoadMemory();
     return "";
 }
 

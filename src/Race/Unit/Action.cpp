@@ -61,6 +61,8 @@ std::string Action::Serialize(){
     return result;
 }
 actionT Action::Deserialize(){
+    int actionType = static_cast<int>(type);
+    std::string result = std::to_string(actionType) + ",";
 
 }
 MoveAction::MoveAction(Vec2 c) : destCoord(c) {type = MOVE;}
