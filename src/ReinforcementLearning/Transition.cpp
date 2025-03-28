@@ -62,11 +62,8 @@ std::string Transition::Serialize(){
 Transition Transition::Deserialize(std::string& trans){
     std::string current = "";
     int count = 0;
-    int unit_start = 0;
-    int unit_index = 0;
-    int struct_start = 0;
-    int struct_index = 0;
     Transition a;
+    std::vector<int> number_of_objects;
     for (int i = 0; i < trans.length(); i++){
         if (trans[i] != ','){
             current += trans[i];
@@ -75,11 +72,12 @@ Transition Transition::Deserialize(std::string& trans){
         if (count <= 11){
             int number = std::stoi(current);
         }
-        if (count == 12){
-            int unit_number = std::stoi(current);
-            unit_index = unit_number * 5;
-            unit_start = count + 1;
+        if (count <= 19){
+            int objecdt_number = std::stoi(current);
+            number_of_objects.push_back(object_number);
         }
+
+
 
 
 
