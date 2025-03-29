@@ -186,13 +186,48 @@ std::vector<binary> Transition::SerializeBinary(){
     
     return binary_data;    
 }
-Transition Transition::DeserializeBinary(std::vector<binary> bin){
+Transition Transition::DeserializeBinary(std::vector<binary>& bin){
+    State state;
+    State nextState;
+    actionT action;
+    state.playerGold = std::get<int>(bin[1]);
+    state.playerFood.x = std::get<int>(bin[2]);
+    state.playerFood.y = std::get<int>(bin[3]);
+    state.enemyGold = std::get<int>(bin[4]);
+    state.enemyFood.x = std::get<int>(bin[5]);
+    state.enemyFood.y = std::get<int>(bin[6]);
+    nextState.playerGold = std::get<int>(bin[7]);
+    nextState.playerFood.x = std::get<int>(bin[8]);
+    nextState.playerFood.y = std::get<int>(bin[9]); 
+    nextState.enemyGold = std::get<int>(bin[10]);
+    nextState.enemyFood.x = std::get<int>(bin[11]);  
+    nextState.enemyFood.y = std::get<int>(bin[12]);
 
+    //for (int i = 0; i < std::get<int>(bin[13]); i++){}
+
+    //for (int i = 0; i < std::get<int>(bin[14]); i++){}
+    //
+    //for (int i = 0; i < std::get<int>(bin[15]); i++){}
+    //
+    //for (int i = 0; i < std::get<int>(bin[16]); i++){}
+
+    //for (int i = 0; i < std::get<int>(bin[17]); i++){}
+
+    //for (int i = 0; i < std::get<int>(bin[18]); i++){}
+    //
+    //for (int i = 0; i < std::get<int>(bin[19]); i++){}
+    //
+    //for (int i = 0; i < std::get<int>(bin[20]); i++){}
+
+
+
+
+    Transition trans(state, action, nextState);
+
+    return trans;
 }
-
-
 State::State(){
-    currentMap = Map();
+
 }
 
 State::State(const State& s){

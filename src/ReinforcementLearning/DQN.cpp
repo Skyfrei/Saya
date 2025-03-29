@@ -95,14 +95,14 @@ void DQN::LoadMemoryAsBinary(){
         }
         binaryData.push_back(temp);
         
-        if (binaryData.size()  == expectedBytes + 1)
+        if (binaryData.size()  == expectedBytes + 1){
+            Transition trans;
+            trans = trans.DeserializeBinary(binaryData);
+            AddExperience(trans);
             binaryData.clear();
-
-
-        //Transition trans;
-        //trans = trans.DeserializeBinary(transitionData);
-        //memory.push_back(trans);
+        }
     }
+    std::cout<< " \n" << memory.size();
     file.close();
 }
 

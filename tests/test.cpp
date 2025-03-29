@@ -5,7 +5,7 @@
 #include "../src/Race/Structure/TownHall.h"
 #include "../src/Race/Unit/Peasant.h"
 
-std::string SaveTransition(){
+std::string StringReplay(){
     State s;
     s.enemyFood.x = 2;
     s.enemyFood.y = 10;
@@ -30,13 +30,12 @@ std::string SaveTransition(){
     DQN obj;  
     for(int i = 0; i < 1000; i++)
         obj.AddExperience(trans);
-    obj.SaveMemoryAsBinary(); 
-    obj.LoadMemoryAsBinary();
-    //obj.LoadMemory();
+    obj.SaveMemory(); 
+    obj.LoadMemory();
     return "";
 }
 
-void SaveBinary(){
+std::string BinaryReplay(){
     State s;
     s.enemyFood.x = 2;
     s.enemyFood.y = 10;
@@ -58,10 +57,17 @@ void SaveBinary(){
     }
     actionT act = MoveAction(s.playerUnits[0], Vec2(3, 4));
     Transition trans(s, act, s);
-    trans.SerializeBinary();
+    DQN obj;  
+    //for(int i = 0; i < 1000; i++)
+    //    obj.AddExperience(trans);
+    //obj.SaveMemoryAsBinary(); 
+    obj.LoadMemoryAsBinary();
+
+    return "";
 }
 
-TEST_CASE("Parsing and saving transition works", "[SaveTransition]") {
-    REQUIRE(SaveTransition() == "");
+TEST_CASE("Serializing and Deserialzing Replays...", "[ReplaySystem]") {
+//    REQUIRE(StringReplay() == "");
+    REQUIRE(BinaryReplay() == ""); 
     //SaveBinary();
 }

@@ -35,7 +35,7 @@ struct Transition {
     std::string Serialize();
     Transition Deserialize(std::string& trans);
     std::vector<binary> SerializeBinary();
-    Transition DeserializeBinary(std::vector<binary> bin);
+    Transition DeserializeBinary(std::vector<binary>& bin);
 
     State state;
     State nextState;
