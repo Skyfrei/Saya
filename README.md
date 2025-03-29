@@ -33,3 +33,25 @@ https://pytorch.org/tutorials/intermediate/reinforcement_ppo.html
 fix cooldown of movement
 
 remove from array upon deat
+
+
+## Also another thing: I'd avoid serializing a std::variant as-is, because you don't know its memory layout (and I don't think the standard gives you any guarantees about it). You can use something simple like:
+
+enum class MyBinaryDataType : uint8_t {
+  Int = 0,
+  Float = 1,
+  Double = 2
+};
+
+union MyBinaryData {
+  int64_t as_int;
+  float as_float;
+  double as_double;
+};
+
+#pragma pack(push, 1)
+struct MyBinary {
+  MyBinaryData data;
+  MyBinaryDataType data_type; // Put values from MyBinaryDataType in here
+};
+#pragma pack(pop)

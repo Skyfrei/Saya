@@ -7,6 +7,7 @@
 #include "../Race/Unit/Unit.h"
 #include "../Race/Structure/Structure.h"
 #include "../Tools/Vec2.h"
+#include "../Tools/Binary.h"
 
 struct State {
     State();
@@ -33,6 +34,8 @@ struct Transition {
     Transition();
     std::string Serialize();
     Transition Deserialize(std::string& trans);
+    std::vector<binary> SerializeBinary();
+    Transition DeserializeBinary(std::vector<binary> bin);
 
     State state;
     State nextState;

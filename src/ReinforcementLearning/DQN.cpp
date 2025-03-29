@@ -3,6 +3,7 @@
 #include <cmath>
 #include <random>
 #include <map>
+#include "../Tools/Binary.h"
 
 int mapSize = MAP_SIZE * MAP_SIZE;
 int moveAction = mapSize * MAX_UNITS;
@@ -57,14 +58,53 @@ void DQN::LoadMemory(){
     }
     while (std::getline(file, line)) {
         Transition trans;
-        trans.Deserialize(line);
+        trans = trans.Deserialize(line);
        // trans = trans.Deserialize(line);
        // memory.push_back(trans);
     }
     file.close();
 }
 
+void DQN::SaveMemoryAsBinary(){
+    std::vector<binary> data_to_save; 
+    std::ofstream file;
+    file.open("binary.bin", std::ios::binary);
+        
+    for (int i = 0; i < memory.size(); i++){
+        std::vector<binary> data = memory[i].SerializeBinary();
+        file.write(reinterpret_cast<char*>(data.data()), data.size() * sizeof(binary));
+    }
+    
+    file.close();
+}
+// 0-11 first bytes, 
+void DQN::LoadMemoryAsBinary(){
+    std::ifstream file("binary.bin", std::ios::binary);
+    std::vector<binary> binaryData;
+    int expectedBytes = 0;
+    binary temp;
 
+    if (!file.is_open()){
+        std::cout<< "File of experience couldn't be opened.";
+        return;
+    }
+    while (file.read(reinterpret_cast<char*>(&temp), sizeof(binary))) {
+        if (binaryData.size() == 0){
+            expectedBytes = std::get<int>(temp);
+            std::cout<<expectedBytes<< " " ;
+        }
+        binaryData.push_back(temp);
+        
+        if (binaryData.size()  == expectedBytes + 1)
+            binaryData.clear();
+
+
+        //Transition trans;
+        //trans = trans.DeserializeBinary(transitionData);
+        //memory.push_back(trans);
+    }
+    file.close();
+}
 
 void DQN::Train(){
     torch::optim::SGD optimizer(this->parameters(), learningRate);

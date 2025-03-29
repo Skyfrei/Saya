@@ -1,4 +1,5 @@
 #include "Transition.h"
+#include <deque>
 
 Transition::Transition(State s, actionT act, State n)
                         : state(s, act), nextState(n), action(act){}
@@ -22,7 +23,7 @@ std::string Transition::Serialize(){
     result += std::to_string(state.enemyUnits.size()) + ",";
     result += std::to_string(state.enemyStructs.size()) + ",";
     result += std::to_string(nextState.playerUnits.size()) + ",";
-    result += std::to_string(nextSta.playerStructs.size()) + ",";
+    result += std::to_string(nextState.playerStructs.size()) + ",";
     result += std::to_string(nextState.enemyUnits.size()) + ",";
     result += std::to_string(nextState.enemyStructs.size()) + ",";
 
@@ -63,33 +64,132 @@ Transition Transition::Deserialize(std::string& trans){
     std::string current = "";
     int count = 0;
     Transition a;
-    std::vector<int> number_of_objects;
+    std::deque<std::string> objs;
     for (int i = 0; i < trans.length(); i++){
         if (trans[i] != ','){
             current += trans[i];
+            if (i == trans.length() - 1)
+                objs.push_back(current);
             continue;
         }
-        if (count <= 11){
-            int number = std::stoi(current);
-        }
-        if (count <= 19){
-            int objecdt_number = std::stoi(current);
-            number_of_objects.push_back(object_number);
-        }
-
-
-
-
-
-        
-         
-        
-         
-        count++;
+        objs.push_back(current);
         current = "";
     }
-   return a; 
+    // 8-15
+    int sp_unitSize = std::stoi(objs[12]);
+    int sp_structureSize = std::stoi(objs[13]); 
+    int se_unitSize = std::stoi(objs[14]);
+    int se_structureSize = std::stoi(objs[15]); 
+    int np_unitSize = std::stoi(objs[16]);
+    int np_structureSize = std::stoi(objs[17]); 
+    int ne_unitSize = std::stoi(objs[18]);
+    int ne_structureSize = std::stoi(objs[19]); 
+    for (int i = 0; i<20; i++)
+        objs.pop_front();
+
+    for (int i = 0; i < sp_unitSize; i++){
+        std::string un = objs[0] + " " + objs[1] + " " + objs[2] +  " " +objs[3]  + " " + objs[4];
+        // deserialize unit on string
+        // Unit* u = Factory.Deserialize(un);
+        for (int j = 0; j < 5; j++)
+            objs.pop_front();
+        std::cout<<un << "\n";
+    }
+    for (int i = 0; i < sp_structureSize; i++){
+        std::string stru = objs[0] + " " + objs[1] + " " + objs[2] + " " + objs[3];
+        for (int j = 0; j< 4; j++)
+             objs.pop_front();
+        std::cout<<stru<<"\n";
+    }
+    for (int i = 0; i < se_unitSize; i++){
+        std::string un = objs[0] + " " + objs[1] + " " + objs[2] +  " " +objs[3]  + " " + objs[4];
+        for (int j = 0; j < 5; j++)
+            objs.pop_front();
+        std::cout<<un << "\n";
+    }
+    for (int i = 0; i < se_structureSize; i++){
+        std::string stru = objs[0] + " " + objs[1] + " " + objs[2] + " " + objs[3];
+        for (int j = 0; j< 4; j++)
+             objs.pop_front();
+        std::cout<<stru<<"\n";
+    }
+    for (int i = 0; i < np_unitSize; i++){
+        std::string un = objs[0] + " " + objs[1] + " " + objs[2] +  " " +objs[3]  + " " + objs[4];
+        // deserialize unit on string
+        // Unit* u = Factory.Deserialize(un);
+        for (int j = 0; j < 5; j++)
+            objs.pop_front();
+        std::cout<<un << "\n";
+    }
+    for (int i = 0; i < np_structureSize; i++){
+        std::string stru = objs[0] + " " + objs[1] + " " + objs[2] + " " + objs[3];
+        for (int j = 0; j< 4; j++)
+             objs.pop_front();
+        std::cout<<stru<<"\n";
+    }
+    for (int i = 0; i < ne_unitSize; i++){
+        std::string un = objs[0] + " " + objs[1] + " " + objs[2] +  " " +objs[3]  + " " + objs[4];
+        // deserialize unit on string
+        // Unit* u = Factory.Deserialize(un);
+        for (int j = 0; j < 5; j++)
+            objs.pop_front();
+        std::cout<<un << "\n";
+    }
+
+    for (int i = 0; i < ne_structureSize; i++){
+        std::string stru = objs[0] + " " + objs[1] + " " + objs[2] + " " + objs[3];
+        for (int j = 0; j< 4; j++)
+             objs.pop_front();
+        std::cout<<stru<<"\n";
+    }
+    
+    
+    return a; 
 }
+
+std::vector<binary> Transition::SerializeBinary(){
+    std::vector<binary> binary_data;
+    int puSize = state.playerUnits.size();
+    int psSize = state.playerStructs.size();
+    int euSize = state.enemyUnits.size();        
+    int esSize = state.enemyStructs.size();     
+    int npuSize = nextState.playerUnits.size();
+    int npsSize = nextState.playerStructs.size();
+    int neuSize = nextState.enemyUnits.size();      
+    int nesSize = nextState.enemyStructs.size();
+    int byte_number = 20;// + puSize + psSize + euSize + esSize + npuSize + npsSize
+                        //+ neuSize + nesSize);
+    
+    binary_data.push_back(byte_number);
+    binary_data.push_back(state.playerGold);
+    binary_data.push_back(state.playerFood.x);
+    binary_data.push_back(state.playerFood.y);
+    binary_data.push_back(state.enemyGold);
+    binary_data.push_back(state.enemyFood.x);
+    binary_data.push_back(state.enemyFood.y);
+    binary_data.push_back(nextState.playerGold);
+    binary_data.push_back(nextState.playerFood.x);
+    binary_data.push_back(nextState.playerFood.y);
+    binary_data.push_back(nextState.enemyGold);
+    binary_data.push_back(nextState.enemyFood.x);
+    binary_data.push_back(nextState.enemyFood.y);
+
+    binary_data.push_back(puSize);
+    binary_data.push_back(psSize);
+    binary_data.push_back(euSize);
+    binary_data.push_back(esSize);
+    binary_data.push_back(npuSize);
+    binary_data.push_back(npsSize);
+    binary_data.push_back(neuSize);
+    binary_data.push_back(nesSize);
+
+    
+    return binary_data;    
+}
+Transition Transition::DeserializeBinary(std::vector<binary> bin){
+
+}
+
 
 State::State(){
     currentMap = Map();
