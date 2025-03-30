@@ -1,5 +1,11 @@
 #include "Transition.h"
-#include <deque>
+#include <span>
+#include "../Tools/Enums.h"
+#include "../Race/Unit/Footman.h"
+#include "../Race/Unit/Peasant.h"
+#include "../Race/Structure/TownHall.h"
+#include "../Race/Structure/Barrack.h"
+#include "../Race/Structure/Farm.h"
 
 Transition::Transition(State s, actionT act, State n)
                         : state(s, act), nextState(n), action(act){}
@@ -157,8 +163,7 @@ std::vector<binary> Transition::SerializeBinary(){
     int npsSize = nextState.playerStructs.size();
     int neuSize = nextState.enemyUnits.size();      
     int nesSize = nextState.enemyStructs.size();
-    int byte_number = 20;// + puSize + psSize + euSize + esSize + npuSize + npsSize
-                        //+ neuSize + nesSize);
+    int byte_number = 20 + (puSize * 5) + (psSize * 4) + (euSize * 5) + (esSize * 4) + (npuSize * 5) + (npsSize * 4) + (neuSize * 5) + (nesSize * 4);
     
     binary_data.push_back(byte_number);
     binary_data.push_back(state.playerGold);
@@ -184,48 +189,183 @@ std::vector<binary> Transition::SerializeBinary(){
     binary_data.push_back(nesSize);
 
     
+    for (int i = 0; i < puSize; i++){
+        std::vector<binary> vec = state.playerUnits[i]->SerializeBinary();
+        binary_data.insert(binary_data.end(), vec.begin(), vec.end());
+    }
+
+    for (int i = 0; i < psSize; i++){
+        std::vector<binary> vec = state.playerStructs[i]->SerializeBinary();
+        binary_data.insert(binary_data.end(), vec.begin(), vec.end());
+    }
+
+    for (int i = 0; i < euSize; i++){
+        std::vector<binary> vec = state.enemyUnits[i]->SerializeBinary();
+        binary_data.insert(binary_data.end(), vec.begin(), vec.end());
+    }
+
+    for (int i = 0; i < esSize; i++){
+        std::vector<binary> vec = state.enemyStructs[i]->SerializeBinary();
+        binary_data.insert(binary_data.end(), vec.begin(), vec.end());
+    }
+
+    for (int i = 0; i < npuSize; i++){
+        std::vector<binary> vec = nextState.playerUnits[i]->SerializeBinary();
+        binary_data.insert(binary_data.end(), vec.begin(), vec.end());
+    }
+
+    for (int i = 0; i < npsSize; i++){
+        std::vector<binary> vec = nextState.playerStructs[i]->SerializeBinary();
+        binary_data.insert(binary_data.end(), vec.begin(), vec.end());
+    }
+
+    for (int i = 0; i < neuSize; i++){
+        std::vector<binary> vec = nextState.enemyUnits[i]->SerializeBinary();
+        binary_data.insert(binary_data.end(), vec.begin(), vec.end());
+    }
+
+    for (int i = 0; i < nesSize; i++){
+        std::vector<binary> vec = nextState.enemyStructs[i]->SerializeBinary();
+        binary_data.insert(binary_data.end(), vec.begin(), vec.end());
+    }
+    
     return binary_data;    
 }
-Transition Transition::DeserializeBinary(std::vector<binary>& bin){
+Transition Transition::DeserializeBinary(std::deque<binary>& bin){
     State state;
     State nextState;
     actionT action;
-    state.playerGold = std::get<int>(bin[1]);
-    state.playerFood.x = std::get<int>(bin[2]);
-    state.playerFood.y = std::get<int>(bin[3]);
-    state.enemyGold = std::get<int>(bin[4]);
-    state.enemyFood.x = std::get<int>(bin[5]);
-    state.enemyFood.y = std::get<int>(bin[6]);
-    nextState.playerGold = std::get<int>(bin[7]);
-    nextState.playerFood.x = std::get<int>(bin[8]);
-    nextState.playerFood.y = std::get<int>(bin[9]); 
-    nextState.enemyGold = std::get<int>(bin[10]);
-    nextState.enemyFood.x = std::get<int>(bin[11]);  
-    nextState.enemyFood.y = std::get<int>(bin[12]);
 
-    //for (int i = 0; i < std::get<int>(bin[13]); i++){}
+    state.playerGold = std::get<int>(bin[0]);
+    state.playerFood.x = std::get<int>(bin[1]);
+    state.playerFood.y = std::get<int>(bin[2]);
+    state.enemyGold = std::get<int>(bin[3]);
+    state.enemyFood.x = std::get<int>(bin[4]);
+    state.enemyFood.y = std::get<int>(bin[5]);
+    nextState.playerGold = std::get<int>(bin[6]);
+    nextState.playerFood.x = std::get<int>(bin[7]);
+    nextState.playerFood.y = std::get<int>(bin[8]); 
+    nextState.enemyGold = std::get<int>(bin[9]);
+    nextState.enemyFood.x = std::get<int>(bin[10]);  
+    nextState.enemyFood.y = std::get<int>(bin[11]);
+    int puSize = std::get<int>(bin[12]);
+    int psSize = std::get<int>(bin[13]);
+    int euSize = std::get<int>(bin[14]);
+    int esSize = std::get<int>(bin[15]);
+    int npuSize = std::get<int>(bin[16]);
+    int npsSize = std::get<int>(bin[17]);
+    int neuSize = std::get<int>(bin[18]);
+    int nesSize = std::get<int>(bin[19]);
+    state.playerUnits.resize(puSize);
+    state.enemyUnits.resize(euSize);
+    nextState.playerUnits.resize(npuSize);
+    nextState.enemyUnits.resize(neuSize);
+    state.playerStructs.resize(psSize);
+    state.enemyStructs.resize(esSize);
+    nextState.playerStructs.resize(npsSize);
+    nextState.enemyStructs.resize(nesSize);
 
-    //for (int i = 0; i < std::get<int>(bin[14]); i++){}
-    //
-    //for (int i = 0; i < std::get<int>(bin[15]); i++){}
-    //
-    //for (int i = 0; i < std::get<int>(bin[16]); i++){}
 
-    //for (int i = 0; i < std::get<int>(bin[17]); i++){}
+    bin.erase(bin.begin(), bin.begin() + 20);
+    
+    for (int i = 0; i < puSize; i++){
+        std::vector<binary> package(bin.begin(), bin.begin() + 5);
+        state.playerUnits[i] = GetUnit(package);
+        bin.erase(bin.begin(), bin.begin() + 5);
+    }
 
-    //for (int i = 0; i < std::get<int>(bin[18]); i++){}
-    //
-    //for (int i = 0; i < std::get<int>(bin[19]); i++){}
-    //
-    //for (int i = 0; i < std::get<int>(bin[20]); i++){}
+    for (int i = 0; i < psSize; i++){
+        std::vector<binary> package(bin.begin(), bin.begin() + 4);
+        state.playerStructs[i] = GetStructure(package);
+        bin.erase(bin.begin(), bin.begin() + 4);
+    }
+    
+    for (int i = 0; i < euSize; i++){
+        std::vector<binary> package(bin.begin(), bin.begin() + 5);
+        state.enemyUnits[1] = GetUnit(package);
+        bin.erase(bin.begin(), bin.begin() + 5);
+    }
 
+    for (int i = 0; i < esSize; i++){
+        std::vector<binary> package(bin.begin(), bin.begin() + 4);
+        state.enemyStructs[i] = GetStructure(package);
+        bin.erase(bin.begin(), bin.begin() + 4);
+    }
 
+    for (int i = 0; i < npuSize; i++){
+        std::vector<binary> package(bin.begin(), bin.begin() + 5);
+        nextState.playerUnits[i] = GetUnit(package);
+        bin.erase(bin.begin(), bin.begin() + 5);
+    }
 
+    for (int i = 0; i < npsSize; i++){
+        std::vector<binary> package(bin.begin(), bin.begin() + 4);
+        nextState.playerStructs[i] = GetStructure(package);
+        bin.erase(bin.begin(), bin.begin() + 4);
+    }
+    
+    for (int i = 0; i < neuSize; i++){
+        std::vector<binary> package(bin.begin(), bin.begin() + 5);
+        nextState.enemyUnits[i] = GetUnit(package);
+        bin.erase(bin.begin(), bin.begin() + 5);
+    }
+
+    for (int i = 0; i < nesSize; i++){
+        std::vector<binary> package(bin.begin(), bin.begin() + 4);
+        nextState.enemyStructs[i] = GetStructure(package);
+        bin.erase(bin.begin(), bin.begin() + 4);
+    }
 
     Transition trans(state, action, nextState);
 
     return trans;
 }
+
+Unit* Transition::GetUnit(std::vector<binary>& bin){
+    UnitType type = static_cast<UnitType>(std::get<int>(bin[0]));
+    float health = std::get<float>(bin[1]);
+    float mana = std::get<float>(bin[2]);
+    int x = std::get<int>(bin[3]);
+    int y = std::get<int>(bin[4]);
+    Unit* un;
+    switch(type){
+        case FOOTMAN:
+            un = new Footman(Vec2(x, y), health, mana);
+            break;
+                                                                       
+        case PEASANT:
+            un = new Peasant(Vec2(x, y), health, mana);
+            break;
+    }
+    return un;
+}
+
+Structure* Transition::GetStructure(std::vector<binary>& bin){
+    StructureType type = static_cast<StructureType>(std::get<int>(bin[0]));
+    float health = std::get<float>(bin[1]);
+    int x = std::get<int>(bin[2]);
+    int y = std::get<int>(bin[3]);
+    Structure* str;
+
+
+    switch(type){
+        case HALL:
+            str = new TownHall(Vec2(x, y), health);
+            break;
+
+        case BARRACK:
+            str = new Barrack(Vec2(x, y), health);
+            break;
+
+
+        case FARM:
+            str = new Farm(Vec2(x, y), health);
+            break;
+    }
+
+    return str;
+}
+
 State::State(){
 
 }

@@ -63,6 +63,23 @@ std::string BinaryReplay(){
     //obj.SaveMemoryAsBinary(); 
     obj.LoadMemoryAsBinary();
 
+//    for (int i = 0 ; i < obj.memory.size(); i++){
+//        for (int j = 0; j < s.playerUnits.size(); j++){
+//            if (obj.memory[i].state.playerUnits[j]->health != s.playerUnits[j]->health)
+//                std::cout<<"not equal";
+//            if (obj.memory[i].state.playerUnits[j]->mana != s.playerUnits[j]->mana)
+//                std::cout<<"not equal mana";
+//            if (obj.memory[i].state.playerUnits[j]->coordinate.x != s.playerUnits[j]->coordinate.x)
+//                std::cout<<"not equal x";
+//            if (obj.memory[i].state.playerUnits[j]->coordinate.y != s.playerUnits[j]->coordinate.y)
+//                std::cout<<"not equal y";
+//            if (obj.memory[i].state.playerUnits[j]->is != s.playerUnits[j]->is)
+//                std::cout<<"not equal type";
+//        }
+//
+//    }
+
+
     return "";
 }
 
@@ -71,3 +88,4 @@ TEST_CASE("Serializing and Deserialzing Replays...", "[ReplaySystem]") {
     REQUIRE(BinaryReplay() == ""); 
     //SaveBinary();
 }
+

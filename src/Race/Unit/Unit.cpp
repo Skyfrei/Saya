@@ -25,6 +25,24 @@ Unit* Unit::Deserialize(std::string& info){
 
 }
 
+std::vector<binary> Unit::SerializeBinary(){
+    std::vector<binary> result;
+    result.resize(5);
+
+    int type = static_cast<int>(is);
+    result[0] = type;
+    result[1] = health;
+    result[2] = mana;
+    result[3] = coordinate.x;
+    result[4] = coordinate.y;
+    
+    return result;
+}
+
+Unit* Unit::DeserializeBinary(std::vector<binary>& bin){
+
+}
+
 void Unit::InsertAction(actionT v) {
   if (std::find(actionQueue.begin(), actionQueue.end(), v) ==
       actionQueue.end()) {

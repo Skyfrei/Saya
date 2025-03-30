@@ -11,6 +11,7 @@
 #include "../Structure/Structure.h"
 #include "../Spells/Spell.h"
 #include "../../State/Terrain.h"
+#include "../../Tools/Binary.h"
 #include "Action.h"
 
 using namespace std::chrono;
@@ -46,6 +47,8 @@ class Unit : public Living {
         int GetActionQueueSize();
         std::string Serialize();
         Unit* Deserialize(std::string& info);
+        std::vector<binary> SerializeBinary();
+        Unit* DeserializeBinary(std::vector<binary>& bin);
         bool operator==(const Unit &other) const;
     
     private:

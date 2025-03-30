@@ -3,8 +3,10 @@
 
 #include "../../Living.h"
 #include "../../Tools/Enums.h"
-#include <memory>
+#include "../../Tools/Binary.h"
+#include <vector>
 #include <string>
+#include <memory>
 
 class Structure : public Living {
     public:
@@ -13,7 +15,8 @@ class Structure : public Living {
         virtual void FinishBuilding() = 0;
         bool operator==(const Structure& other);
         std::string Serialize();
-
+        std::vector<binary> SerializeBinary();
+        Structure* DeserializeBinary(std::vector<binary>& bin);
 
     public:
         StructureType is = OTHER;

@@ -14,16 +14,8 @@
 
 class Barrack : public Structure {
  public:
-  Barrack(Vec2 coord) {
-    name = "Barrack";
-    description = "Can create units.";
-    health = 1500;
-    maxHealth = health;
-    goldCost = 220;
-    is = BARRACK;
-    buildTime = 70;
-    coordinate = coord;
-  }
+  Barrack(Vec2 coord);
+    Barrack(Vec2 coord, float hp);
 
  public:
   void FinishBuilding() override {}

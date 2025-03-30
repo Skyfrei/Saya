@@ -3,6 +3,7 @@
 
 #include <vector> 
 #include <string>
+#include <deque>
 #include "../State/Map.h"
 #include "../Race/Unit/Unit.h"
 #include "../Race/Structure/Structure.h"
@@ -35,7 +36,9 @@ struct Transition {
     std::string Serialize();
     Transition Deserialize(std::string& trans);
     std::vector<binary> SerializeBinary();
-    Transition DeserializeBinary(std::vector<binary>& bin);
+    Transition DeserializeBinary(std::deque<binary>& bin);
+    Unit* GetUnit(std::vector<binary>& bin);
+    Structure* GetStructure(std::vector<binary>& bin);
 
     State state;
     State nextState;

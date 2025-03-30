@@ -9,7 +9,34 @@
 #include "../Structure/Structure.h"
 #include "../Structure/TownHall.h"
 
+Peasant::Peasant(){
+    name = "Peasant";
+    description = "God damn farm workers.";
+    health = 240;
+    maxHealth = health;
+    attack = 5.5;
+    mana = 200;
+    manaRegen = 0.67f;
+    goldCost = 75;
+    foodCost = 1;
+    buildTime = 15;
+    is = PEASANT;
+}
 
+Peasant::Peasant(Vec2 coord, float hp, float man){
+    coordinate = coord;
+    health = hp;
+    mana = man;
+    name = "Peasant";
+    description = "God damn farm workers.";
+    maxHealth = 240;
+    attack = 5.5;
+    manaRegen = 0.67f;
+    goldCost = 75;
+    foodCost = 1;
+    buildTime = 15;
+    is = PEASANT;
+}
 
 void Peasant::Build(Structure *str) {
   if (WithinDistance(str->coordinate)) {

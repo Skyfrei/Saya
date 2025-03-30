@@ -9,6 +9,23 @@ std::string Structure::Serialize(){
     return result;
 }
 
+std::vector<binary> Structure::SerializeBinary(){
+    std::vector<binary> result;
+    int type = static_cast<int>(is);
+    result.resize(4);
+    result[0] = type;
+    result[1] = health;
+    result[2] = coordinate.x;
+    result[3] = coordinate.y;
+
+    return result;
+}
+
+Structure* Structure::DeserializeBinary(std::vector<binary>& bin){
+
+}
+
+
 bool Structure::operator==(const Structure& other){
   if (other.coordinate == coordinate && other.health == health && other.is == is)
     return false;

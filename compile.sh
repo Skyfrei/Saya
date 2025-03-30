@@ -3,4 +3,5 @@ cd build/
 ninja
 
 mv Saya ..
-#./tester
+cd ..
+./build/tester

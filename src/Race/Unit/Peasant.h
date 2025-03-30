@@ -3,28 +3,13 @@
 #include <memory>
 
 #include "../../Tools/Enums.h"
+#include "../../Tools/Vec2.h"
 #include "Unit.h"
 
 class Peasant : public Unit {
  public:
-  Peasant() {
-    name = "Peasant";
-    description = "God damn farm workers.";
-    health = 240;  // 240
-    maxHealth = health;
-
-    attack = 5.5;
-
-    mana = 200;
-    manaRegen = 0.67f;
-
-    goldCost = 75;
-    foodCost = 1;
-
-    buildTime = 15;
-
-    is = PEASANT;
-  }
+    Peasant();
+    Peasant(Vec2 coord, float hp, float man);
 
  public:
   void Build(Structure *);

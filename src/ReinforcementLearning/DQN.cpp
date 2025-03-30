@@ -53,14 +53,14 @@ void DQN::LoadMemory(){
     std::string line;
 
     if (!file.is_open()){
-        std::cout<< "File of experience couldn't be opened.";
+        std::cout<< "String replay file couldn't be opened.";
         return;
     }
     while (std::getline(file, line)) {
         Transition trans;
         trans = trans.Deserialize(line);
        // trans = trans.Deserialize(line);
-       // memory.push_back(trans);
+       // AddExperience(trans);
     }
     file.close();
 }
@@ -80,29 +80,34 @@ void DQN::SaveMemoryAsBinary(){
 // 0-11 first bytes, 
 void DQN::LoadMemoryAsBinary(){
     std::ifstream file("binary.bin", std::ios::binary);
-    std::vector<binary> binaryData;
+    std::deque<binary> binaryData;
     int expectedBytes = 0;
     binary temp;
+    int count = 0;
 
     if (!file.is_open()){
-        std::cout<< "File of experience couldn't be opened.";
+        std::cout<< "Binary replay file couldn't be opened.";
         return;
     }
+
     while (file.read(reinterpret_cast<char*>(&temp), sizeof(binary))) {
         if (binaryData.size() == 0){
             expectedBytes = std::get<int>(temp);
-            std::cout<<expectedBytes<< " " ;
+            binaryData.resize(expectedBytes);
+            continue;
         }
-        binaryData.push_back(temp);
+        binaryData[count] = temp;
         
-        if (binaryData.size()  == expectedBytes + 1){
+        if (count == expectedBytes - 1){
             Transition trans;
             trans = trans.DeserializeBinary(binaryData);
             AddExperience(trans);
             binaryData.clear();
+            count = 0;
+            continue;
         }
+        count++;
     }
-    std::cout<< " \n" << memory.size();
     file.close();
 }
 
