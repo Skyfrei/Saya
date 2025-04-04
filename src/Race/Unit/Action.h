@@ -18,11 +18,11 @@ class Terrain;
 struct MoveAction;
 struct AttackAction;
 struct FarmGoldAction;
-struct RecruitSoldierAction;
+struct RecruitAction;
 struct BuildAction;
 
 using actionT = std::variant<AttackAction, MoveAction,
-                             BuildAction, FarmGoldAction, RecruitSoldierAction>;
+                             BuildAction, FarmGoldAction, RecruitAction>;
 
 Unit* GetUnit(std::vector<binary>& bin);
 Structure* GetStructure(std::vector<binary>& bin);
@@ -85,11 +85,11 @@ struct FarmGoldAction : public Action {
     
     int gold = 0;
 };
-struct RecruitSoldierAction : public Action{
+struct RecruitAction : public Action{
     
-    RecruitSoldierAction(UnitType typeOfUnit, Structure* s);
+    RecruitAction(UnitType typeOfUnit, Structure* s);
     ActionType GetType() override;
-    bool operator==(const RecruitSoldierAction &a) const;
+    bool operator==(const RecruitAction &a) const;
     UnitType unitType;
     Structure *stru;
 };
