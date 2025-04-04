@@ -66,15 +66,15 @@ actionT Action::Deserialize(){
     return MoveAction(Vec2(4,5));
 }
 
-std::vector<binary> Action::SerializeBinary(){
-    std::vector<binary> result;
+std::deque<binary> Action::SerializeBinary(){
+    std::deque<binary> result;
     int actionType = static_cast<int>(type);
     result.push_back(actionType);
     switch(type){
         case MOVE:{
             MoveAction* moveAction = dynamic_cast<MoveAction*>(this);
-            result.push_back(moveAction->prevCoord.x);
-            result.push_back(moveAction->prevCoord.y);
+            std::vector<binary> unBin = attackAction->unit->SerializeBinary();
+            result.insert(result.end(), unBin.begin(), unBin.end());
             result.push_back(moveAction->destCoord.x);
             result.push_back(moveAction->destCoord.y);
             break;
@@ -106,7 +106,9 @@ std::vector<binary> Action::SerializeBinary(){
             std::vector<binary> struBin = buildAction->stru->SerializeBinary();
             result.insert(result.end(), unBin.begin(), unBin.end());
             result.push_back(structureType);
-            result.insert(result.end(), struBin.begin(), struBin.end());
+            //result.insert(result.end(), struBin.begin(), struBin.end());
+            result.push_back(buildAction->coordinate.x);
+            result.push_back(buildAction->coordinate.y);
             break;
         }
 
@@ -123,6 +125,7 @@ std::vector<binary> Action::SerializeBinary(){
             RecruitSoldierAction* recruitAction = dynamic_cast<RecruitSoldierAction*>(this);
             int unitType = static_cast<int>(recruitAction->unitType);
             std::vector<binary> struBin = recruitAction->stru->SerializeBinary();
+
             result.push_back(unitType);
             result.insert(result.end(), struBin.begin(), struBin.end());
             break;
@@ -131,8 +134,100 @@ std::vector<binary> Action::SerializeBinary(){
     return result;
 }
 
-actionT Action::DeserializeBinary(std::vector<binary>& bin){
-    return MoveAction(Vec2(4,5));
+actionT Action::DeserializeBinary(std::deque<binary>& bin){
+    int actionType = std::get<int>(bin[0]);
+    deque.pop_front();
+    switch(actionType){
+        case 0:
+            std::vector<binary> package(bin.begin(), bin.begin() + 5);
+            Unit* newUnit = GetUnit(package);
+            Vec2 dest(std::get<int>(bin[5]), std::get<int>(bin[6]));
+            MoveAction move(newUnit, dest);
+            bin.erase(bin.begin(), bin.begin() + 7);
+
+            return move;
+        case 1:
+
+
+            break;
+        case 2:
+            std::vector<binary> package(bin.begin(), bin.begin() + 5);
+            //bin.erase(bin.begin(), bin.begin() + 5);
+            //std::vector<binary> package2(bin.begin(), bin.begin() + 4);
+            int structType = std::get<int>(bin[5]);
+            Vec2 buildCoord(std::get<int>(bin[6]), std::get<int>(bin[7]));
+            bin.erase(bin.begin(), bin.begin() + 8);
+
+            Unit* newUnit = GetUnit(package);
+            Structure* newStruct = GetStructure(package2);
+            BuildAction buildAction(newUnit, structType, buildCoord);
+            return buildAction;
+
+        case 3:
+            result.push_back(farmAction->terr->coord.x);
+            result.push_back(farmAction->terr->coord.y);
+            
+            std::vector<binary> package(bin.begin(), bin.begin() + 5) 
+            Unit* newUnit = GetUnit(package);
+            int x = std::get<int>bin[5]
+            int y = std::get<int>bin[6];
+            Vec2 dest(x, y);
+            bin.erase(bin.begin(), bin.begin() + 7);
+            FarmGoldAction farmAction(newUnit, dest);
+
+            return farmAction;
+        case 4:
+            int unitType = std::get<int>bin[0];
+            std::vector<binary> package(bin.begin() + 1, bin.begin() + 4);
+            Structure* binStru = GetStructure(package);
+            
+            bin.erase(bin.begin(), bin.begin() + 5);
+            RecruitAction recruitAction(unitType, binStru);
+            return recruitAction;
+    }
+}
+
+Unit* GetUnit(std::vector<binary>& bin){
+    UnitType type = static_cast<UnitType>(std::get<int>(bin[0]));
+    float health = std::get<float>(bin[1]);
+    float mana = std::get<float>(bin[2]);
+    int x = std::get<int>(bin[3]);
+    int y = std::get<int>(bin[4]);
+    Unit* un;
+    switch(type){
+        case FOOTMAN:
+            un = new Footman(Vec2(x, y), health, mana);
+            break;
+                                                                       
+        case PEASANT:
+            un = new Peasant(Vec2(x, y), health, mana);
+            break;
+    }
+    return un;
+}
+
+Structure* GetStructure(std::vector<binary>& bin){
+    StructureType type = static_cast<StructureType>(std::get<int>(bin[0]));
+    float health = std::get<float>(bin[1]);
+    int x = std::get<int>(bin[2]);
+    int y = std::get<int>(bin[3]);
+    Structure* str;
+    switch(type){
+        case HALL:
+            str = new TownHall(Vec2(x, y), health);
+            break;
+
+        case BARRACK:
+            str = new Barrack(Vec2(x, y), health);
+            break;
+
+
+        case FARM:
+            str = new Farm(Vec2(x, y), health);
+            break;
+    }
+
+    return str;
 }
 
 
@@ -147,6 +242,7 @@ AttackAction::AttackAction(Unit* un, Living* o) : object(o), unit(un){type = ATT
 BuildAction::BuildAction(Structure *s) : stru(s) {type = BUILD;}
 BuildAction::BuildAction(Unit* p, StructureType s, Vec2 c) : peasant(p), struType(s), coordinate(c){type = BUILD;} 
 FarmGoldAction::FarmGoldAction(Vec2 v, Terrain *te, TownHall *t) : destCoord(v), terr(te), hall(t){type = FARMGOLD;}
+FarmGoldAction::FarmGoldAction(Unit *p, Vec2 v) : destCoord(v), peasant(p){type = FARMGOLD;}    
 FarmGoldAction::FarmGoldAction(Unit *p, Vec2 v, TownHall *h) : peasant(p), destCoord(v), hall(h){type = FARMGOLD;}
 RecruitSoldierAction::RecruitSoldierAction(UnitType typeOfUnit, Structure* s) : unitType(typeOfUnit), stru(s){type = RECRUIT;}
 bool MoveAction::operator==(const MoveAction &b) const {

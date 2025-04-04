@@ -31,8 +31,13 @@ std::string StringReplay(){
     DQN obj;  
     for(int i = 0; i < 1000; i++)
         obj.AddExperience(trans);
+    auto a = std::chrono::high_resolution_clock::now();
     obj.SaveMemory(); 
-    //obj.LoadMemory();
+    auto b = std::chrono::high_resolution_clock::now();
+//    obj.LoadMemory();
+    auto c = std::chrono::high_resolution_clock::now();
+    std::cout << "Time  to save string replay " << duration_cast<milliseconds>(b-a).count();
+    std::cout<<"\n Time to load string replay\n" << duration_cast<milliseconds>(c-b).count();
     return "";
 }
 
@@ -66,8 +71,8 @@ std::string BinaryReplay(){
     auto b = std::chrono::high_resolution_clock::now();
     obj.LoadMemoryAsBinary();
     auto c = std::chrono::high_resolution_clock::now();
-    std::cout << "Time  to save " << duration_cast<milliseconds>(b-a).count();
-    std::cout<<"\n Time to load" << duration_cast<milliseconds>(c-b).count();
+    std::cout << "Time  to save binary replay" << duration_cast<milliseconds>(b-a).count();
+    std::cout<<"\n Time to load binary replay" << duration_cast<milliseconds>(c-b).count();
 
 //    for (int i = 0 ; i < obj.memory.size(); i++){
 //        for (int j = 0; j < s.playerUnits.size(); j++){
@@ -90,7 +95,7 @@ std::string BinaryReplay(){
 }
 
 TEST_CASE("Serializing and Deserialzing Replays...", "[ReplaySystem]") {
-//    REQUIRE(StringReplay() == "");
+    REQUIRE(StringReplay() == "");
     REQUIRE(BinaryReplay() == ""); 
     //SaveBinary();
 }

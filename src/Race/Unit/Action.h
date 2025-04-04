@@ -6,8 +6,9 @@
 #include "../../Tools/Enums.h"
 #include "../../Tools/Binary.h"
 #include "../../Tools/Vec2.h"
-#include <vector>
+#include <deque>
 #include <string>
+#include <vector>
 
 class TownHall;
 class Unit;
@@ -22,14 +23,18 @@ struct BuildAction;
 
 using actionT = std::variant<AttackAction, MoveAction,
                              BuildAction, FarmGoldAction, RecruitSoldierAction>;
+
+Unit* GetUnit(std::vector<binary>& bin);
+Structure* GetStructure(std::vector<binary>& bin);
+
 class Action{
     public:
         ActionType type;
         virtual ActionType GetType() = 0;
         std::string Serialize();
         actionT Deserialize();
-        std::vector<binary> SerializeBinary();
-        actionT DeserializeBinary(std::vector<binary>& bin);
+        std::deque<binary> SerializeBinary();
+        actionT DeserializeBinary(std::deque<binary>& bin);
 };
 struct MoveAction : public Action {
     MoveAction(Vec2 c);
@@ -67,6 +72,8 @@ struct BuildAction : public Action{
 struct FarmGoldAction : public Action {
     FarmGoldAction(Vec2 v, Terrain *te, TownHall *t);
     FarmGoldAction(Unit *p, Vec2 v, TownHall *h);    
+    FarmGoldAction(Unit *p, Vec2 v);    
+
     ActionType GetType() override;
     bool operator==(const FarmGoldAction &a) const;
 
