@@ -4,6 +4,7 @@
 #include "../src/Race/Unit/Unit.h"
 #include "../src/Race/Structure/TownHall.h"
 #include "../src/Race/Unit/Peasant.h"
+#include <chrono>
 
 std::string StringReplay(){
     State s;
@@ -31,7 +32,7 @@ std::string StringReplay(){
     for(int i = 0; i < 1000; i++)
         obj.AddExperience(trans);
     obj.SaveMemory(); 
-    obj.LoadMemory();
+    //obj.LoadMemory();
     return "";
 }
 
@@ -58,10 +59,15 @@ std::string BinaryReplay(){
     actionT act = MoveAction(s.playerUnits[0], Vec2(3, 4));
     Transition trans(s, act, s);
     DQN obj;  
-    //for(int i = 0; i < 1000; i++)
-    //    obj.AddExperience(trans);
-    //obj.SaveMemoryAsBinary(); 
+    for(int i = 0; i < 1000; i++)
+        obj.AddExperience(trans);
+    auto a = std::chrono::high_resolution_clock::now();
+    obj.SaveMemoryAsBinary(); 
+    auto b = std::chrono::high_resolution_clock::now();
     obj.LoadMemoryAsBinary();
+    auto c = std::chrono::high_resolution_clock::now();
+    std::cout << "Time  to save " << duration_cast<milliseconds>(b-a).count();
+    std::cout<<"\n Time to load" << duration_cast<milliseconds>(c-b).count();
 
 //    for (int i = 0 ; i < obj.memory.size(); i++){
 //        for (int j = 0; j < s.playerUnits.size(); j++){

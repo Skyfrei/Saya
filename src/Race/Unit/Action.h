@@ -4,7 +4,9 @@
 #include <cstddef>
 #include <variant>
 #include "../../Tools/Enums.h"
+#include "../../Tools/Binary.h"
 #include "../../Tools/Vec2.h"
+#include <vector>
 #include <string>
 
 class TownHall;
@@ -26,7 +28,8 @@ class Action{
         virtual ActionType GetType() = 0;
         std::string Serialize();
         actionT Deserialize();
-        
+        std::vector<binary> SerializeBinary();
+        actionT DeserializeBinary(std::vector<binary>& bin);
 };
 struct MoveAction : public Action {
     MoveAction(Vec2 c);

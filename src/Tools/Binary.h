@@ -3,7 +3,7 @@
 
 #include <variant>
 
-using binary = std::variant<int, float, double>;
+using binary = std::variant<int, float>;
 
 
 #endif

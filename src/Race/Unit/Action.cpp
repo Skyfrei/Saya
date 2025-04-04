@@ -63,8 +63,79 @@ std::string Action::Serialize(){
 actionT Action::Deserialize(){
     int actionType = static_cast<int>(type);
     std::string result = std::to_string(actionType) + ",";
-
+    return MoveAction(Vec2(4,5));
 }
+
+std::vector<binary> Action::SerializeBinary(){
+    std::vector<binary> result;
+    int actionType = static_cast<int>(type);
+    result.push_back(actionType);
+    switch(type){
+        case MOVE:{
+            MoveAction* moveAction = dynamic_cast<MoveAction*>(this);
+            result.push_back(moveAction->prevCoord.x);
+            result.push_back(moveAction->prevCoord.y);
+            result.push_back(moveAction->destCoord.x);
+            result.push_back(moveAction->destCoord.y);
+            break;
+        }
+
+        case ATTACK:{
+            AttackAction* attackAction = dynamic_cast<AttackAction*>(this);
+            std::vector<binary> unBin = attackAction->unit->SerializeBinary();
+            result.insert(result.end(), unBin.begin(), unBin.end());
+            Structure* objStru = dynamic_cast<Structure*>(attackAction->object);
+            Unit* objUn = dynamic_cast<Unit*>(attackAction->object);
+            if (objUn != nullptr){
+                result.push_back(0);
+                std::vector<binary> objectBin = objUn->SerializeBinary();
+                result.insert(result.end(), objectBin.begin(), objectBin.end());
+            }
+            else if (objStru != nullptr){
+                result.push_back(1);
+                std::vector<binary> objectBin = objStru->SerializeBinary();
+                result.insert(result.end(), objectBin.begin(), objectBin.end());
+            } 
+            break;
+        }
+
+        case BUILD:{
+            BuildAction* buildAction = dynamic_cast<BuildAction*>(this);
+            int structureType = static_cast<int>(buildAction->struType);
+            std::vector<binary> unBin = buildAction->peasant->SerializeBinary();
+            std::vector<binary> struBin = buildAction->stru->SerializeBinary();
+            result.insert(result.end(), unBin.begin(), unBin.end());
+            result.push_back(structureType);
+            result.insert(result.end(), struBin.begin(), struBin.end());
+            break;
+        }
+
+        case FARMGOLD:{
+            FarmGoldAction* farmAction = dynamic_cast<FarmGoldAction*>(this);
+            std::vector<binary> unBin = farmAction->peasant->SerializeBinary();
+            result.insert(result.end(), unBin.begin(), unBin.end());
+            result.push_back(farmAction->terr->coord.x);
+            result.push_back(farmAction->terr->coord.y);
+            break;
+        }
+
+        case RECRUIT:{
+            RecruitSoldierAction* recruitAction = dynamic_cast<RecruitSoldierAction*>(this);
+            int unitType = static_cast<int>(recruitAction->unitType);
+            std::vector<binary> struBin = recruitAction->stru->SerializeBinary();
+            result.push_back(unitType);
+            result.insert(result.end(), struBin.begin(), struBin.end());
+            break;
+        }
+    }
+    return result;
+}
+
+actionT Action::DeserializeBinary(std::vector<binary>& bin){
+    return MoveAction(Vec2(4,5));
+}
+
+
 MoveAction::MoveAction(Vec2 c) : destCoord(c) {type = MOVE;}
 MoveAction::MoveAction(Unit* un, Vec2 c) : destCoord(c), unit(un){
     type = MOVE;

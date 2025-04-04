@@ -94,6 +94,7 @@ void DQN::LoadMemoryAsBinary(){
         if (binaryData.size() == 0){
             expectedBytes = std::get<int>(temp);
             binaryData.resize(expectedBytes);
+            //std::cout<<expectedBytes<<" ";
             continue;
         }
         binaryData[count] = temp;
