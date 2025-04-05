@@ -68,7 +68,7 @@ void DQN::LoadMemory(){
 void DQN::SaveMemoryAsBinary(){
     std::vector<binary> data_to_save; 
     std::ofstream file;
-    file.open("binary.bin", std::ios::binary);
+    file.open(memory_file_binary, std::ios::binary);
         
     for (int i = 0; i < memory.size(); i++){
         std::vector<binary> data = memory[i].SerializeBinary();
@@ -79,7 +79,7 @@ void DQN::SaveMemoryAsBinary(){
 }
 // 0-11 first bytes, 
 void DQN::LoadMemoryAsBinary(){
-    std::ifstream file("binary.bin", std::ios::binary);
+    std::ifstream file(memory_file_binary, std::ios::binary);
     std::deque<binary> binaryData;
     int expectedBytes = 0;
     binary temp;

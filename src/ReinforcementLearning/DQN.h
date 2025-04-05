@@ -54,7 +54,8 @@ class DQN : public torch::nn::Module {
 
         std::deque<Transition> memory;
         int memory_size = 1000;
-        const std::string memory_file = "dqn_memory.bin";
+        const std::string memory_file = "dqn_memory.say";
+        const std::string memory_file_binary = "binary.bay";
 };
 
 struct TensorStruct{

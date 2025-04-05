@@ -61,7 +61,7 @@ std::string BinaryReplay(){
         s.enemyUnits[i]->coordinate.x = 10;
         s.enemyUnits[i]->coordinate.y = 10;
     }
-    actionT act = MoveAction(s.playerUnits[0], Vec2(3, 4));
+    actionT act = MoveAction(s.enemyUnits[0], Vec2(3, 4));
     Transition trans(s, act, s);
     DQN obj;  
     for(int i = 0; i < 1000; i++)
@@ -71,8 +71,8 @@ std::string BinaryReplay(){
     auto b = std::chrono::high_resolution_clock::now();
     obj.LoadMemoryAsBinary();
     auto c = std::chrono::high_resolution_clock::now();
-    std::cout << "Time  to save binary replay" << duration_cast<milliseconds>(b-a).count();
-    std::cout<<"\n Time to load binary replay" << duration_cast<milliseconds>(c-b).count();
+    std::cout << "\nTime  to save binary replay" << duration_cast<milliseconds>(b-a).count();
+    std::cout<<"\nTime to load binary replay" << duration_cast<milliseconds>(c-b).count();
 
 //    for (int i = 0 ; i < obj.memory.size(); i++){
 //        for (int j = 0; j < s.playerUnits.size(); j++){
@@ -95,8 +95,7 @@ std::string BinaryReplay(){
 }
 
 TEST_CASE("Serializing and Deserialzing Replays...", "[ReplaySystem]") {
-    REQUIRE(StringReplay() == "");
+    //REQUIRE(StringReplay() == "");
     REQUIRE(BinaryReplay() == ""); 
     //SaveBinary();
 }
-

@@ -39,6 +39,7 @@ struct Transition {
     Transition DeserializeBinary(std::deque<binary>& bin);
     Unit* GetUnit(std::vector<binary>& bin);
     Structure* GetStructure(std::vector<binary>& bin);
+    actionT GetAction(std::deque<binary>& bin);
 
     State state;
     State nextState;
