@@ -21,9 +21,9 @@ std::string Unit::Serialize(){
     return result;
 }
 
-Unit* Unit::Deserialize(std::string& info){
-
-}
+//Unit* Unit::Deserialize(std::string& info){
+//
+//}
 
 std::vector<binary> Unit::SerializeBinary(){
     std::vector<binary> result;
@@ -39,9 +39,9 @@ std::vector<binary> Unit::SerializeBinary(){
     return result;
 }
 
-Unit* Unit::DeserializeBinary(std::vector<binary>& bin){
-
-}
+//Unit* Unit::DeserializeBinary(std::vector<binary>& bin){
+//
+//}
 
 void Unit::InsertAction(actionT v) {
   if (std::find(actionQueue.begin(), actionQueue.end(), v) ==

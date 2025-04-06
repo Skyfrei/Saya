@@ -21,11 +21,6 @@ std::vector<binary> Structure::SerializeBinary(){
     return result;
 }
 
-Structure* Structure::DeserializeBinary(std::vector<binary>& bin){
-
-}
-
-
 bool Structure::operator==(const Structure& other){
   if (other.coordinate == coordinate && other.health == health && other.is == is)
     return false;

@@ -46,9 +46,9 @@ class Unit : public Living {
         bool HasCommand();
         int GetActionQueueSize();
         std::string Serialize();
-        Unit* Deserialize(std::string& info);
+        //Unit* Deserialize(std::string& info);
         std::vector<binary> SerializeBinary();
-        Unit* DeserializeBinary(std::vector<binary>& bin);
+        //Unit* DeserializeBinary(std::vector<binary>& bin);
         bool operator==(const Unit &other) const;
     
     private:

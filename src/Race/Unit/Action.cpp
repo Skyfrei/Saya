@@ -65,11 +65,11 @@ std::string Action::Serialize(){
 
     return result;
 }
-actionT Action::Deserialize(){
-    int actionType = static_cast<int>(type);
-    std::string result = std::to_string(actionType) + ",";
-    return MoveAction(Vec2(4,5));
-}
+//actionT Action::Deserialize(){
+//    int actionType = static_cast<int>(type);
+//    std::string result = std::to_string(actionType) + ",";
+//    return MoveAction(Vec2(4,5));
+//}
 
 std::deque<binary> Action::SerializeBinary(){
     std::deque<binary> result;
@@ -138,123 +138,6 @@ std::deque<binary> Action::SerializeBinary(){
     }
     return result;
 }
-
-actionT Action::DeserializeBinary(std::deque<binary>& bin){
-    int actionType = std::get<int>(bin[0]);
-    bin.pop_front();
-    switch(actionType){
-        case 0:{
-            std::vector<binary> package(bin.begin(), bin.begin() + 5);
-            Unit* newUnit = GetUnit(package);
-            Vec2 dest(std::get<int>(bin[5]), std::get<int>(bin[6]));
-            MoveAction move(newUnit, dest);
-            bin.erase(bin.begin(), bin.begin() + 7);
-            return move;
-        }
-
-        case 1:{
-            std::vector<binary> package(bin.begin(), bin.begin() + 5);
-            Unit* newUnit = GetUnit(package);
-            int unitOrStruct = std::get<int>(bin[5]);
-            Unit* targetUnit;
-            Structure* targetStructure;
-            bin.erase(bin.begin(), bin.begin() + 6);
-            if (unitOrStruct == 0){
-                std::vector<binary> package2(bin.begin(), bin.begin() + 5);
-                targetUnit = GetUnit(package2); 
-                delete targetStructure;
-                bin.erase(bin.begin(), bin.begin() + 5);
-            }else{
-                std::vector<binary> package2(bin.begin(), bin.begin() + 4);
-                targetStructure = GetStructure(package2); 
-                delete targetUnit;
-                bin.erase(bin.begin(), bin.begin() + 4);
-            }
-            AttackAction attackAction(targetUnit, targetStructure);
-            return attackAction;
-        }
-
-        case 2:{
-            std::vector<binary> package(bin.begin(), bin.begin() + 5);
-            //bin.erase(bin.begin(), bin.begin() + 5);
-            //std::vector<binary> package2(bin.begin(), bin.begin() + 4);
-            StructureType structType = static_cast<StructureType>(std::get<int>(bin[5]));
-            Vec2 buildCoord(std::get<int>(bin[6]), std::get<int>(bin[7]));
-            bin.erase(bin.begin(), bin.begin() + 8);
-
-            Unit* newUnit = GetUnit(package);
-            //Structure* newStruct = GetStructure(package2);
-            BuildAction buildAction(newUnit, structType, buildCoord);
-            return buildAction;
-        }
-
-        case 3:{
-            std::vector<binary> package(bin.begin(), bin.begin() + 5);
-            Unit* newUnit = GetUnit(package);
-            int x = std::get<int>(bin[5]);
-            int y = std::get<int>(bin[6]);
-            Vec2 dest(x, y);
-
-            bin.erase(bin.begin(), bin.begin() + 7);
-            FarmGoldAction farmAction(newUnit, dest);
-            return farmAction;
-        }
-
-        case 4:{
-            UnitType unitType = static_cast<UnitType>(std::get<int>(bin[0]));
-            std::vector<binary> package(bin.begin() + 1, bin.begin() + 4);
-            Structure* binStru = GetStructure(package);
-            
-            bin.erase(bin.begin(), bin.begin() + 5);
-            RecruitAction recruitAction(unitType, binStru);
-            return recruitAction;
-        }
-    }
-}
-
-Unit* GetUnit(std::vector<binary>& bin){
-    UnitType type = static_cast<UnitType>(std::get<int>(bin[0]));
-    float health = std::get<float>(bin[1]);
-    float mana = std::get<float>(bin[2]);
-    int x = std::get<int>(bin[3]);
-    int y = std::get<int>(bin[4]);
-    Unit* un;
-    switch(type){
-        case FOOTMAN:
-            un = new Footman(Vec2(x, y), health, mana);
-            break;
-                                                                       
-        case PEASANT:
-            un = new Peasant(Vec2(x, y), health, mana);
-            break;
-    }
-    return un;
-}
-
-Structure* GetStructure(std::vector<binary>& bin){
-    StructureType type = static_cast<StructureType>(std::get<int>(bin[0]));
-    float health = std::get<float>(bin[1]);
-    int x = std::get<int>(bin[2]);
-    int y = std::get<int>(bin[3]);
-    Structure* str;
-    switch(type){
-        case HALL:
-            str = new TownHall(Vec2(x, y), health);
-            break;
-
-        case BARRACK:
-            str = new Barrack(Vec2(x, y), health);
-            break;
-
-
-        case FARM:
-            str = new Farm(Vec2(x, y), health);
-            break;
-    }
-
-    return str;
-}
-
 
 MoveAction::MoveAction(Vec2 c) : destCoord(c) {type = MOVE;}
 MoveAction::MoveAction(Unit* un, Vec2 c) : destCoord(c), unit(un){

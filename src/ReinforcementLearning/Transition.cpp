@@ -7,6 +7,9 @@
 #include "../Race/Structure/Barrack.h"
 #include "../Race/Structure/Farm.h"
 
+//#include <chrono>
+
+
 Transition::Transition(State s, actionT act, State n)
                         : state(s, act), nextState(n), action(act){}
 
@@ -237,7 +240,7 @@ std::vector<binary> Transition::SerializeBinary(){
     
     return binary_data;    
 }
-Transition Transition::DeserializeBinary(std::deque<binary>& bin){
+Transition Transition::DeserializeBinary(std::vector<binary>& bin){
     State state;
     State nextState;
 
@@ -270,137 +273,113 @@ Transition Transition::DeserializeBinary(std::deque<binary>& bin){
     nextState.playerStructs.resize(npsSize);
     nextState.enemyStructs.resize(nesSize);
 
-    bin.erase(bin.begin(), bin.begin() + 20);
-
-    
+    std::vector<binary>::iterator start = bin.begin() + 20;
     for (int i = 0; i < puSize; i++){
-        std::vector<binary> package(bin.begin(), bin.begin() + 5);
-        state.playerUnits[i] = GetUnit(package);
-        bin.erase(bin.begin(), bin.begin() + 5);
+        state.playerUnits[i] = GetUnit(std::span(start, start+5));
+        start += 5;
     }
 
     for (int i = 0; i < psSize; i++){
-        std::vector<binary> package(bin.begin(), bin.begin() + 4);
-        state.playerStructs[i] = GetStructure(package);
-        bin.erase(bin.begin(), bin.begin() + 4);
+        state.playerStructs[i] = GetStructure(std::span(start, start + 4));
+        start += 4;
     }
-    
+
     for (int i = 0; i < euSize; i++){
-        std::vector<binary> package(bin.begin(), bin.begin() + 5);
-        state.enemyUnits[1] = GetUnit(package);
-        bin.erase(bin.begin(), bin.begin() + 5);
+        state.enemyUnits[1] = GetUnit(std::span(start, start + 5));
+        start += 5;
     }
 
     for (int i = 0; i < esSize; i++){
-        std::vector<binary> package(bin.begin(), bin.begin() + 4);
-        state.enemyStructs[i] = GetStructure(package);
-        bin.erase(bin.begin(), bin.begin() + 4);
+        state.enemyStructs[i] = GetStructure(std::span(start, start + 4));
+        start += 4;
     }
 
     for (int i = 0; i < npuSize; i++){
-        std::vector<binary> package(bin.begin(), bin.begin() + 5);
-        nextState.playerUnits[i] = GetUnit(package);
-        bin.erase(bin.begin(), bin.begin() + 5);
+        nextState.playerUnits[i] = GetUnit(std::span(start, start + 5));
+        start += 5;
     }
 
     for (int i = 0; i < npsSize; i++){
-        std::vector<binary> package(bin.begin(), bin.begin() + 4);
-        nextState.playerStructs[i] = GetStructure(package);
-        bin.erase(bin.begin(), bin.begin() + 4);
+        nextState.playerStructs[i] = GetStructure(std::span(start, start + 4));
+        start += 4;
     }
     
     for (int i = 0; i < neuSize; i++){
-        std::vector<binary> package(bin.begin(), bin.begin() + 5);
-        nextState.enemyUnits[i] = GetUnit(package);
-        bin.erase(bin.begin(), bin.begin() + 5);
+        nextState.enemyUnits[i] = GetUnit(std::span(start, start + 5));
+        start += 5;
     }
 
     for (int i = 0; i < nesSize; i++){
-        std::vector<binary> package(bin.begin(), bin.begin() + 4);
-        nextState.enemyStructs[i] = GetStructure(package);
-        bin.erase(bin.begin(), bin.begin() + 4);
+        nextState.enemyStructs[i] = GetStructure(std::span(start, start + 4));
+        start += 4;
     }
+    actionT deserAction = GetAction(std::span(start, bin.end()));
 
-    actionT deserAction = GetAction(bin);
+
     Transition trans(state, deserAction, nextState);
 
     return trans;
 }
 
-actionT Transition::GetAction(std::deque<binary>& bin){
+actionT Transition::GetAction(std::span<binary> bin){
     int actionType = std::get<int>(bin[0]);
-    bin.pop_front();
+    auto start = bin.begin() + 1;
     switch(actionType){
         case 0:{
-            std::vector<binary> package(bin.begin(), bin.begin() + 5);
-            Unit* newUnit = GetUnit(package);
+            Unit* newUnit = GetUnit(std::span(start, start + 5));
             Vec2 dest(std::get<int>(bin[5]), std::get<int>(bin[6]));
             MoveAction move(newUnit, dest);
-            bin.erase(bin.begin(), bin.begin() + 7);
             return move;
         }
 
         case 1:{
-            std::vector<binary> package(bin.begin(), bin.begin() + 5);
-            Unit* newUnit = GetUnit(package);
+            Unit* newUnit = GetUnit(std::span(start, start + 5));
             int unitOrStruct = std::get<int>(bin[5]);
             Unit* targetUnit;
             Structure* targetStructure;
-            bin.erase(bin.begin(), bin.begin() + 6);
+
+            start += 7;
             if (unitOrStruct == 0){
-                std::vector<binary> package2(bin.begin(), bin.begin() + 5);
-                targetUnit = GetUnit(package2); 
+                targetUnit = GetUnit(std::span(start, start + 5)); 
                 delete targetStructure;
-                bin.erase(bin.begin(), bin.begin() + 5);
             }else{
-                std::vector<binary> package2(bin.begin(), bin.begin() + 4);
-                targetStructure = GetStructure(package2); 
+                targetStructure = GetStructure(std::span(start, start + 4)); 
                 delete targetUnit;
-                bin.erase(bin.begin(), bin.begin() + 4);
             }
             AttackAction attackAction(targetUnit, targetStructure);
             return attackAction;
         }
 
         case 2:{
-            std::vector<binary> package(bin.begin(), bin.begin() + 5);
-            //bin.erase(bin.begin(), bin.begin() + 5);
-            //std::vector<binary> package2(bin.begin(), bin.begin() + 4);
+            Unit* newUnit = GetUnit(std::span(start, start + 5));
             StructureType structType = static_cast<StructureType>(std::get<int>(bin[5]));
             Vec2 buildCoord(std::get<int>(bin[6]), std::get<int>(bin[7]));
-            bin.erase(bin.begin(), bin.begin() + 8);
 
-            Unit* newUnit = GetUnit(package);
-            //Structure* newStruct = GetStructure(package2);
             BuildAction buildAction(newUnit, structType, buildCoord);
             return buildAction;
         }
 
         case 3:{
-            std::vector<binary> package(bin.begin(), bin.begin() + 5);
-            Unit* newUnit = GetUnit(package);
+            Unit* newUnit = GetUnit(std::span(start, start + 5));
             int x = std::get<int>(bin[5]);
             int y = std::get<int>(bin[6]);
             Vec2 dest(x, y);
 
-            bin.erase(bin.begin(), bin.begin() + 7);
             FarmGoldAction farmAction(newUnit, dest);
             return farmAction;
         }
 
         case 4:{
             UnitType unitType = static_cast<UnitType>(std::get<int>(bin[0]));
-            std::vector<binary> package(bin.begin() + 1, bin.begin() + 4);
-            Structure* binStru = GetStructure(package);
-            
-            bin.erase(bin.begin(), bin.begin() + 5);
+            start += 1;
+            Structure* binStru = GetStructure(std::span(start, start + 4));
             RecruitAction recruitAction(unitType, binStru);
             return recruitAction;
         }
     }
 }
 
-Unit* Transition::GetUnit(std::vector<binary>& bin){
+Unit* Transition::GetUnit(std::span<binary> bin){
     UnitType type = static_cast<UnitType>(std::get<int>(bin[0]));
     float health = std::get<float>(bin[1]);
     float mana = std::get<float>(bin[2]);
@@ -419,7 +398,7 @@ Unit* Transition::GetUnit(std::vector<binary>& bin){
     return un;
 }
 
-Structure* Transition::GetStructure(std::vector<binary>& bin){
+Structure* Transition::GetStructure(std::span<binary> bin){
     StructureType type = static_cast<StructureType>(std::get<int>(bin[0]));
     float health = std::get<float>(bin[1]);
     int x = std::get<int>(bin[2]);

@@ -16,7 +16,7 @@ class Structure : public Living {
         bool operator==(const Structure& other);
         std::string Serialize();
         std::vector<binary> SerializeBinary();
-        Structure* DeserializeBinary(std::vector<binary>& bin);
+        //Structure* DeserializeBinary(std::vector<binary>& bin);
 
     public:
         StructureType is = OTHER;

@@ -32,9 +32,9 @@ class Action{
         ActionType type;
         virtual ActionType GetType() = 0;
         std::string Serialize();
-        actionT Deserialize();
+        //actionT Deserialize();
         std::deque<binary> SerializeBinary();
-        actionT DeserializeBinary(std::deque<binary>& bin);
+        //actionT DeserializeBinary(std::deque<binary>& bin);
 };
 struct MoveAction : public Action {
     MoveAction(Vec2 c);

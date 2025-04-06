@@ -80,7 +80,7 @@ void DQN::SaveMemoryAsBinary(){
 // 0-11 first bytes, 
 void DQN::LoadMemoryAsBinary(){
     std::ifstream file(memory_file_binary, std::ios::binary);
-    std::deque<binary> binaryData;
+    std::vector<binary> binaryData;
     int expectedBytes = 0;
     binary temp;
     int count = 0;

@@ -3,12 +3,13 @@
 
 #include <vector> 
 #include <string>
-#include <deque>
+//#include <deque>
 #include "../State/Map.h"
 #include "../Race/Unit/Unit.h"
 #include "../Race/Structure/Structure.h"
 #include "../Tools/Vec2.h"
 #include "../Tools/Binary.h"
+#include <span>
 
 struct State {
     State();
@@ -36,10 +37,10 @@ struct Transition {
     std::string Serialize();
     Transition Deserialize(std::string& trans);
     std::vector<binary> SerializeBinary();
-    Transition DeserializeBinary(std::deque<binary>& bin);
-    Unit* GetUnit(std::vector<binary>& bin);
-    Structure* GetStructure(std::vector<binary>& bin);
-    actionT GetAction(std::deque<binary>& bin);
+    Transition DeserializeBinary(std::vector<binary>& bin);
+    Unit* GetUnit(std::span<binary> bin);
+    Structure* GetStructure(std::span<binary> bin);
+    actionT GetAction(std::span<binary> bin);
 
     State state;
     State nextState;

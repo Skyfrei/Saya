@@ -15,25 +15,7 @@ file(GLOB_RECURSE CPPSRC
     "src/*.cpp"
     "src/*.h"
 )
-#set(CPPSRC src/main.cpp
-#        src/Living.h
-#        src/State/Graph.cpp
-#        src/State/Map.cpp
-#        src/State/Terrain.cpp
-#        src/State/Terrain.h
-#        src/Race/Structure/Barrack.cpp
-#        src/Race/Unit/Peasant.cpp
-#        src/Race/Unit/Unit.cpp
-#        src/State/Manager.cpp
-#        src/State/Manager.h
-#        src/State/Player.h
-#        src/State/Player.cpp
-#        src/Living.cpp
-#        src/ReinforcementLearning/RlManager.h
-#        src/ReinforcementLearning/Transition.h
-#        src/ReinforcementLearning/RlManager.cpp
-#        src/ReinforcementLearning/DQN.h
-#        src/ReinforcementLearning/DQN.cpp)
+list(REMOVE_ITEM CPPSRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gui/start.cpp)
 add_executable(Saya WIN32 ${CPPSRC})
 #target_link_libraries(Saya PRIVATE SDL3::SDL3)
 target_link_libraries(Saya PRIVATE "${TORCH_LIBRARIES}")
@@ -45,4 +27,14 @@ list(REMOVE_ITEM CPPSRC ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
 add_executable(tester tests/test.cpp ${CPPSRC})
 target_link_libraries(tester PRIVATE Catch2::Catch2WithMain)
 target_link_libraries(tester PRIVATE "${TORCH_LIBRARIES}")
+
+
+file (GLOB_RECURSE SDLSRC
+    "src/gui/*.cpp"
+    "src/gui/*.h"
+)
+
+add_subdirectory(SDL EXCLUDE_FROM_ALL)
+add_executable(sdl-test src/gui/start.cpp ${SDLSRC})
+target_link_libraries(sdl-test PRIVATE SDL3::SDL3)
 
