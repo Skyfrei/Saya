@@ -6,7 +6,8 @@
 #include "DQN.h"
 #include "Transition.h"
 
-class RlManager {
+class RlManager
+{
   public:
     RlManager();
     void InitializeDQN(Map map, Player player, Player enemy);
@@ -17,7 +18,7 @@ class RlManager {
     State CreateCurrentState(Map map, Player player, Player enemy);
     Transition CreateTransition(State s, actionT a, State nextS);
 
-  private: 
+  private:
     DQN policy_net;
     DQN target_net;
 

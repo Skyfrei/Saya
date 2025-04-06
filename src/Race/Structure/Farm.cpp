@@ -1,5 +1,5 @@
 #include "Farm.h"
-Farm::Farm(Vec2 coord){
+Farm::Farm(Vec2 coord) {
     name = "Farm";
     description = "Gives 6 food.";
     health = 500;
@@ -8,9 +8,9 @@ Farm::Farm(Vec2 coord){
     buildTime = 10;
     is = FARM;
     coordinate = coord;
-  }
+}
 
-Farm::Farm(Vec2 coord, float hp){
+Farm::Farm(Vec2 coord, float hp) {
     name = "Farm";
     description = "Gives 6 food.";
     health = hp;
@@ -19,12 +19,17 @@ Farm::Farm(Vec2 coord, float hp){
     buildTime = 10;
     is = FARM;
     coordinate = coord;
-  }
+}
 
-std::string Farm::GetDescription()  { return description; }
-void Farm::FinishBuilding(){}
+std::string Farm::GetDescription() {
+    return description;
+}
+void Farm::FinishBuilding() {
+}
 
-std::unique_ptr<Structure> Farm::Clone() const{
+std::unique_ptr<Structure> Farm::Clone() const {
     return std::make_unique<Farm>(*this);
 }
-int Farm::GetFood() { return 5; }
+int Farm::GetFood() {
+    return 5;
+}

@@ -12,18 +12,21 @@
 #include "../Unit/Unit.h"
 #include "Structure.h"
 
-class Barrack : public Structure {
- public:
-  Barrack(Vec2 coord);
+class Barrack : public Structure
+{
+  public:
+    Barrack(Vec2 coord);
     Barrack(Vec2 coord, float hp);
 
- public:
-  void FinishBuilding() override {}
-  std::unique_ptr<Structure> Clone() const override{
-    return std::make_unique<Barrack>(*this);
-  }
-  std::string GetDescription() override { return "Recruit soldiers."; }
-  void CreateUnit(std::vector<std::unique_ptr<Unit>> &units, int &playerGold,
-                  UnitType type);
+  public:
+    void FinishBuilding() override {
+    }
+    std::unique_ptr<Structure> Clone() const override {
+        return std::make_unique<Barrack>(*this);
+    }
+    std::string GetDescription() override {
+        return "Recruit soldiers.";
+    }
+    void CreateUnit(std::vector<std::unique_ptr<Unit>> &units, int &playerGold, UnitType type);
 };
 #endif

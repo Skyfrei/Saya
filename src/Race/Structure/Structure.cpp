@@ -1,6 +1,6 @@
 #include "Structure.h"
 
-std::string Structure::Serialize(){
+std::string Structure::Serialize() {
     std::string result;
     int type = static_cast<int>(is);
     int x = coordinate.x;
@@ -9,7 +9,7 @@ std::string Structure::Serialize(){
     return result;
 }
 
-std::vector<binary> Structure::SerializeBinary(){
+std::vector<binary> Structure::SerializeBinary() {
     std::vector<binary> result;
     int type = static_cast<int>(is);
     result.resize(4);
@@ -21,8 +21,8 @@ std::vector<binary> Structure::SerializeBinary(){
     return result;
 }
 
-bool Structure::operator==(const Structure& other){
-  if (other.coordinate == coordinate && other.health == health && other.is == is)
-    return false;
-  return true;
+bool Structure::operator==(const Structure &other) {
+    if (other.coordinate == coordinate && other.health == health && other.is == is)
+        return false;
+    return true;
 }

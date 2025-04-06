@@ -10,18 +10,23 @@
 
 // Calls down waves of freezing ice shards that damage units in a target area.
 
-class BrillanceAura : public Spell {
- public:
-  BrillanceAura() {
-    name = "BrillanceAura";
-    type = PASSIVE;
-  }
+class BrillanceAura : public Spell
+{
+  public:
+    BrillanceAura() {
+        name = "BrillanceAura";
+        type = PASSIVE;
+    }
 
- public:
-  void GetDescription() override {}
-  void ProcEffect() override {}
-  void ManaRegen(Unit &unit) { unit.mana += manaRegen; }
+  public:
+    void GetDescription() override {
+    }
+    void ProcEffect() override {
+    }
+    void ManaRegen(Unit &unit) {
+        unit.mana += manaRegen;
+    }
 
- private:
-  float manaRegen = 0.75;
+  private:
+    float manaRegen = 0.75;
 };

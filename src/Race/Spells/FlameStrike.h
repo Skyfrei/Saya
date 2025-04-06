@@ -10,22 +10,25 @@
 // 1 2	80 Pillar damage/sec. for 2.67 seconds, 8 Fire damage for 6 sec.
 // 3 3	110 Pillar damage/sec. for 2.67 seconds, 12 Fire damage for 6 sec.
 
-class FlameStrike : public Spell {
- public:
-  FlameStrike() {
-    cooldown = 10.0f;
-    manaCost = 135;
-    range = 80;
-    areaOfEffect = 20;
-    duration = 6.0f;
-    name = "Flame Strike";
-    type = MANUAL;
-  }
+class FlameStrike : public Spell
+{
+  public:
+    FlameStrike() {
+        cooldown = 10.0f;
+        manaCost = 135;
+        range = 80;
+        areaOfEffect = 20;
+        duration = 6.0f;
+        name = "Flame Strike";
+        type = MANUAL;
+    }
 
- public:
-  virtual void GetDescription() override {}
-  void ProcEffect() override {}
+  public:
+    virtual void GetDescription() override {
+    }
+    void ProcEffect() override {
+    }
 
- public:
-  float delay = 0.9f;
+  public:
+    float delay = 0.9f;
 };

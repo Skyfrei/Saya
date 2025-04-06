@@ -28,35 +28,38 @@
 // (5)	1.12 sec.	    46	            690	    2.31 Mana/sec.	48-54
 // (51 avg)
 
-class BloodMage : public Hero {
- public:
-  BloodMage() {
-    health = 550;
-    hpRegen = 1.15f;
-    mana = 285;
-    manaRegen = 0.96f;
-    maxMana += 285;
+class BloodMage : public Hero
+{
+  public:
+    BloodMage() {
+        health = 550;
+        hpRegen = 1.15f;
+        mana = 285;
+        manaRegen = 0.96f;
+        maxMana += 285;
 
-    goldCost = 535;
-    foodCost = 5;
-    buildTime = 55;
-    attack = 24;
-    attackCooldown = duration<float>(1.28f);
+        goldCost = 535;
+        foodCost = 5;
+        buildTime = 55;
+        attack = 24;
+        attackCooldown = duration<float>(1.28f);
 
-    strength = 18;
-    agility = 14;
-    intelligence = 19;
+        strength = 18;
+        agility = 14;
+        intelligence = 19;
 
-    primaryAttribute = INTELLIGENCE;
+        primaryAttribute = INTELLIGENCE;
 
-    spells.push_back(new FlameStrike());
-    spells.push_back(new Banish());
-    spells.push_back(new SiphonMana());
-    is = BLOODMAGE;
-  }
+        spells.push_back(new FlameStrike());
+        spells.push_back(new Banish());
+        spells.push_back(new SiphonMana());
+        is = BLOODMAGE;
+    }
 
-  std::string GetDescription() override { return "Bloodmage hero"; }
-  std::unique_ptr<Unit> Clone() const override{
-    return std::make_unique<BloodMage>(*this);
-  }
+    std::string GetDescription() override {
+        return "Bloodmage hero";
+    }
+    std::unique_ptr<Unit> Clone() const override {
+        return std::make_unique<BloodMage>(*this);
+    }
 };

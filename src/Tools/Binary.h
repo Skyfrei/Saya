@@ -5,5 +5,4 @@
 
 using binary = std::variant<int, float>;
 
-
 #endif

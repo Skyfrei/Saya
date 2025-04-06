@@ -9,7 +9,7 @@
 #include "../Structure/Structure.h"
 #include "../Structure/TownHall.h"
 
-Peasant::Peasant(){
+Peasant::Peasant() {
     name = "Peasant";
     description = "God damn farm workers.";
     health = 240;
@@ -23,7 +23,7 @@ Peasant::Peasant(){
     is = PEASANT;
 }
 
-Peasant::Peasant(Vec2 coord, float hp, float man){
+Peasant::Peasant(Vec2 coord, float hp, float man) {
     coordinate = coord;
     health = hp;
     mana = man;
@@ -39,33 +39,44 @@ Peasant::Peasant(Vec2 coord, float hp, float man){
 }
 
 void Peasant::Build(Structure *str) {
-  if (WithinDistance(str->coordinate)) {
-    if (CanAttack()) {
-      if (str->health + attack <= maxHealth) {
-        str->health += attack;
-      }
+    if (WithinDistance(str->coordinate))
+    {
+        if (CanAttack())
+        {
+            if (str->health + attack <= maxHealth)
+            {
+                str->health += attack;
+            }
+        }
     }
-  } else
-    Move(str->coordinate);
+    else
+        Move(str->coordinate);
 }
 
 void Peasant::FarmGold(Terrain &terr, TownHall &hall, int &g) {
-  if (goldInventory > 0 && WithinDistance(hall.coordinate)) {
-    goldInventory = 0;
-  }
-  if (goldInventory >= maxGoldInventory) {
-    Move(hall.coordinate);
-    return;
-  }
-  if (WithinDistance(terr.coord)) {
-    if (terr.type == GOLD) {
-      if (CanAttack()) {
-        goldInventory++;
-        terr.resourceLeft--;
-        g++;
-      }
+    if (goldInventory > 0 && WithinDistance(hall.coordinate))
+    {
+        goldInventory = 0;
     }
-  } else {
-    Move(terr.coord);
-  }
+    if (goldInventory >= maxGoldInventory)
+    {
+        Move(hall.coordinate);
+        return;
+    }
+    if (WithinDistance(terr.coord))
+    {
+        if (terr.type == GOLD)
+        {
+            if (CanAttack())
+            {
+                goldInventory++;
+                terr.resourceLeft--;
+                g++;
+            }
+        }
+    }
+    else
+    {
+        Move(terr.coord);
+    }
 }

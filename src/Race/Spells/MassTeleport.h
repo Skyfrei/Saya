@@ -9,22 +9,25 @@
 // Teleports 24 of the player's nearby units, including the Archmage, to a
 // friendly ground unit or structure.
 
-class MassTeleport : public Spell {
- public:
-  MassTeleport() {
-    cooldown = 30.0f;
-    manaCost = 100;
-    range = 80;
-    areaOfEffect = 80;
-    duration = 6.0f;
-    name = "Blizzard";
-    type = MANUAL;
-  }
+class MassTeleport : public Spell
+{
+  public:
+    MassTeleport() {
+        cooldown = 30.0f;
+        manaCost = 100;
+        range = 80;
+        areaOfEffect = 80;
+        duration = 6.0f;
+        name = "Blizzard";
+        type = MANUAL;
+    }
 
- public:
-  virtual void GetDescription() override {}
-  void ProcEffect() override {}
+  public:
+    virtual void GetDescription() override {
+    }
+    void ProcEffect() override {
+    }
 
- public:
-  float delay = 3.0f;
+  public:
+    float delay = 3.0f;
 };

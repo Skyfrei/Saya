@@ -1,45 +1,47 @@
 #ifndef TRANSITION_H
 #define TRANSITION_H
 
-#include <vector> 
 #include <string>
-//#include <deque>
-#include "../State/Map.h"
-#include "../Race/Unit/Unit.h"
+#include <vector>
+// #include <deque>
 #include "../Race/Structure/Structure.h"
-#include "../Tools/Vec2.h"
+#include "../Race/Unit/Unit.h"
+#include "../State/Map.h"
 #include "../Tools/Binary.h"
+#include "../Tools/Vec2.h"
 #include <span>
 
-struct State {
+struct State
+{
     State();
-    State(const State& s);
-    State(const State& s, actionT a);
-    bool operator<(const State& other) const;
+    State(const State &s);
+    State(const State &s, actionT a);
+    bool operator<(const State &other) const;
 
     Map currentMap;
     int playerGold;
     Vec2 playerFood;
-    std::vector<Unit*> playerUnits;
-    std::vector<Structure*> playerStructs;
+    std::vector<Unit *> playerUnits;
+    std::vector<Structure *> playerStructs;
 
     int enemyGold;
     Vec2 enemyFood;
-    std::vector<Unit*> enemyUnits;
-    std::vector<Structure*> enemyStructs;
+    std::vector<Unit *> enemyUnits;
+    std::vector<Structure *> enemyStructs;
 
     actionT action;
 };
 
-struct Transition {
+struct Transition
+{
     Transition(State s, actionT act, State n);
     Transition();
     std::string Serialize();
-    Transition Deserialize(std::string& trans);
+    Transition Deserialize(std::string &trans);
     std::vector<binary> SerializeBinary();
-    Transition DeserializeBinary(std::vector<binary>& bin);
-    Unit* GetUnit(std::span<binary> bin);
-    Structure* GetStructure(std::span<binary> bin);
+    Transition DeserializeBinary(std::vector<binary> &bin);
+    Unit *GetUnit(std::span<binary> bin);
+    Structure *GetStructure(std::span<binary> bin);
     actionT GetAction(std::span<binary> bin);
 
     State state;
@@ -49,4 +51,4 @@ struct Transition {
     double reward = 0.0;
 };
 
-#endif  // !TRANSITION_H
+#endif // !TRANSITION_H

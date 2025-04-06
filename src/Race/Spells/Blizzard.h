@@ -8,19 +8,22 @@
 
 // Calls down waves of freezing ice shards that damage units in a target area.
 
-class Blizzard : public Spell {
- public:
-  Blizzard() {
-    cooldown = 6.0f;
-    manaCost = 75;
-    range = 80;
-    areaOfEffect = 20;
-    duration = 6.0f;
-    name = "Blizzard";
-    type = MANUAL;
-  }
+class Blizzard : public Spell
+{
+  public:
+    Blizzard() {
+        cooldown = 6.0f;
+        manaCost = 75;
+        range = 80;
+        areaOfEffect = 20;
+        duration = 6.0f;
+        name = "Blizzard";
+        type = MANUAL;
+    }
 
- public:
-  void GetDescription() override {}
-  void ProcEffect() override {}
+  public:
+    void GetDescription() override {
+    }
+    void ProcEffect() override {
+    }
 };

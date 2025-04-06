@@ -8,22 +8,25 @@
 // Mana transferred/sec.	3 3	40 Mana drained/sec., 90 Mana
 // transferred/sec.	5
 
-class SiphonMana : public Spell {
- public:
-  SiphonMana() {
-    cooldown = 6.0f;
-    manaCost = 10;
-    range = 60;
-    areaOfEffect = 20;
-    duration = 6.0f;
-    name = "Siphon Mana";
-    type = MANUAL;
-  }
+class SiphonMana : public Spell
+{
+  public:
+    SiphonMana() {
+        cooldown = 6.0f;
+        manaCost = 10;
+        range = 60;
+        areaOfEffect = 20;
+        duration = 6.0f;
+        name = "Siphon Mana";
+        type = MANUAL;
+    }
 
- public:
-  virtual void GetDescription() override {}
-  void ProcEffect() override {}
+  public:
+    virtual void GetDescription() override {
+    }
+    void ProcEffect() override {
+    }
 
- public:
-  float delay = 0.9f;
+  public:
+    float delay = 0.9f;
 };

@@ -13,3 +13,4 @@ libtorch/
 SDL/
 thesis/
 Catch2/
+*.bay

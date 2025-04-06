@@ -65,10 +65,14 @@ std::string BinaryReplay(){
     actionT act = MoveAction(s.enemyUnits[0], Vec2(3, 4));
     Transition trans(s, act, s);
     DQN obj;  
-    for(int i = 0; i < 1000; i++)
+    for(int i = 0; i < 100000; i++)
         obj.AddExperience(trans);
     obj.SaveMemoryAsBinary(); 
+    auto b = std::chrono::high_resolution_clock::now();
     obj.LoadMemoryAsBinary();
+    auto c = std::chrono::high_resolution_clock::now();
+
+    std::cout<<duration_cast<milliseconds>(c-b).count() << " ";
 
 //    for (int i = 0 ; i < obj.memory.size(); i++){
 //        for (int j = 0; j < s.playerUnits.size(); j++){

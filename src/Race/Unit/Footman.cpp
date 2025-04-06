@@ -6,16 +6,16 @@ Footman::Footman() {
     health = 420;
     maxHealth = health;
     attack = 12.5;
-    
+
     goldCost = 135;
     foodCost = 2;
-    
+
     buildTime = 20;
-    
+
     is = FOOTMAN;
 }
 
-Footman::Footman(Vec2 coord, float hp, float man){
+Footman::Footman(Vec2 coord, float hp, float man) {
     name = "Footman";
     description = "A normal foot soldier.";
     maxHealth = 420;
@@ -30,11 +30,10 @@ Footman::Footman(Vec2 coord, float hp, float man){
     is = FOOTMAN;
 }
 
-std::string Footman::GetDescription(){
+std::string Footman::GetDescription() {
     return "Footman.";
 }
 
-std::unique_ptr<Unit> Footman::Clone() const{
+std::unique_ptr<Unit> Footman::Clone() const {
     return std::make_unique<Footman>(*this);
 }
-

@@ -1,3 +1,1 @@
- // PPM output
-
- 
+// PPM output

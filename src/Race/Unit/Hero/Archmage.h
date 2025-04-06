@@ -28,36 +28,38 @@
 // (5)	    1.12 sec.	46	            690	    2.31 Mana/sec.	48-54
 // (51 avg)
 
-class Archmage : public Hero {
- public:
-  Archmage() {
-    health = 550;
-    hpRegen = 1.15f;
-    mana = 285;
-    manaRegen = 0.96f;
-    maxMana += 285;
+class Archmage : public Hero
+{
+  public:
+    Archmage() {
+        health = 550;
+        hpRegen = 1.15f;
+        mana = 285;
+        manaRegen = 0.96f;
+        maxMana += 285;
 
-    goldCost = 535;
-    foodCost = 5;
-    buildTime = 55;
-    attack = 24;
-    attackCooldown = duration<float>(1.28f);
+        goldCost = 535;
+        foodCost = 5;
+        buildTime = 55;
+        attack = 24;
+        attackCooldown = duration<float>(1.28f);
 
-    strength = 18;
-    agility = 14;
-    intelligence = 19;
+        strength = 18;
+        agility = 14;
+        intelligence = 19;
 
-    primaryAttribute = INTELLIGENCE;
+        primaryAttribute = INTELLIGENCE;
 
-    spells.push_back(new Blizzard());
-    spells.push_back(new BrillanceAura());
-    spells.push_back(new MassTeleport());
-    is = ARCHMAGE;
-  }
+        spells.push_back(new Blizzard());
+        spells.push_back(new BrillanceAura());
+        spells.push_back(new MassTeleport());
+        is = ARCHMAGE;
+    }
 
-  std::string GetDescription() override { return "Archmage hero"; }
-  std::unique_ptr<Unit> Clone() const override{
-    return std::make_unique<Archmage>(*this);
-  }
-  
+    std::string GetDescription() override {
+        return "Archmage hero";
+    }
+    std::unique_ptr<Unit> Clone() const override {
+        return std::make_unique<Archmage>(*this);
+    }
 };
