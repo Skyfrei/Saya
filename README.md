@@ -24,10 +24,6 @@ possible decisions to win the game.
 
 -   https://harichada.github.io/osbox/posts/reinforcement-learning-for-real-time-strategy-games/
 
-cmake -D CMAKE_CXX_COMPILER=g++-10 CMakeLists.txt
-export DYLD_LIBRARY_PATH=/opt/homebrew/opt/libomp/lib:$DYLD_LIBRARY_PATH
-https://pytorch.org/tutorials/intermediate/reinforcement_ppo.html
-
 
 
 fix cooldown of movement
@@ -50,4 +46,4 @@ remove from array upon deat
 
 
 ### SDL3 next
-
+    SDL_RenderDrawPoint
