@@ -13,6 +13,7 @@ class Window{
        
     private:
         SDL_AppResult InitSdl(); 
+        void RenderUI();
     private:
         Vec2 window_size;
         const float scale = 1.0f;
