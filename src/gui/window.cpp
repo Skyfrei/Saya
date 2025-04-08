@@ -25,15 +25,21 @@ SDL_AppResult Window::InitSdl(){
 
 }
 SDL_AppResult Window::Render(){
-    RenderStruct map("map", Vec2(0,0));
-    RenderStruct advice("advice", Vec2(600, 0));
-    RenderStruct moves("moves", Vec2(600, 600));
+    RenderStruct map("Map", Vec2(5,5));
+    RenderStruct advice("Advice", Vec2(550, 5));
+    RenderStruct moves("Moves", Vec2(550, 400));
 
-    SDL_SetRenderScale(renderer, scale, scale); 
+    SDL_SetRenderScale(renderer, scale * 1.5, scale * 1.5); 
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderDebugText(renderer, map.pos.x, map.pos.y, map.text);
+    SDL_RenderDebugText(renderer, advice.pos.x, advice.pos.y, advice.text);
+    SDL_RenderDebugText(renderer, moves.pos.x, moves.pos.y, moves.text);
+    const SDL_FRect parallel_line = {advice.pos.x * 1.0f, moves.pos.y  - 10.0f, window_size.y - advice.pos.y, 1};
+    const SDL_FRect vertical_line = {advice.pos.x * 1.0f, 0.0f, 1, window_size.y * 1.0f};
+    SDL_RenderFillRect(renderer, &parallel_line);
+    SDL_RenderFillRect(renderer, &vertical_line);
     SDL_RenderPresent(renderer);
 
     return SDL_APP_CONTINUE;
