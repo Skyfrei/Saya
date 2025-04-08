@@ -65,7 +65,7 @@ std::string BinaryReplay(){
     actionT act = MoveAction(s.enemyUnits[0], Vec2(3, 4));
     Transition trans(s, act, s);
     DQN obj;  
-    for(int i = 0; i < 100000; i++)
+    for(int i = 0; i < 1000; i++)
         obj.AddExperience(trans);
     obj.SaveMemoryAsBinary(); 
     auto b = std::chrono::high_resolution_clock::now();

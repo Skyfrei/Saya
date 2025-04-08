@@ -15,7 +15,7 @@ file(GLOB_RECURSE CPPSRC
     "src/*.cpp"
     "src/*.h"
 )
-list(REMOVE_ITEM CPPSRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gui/start.cpp)
+list(FILTER CPPSRC EXCLUDE REGEX ".*/src/gui/.*")
 add_executable(Saya WIN32 ${CPPSRC})
 #target_link_libraries(Saya PRIVATE SDL3::SDL3)
 target_link_libraries(Saya PRIVATE "${TORCH_LIBRARIES}")

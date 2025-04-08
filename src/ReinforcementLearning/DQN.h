@@ -55,7 +55,7 @@ class DQN : public torch::nn::Module
     torch::nn::Linear layer1{nullptr}, layer2{nullptr}, layer3{nullptr};
 
     std::deque<Transition> memory;
-    int memory_size = 100000;
+    int memory_size = 1000;
     const std::string memory_file = "dqn_memory.say";
     const std::string memory_file_binary = "binary.bay";
 };
