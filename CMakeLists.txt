@@ -21,14 +21,6 @@ add_executable(Saya WIN32 ${CPPSRC})
 target_link_libraries(Saya PRIVATE "${TORCH_LIBRARIES}")
 target_include_directories(Saya PRIVATE src/ReinforcementLearning/)
 
-find_package(Catch2 3 REQUIRED)
-# These tests can use the Catch2-provided main
-list(REMOVE_ITEM CPPSRC ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
-add_executable(tester tests/test.cpp ${CPPSRC})
-target_link_libraries(tester PRIVATE Catch2::Catch2WithMain)
-target_link_libraries(tester PRIVATE "${TORCH_LIBRARIES}")
-
-
 file (GLOB_RECURSE SDLSRC
     "src/gui/*.cpp"
     "src/gui/*.h"
@@ -37,4 +29,14 @@ file (GLOB_RECURSE SDLSRC
 add_subdirectory(SDL EXCLUDE_FROM_ALL)
 add_executable(sdl-test src/gui/start.cpp ${SDLSRC})
 target_link_libraries(sdl-test PRIVATE SDL3::SDL3)
+
+
+find_package(Catch2 3 REQUIRED)
+# These tests can use the Catch2-provided main
+list(REMOVE_ITEM CPPSRC ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
+list(REMOVE_ITEM SDLSRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gui/start.cpp)
+add_executable(tester tests/test.cpp ${CPPSRC} ${SDLSRC})
+target_link_libraries(tester PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(tester PRIVATE "${TORCH_LIBRARIES}")
+target_link_libraries(tester PRIVATE SDL3::SDL3)
 

@@ -4,11 +4,11 @@
 #include "../Tools/Vec2.h"
 #include "Graph.h"
 #include <algorithm>
-#include <iostream>
 #include <vector>
 
-class Terrain;
 
+
+class Terrain;
 class Map
 {
   public:

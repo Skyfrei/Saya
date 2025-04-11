@@ -2,10 +2,9 @@
 #define TERRAIN_H
 #include <memory>
 #include <vector>
-
 #include "../Tools/Vec2.h"
 
-#define MAP_SIZE 5
+
 enum TerrainType
 {
     GROUND,

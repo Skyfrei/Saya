@@ -21,8 +21,7 @@
 class DQN : public torch::nn::Module
 {
   public:
-    DQN() {
-    }
+    DQN();
     torch::Tensor Forward(torch::Tensor x);
     void Initialize(State state);
     actionT SelectAction(State state); // gotta return an
@@ -36,6 +35,7 @@ class DQN : public torch::nn::Module
     void LoadMemory();
     void SaveMemoryAsBinary();
     void LoadMemoryAsBinary();
+    std::deque<Transition> memory;
 
   private:
     void OptimizeModel(std::deque<Transition> memory);
@@ -54,7 +54,6 @@ class DQN : public torch::nn::Module
     int inputSize = 0;
     torch::nn::Linear layer1{nullptr}, layer2{nullptr}, layer3{nullptr};
 
-    std::deque<Transition> memory;
     int memory_size = 1000;
     const std::string memory_file = "dqn_memory.say";
     const std::string memory_file_binary = "binary.bay";

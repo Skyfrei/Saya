@@ -1,7 +1,8 @@
 #include "Map.h"
-
 #include "../Race/Structure/Structure.h"
 #include "Terrain.h"
+#include "../Tools/Macro.h"
+
 Map::Map() {
     std::vector<Terrain> tempTerr;
     for (int i = 0; i < MAP_SIZE; i++)
@@ -96,7 +97,6 @@ std::vector<Node *> Map::GetClosestDestNode(Vec2 &coord, Vec2 &dest) {
             if (std::find(q.begin(), q.end(), n) != q.end())
             {
                 int alt = dist[u] + 1;
-                std::cout << alt;
                 if (alt < dist[n])
                 {
                     dist[n] = alt;

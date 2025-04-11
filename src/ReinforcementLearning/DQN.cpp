@@ -1,9 +1,10 @@
 #include "DQN.h"
-#include "../Tools/Binary.h"
 #include <cmath>
 #include <fstream>
 #include <map>
 #include <random>
+#include "../Tools/Macro.h"
+#include "../Tools/Binary.h"
 
 int mapSize = MAP_SIZE * MAP_SIZE;
 int moveAction = mapSize * MAX_UNITS;
@@ -12,6 +13,9 @@ int buildAction = attackAction + PEASANT_INDEX_IN_UNITS * NR_OF_STRUCTS * mapSiz
 int farmAction =
     buildAction + PEASANT_INDEX_IN_UNITS * mapSize * HALL_INDEX_IN_STRCTS;   // town hall size multipled here as well
 int recruitAction = farmAction + 2 * NR_OF_UNITS * BARRACK_INDEX_IN_STRUCTS; // barrack size
+
+DQN::DQN(){
+}
 
 void DQN::Initialize(State state) {
     TensorStruct ts(state);
@@ -32,7 +36,7 @@ torch::Tensor DQN::Forward(torch::Tensor x) {
 void DQN::AddExperience(Transition trans) {
     if (memory.size() >= memory_size)
     {
-        memory.pop_back();
+        memory.pop_front();
     }
     memory.push_back(trans);
 }
