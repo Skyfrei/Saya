@@ -25,6 +25,9 @@ class Window{
         int win_start_x = 5;
         int win_start_y = 5;
         int algo_start_x = 550;
+        Vec2 canvas_start;
+        int canvas_size_x;
+        int canvas_size_y;
                 
 };
 

@@ -62,7 +62,7 @@ void RlManager::InitializeDQN(Map map, Player player, Player enemy) {
 
 State RlManager::CreateCurrentState(Map map, Player player, Player enemy) {
     State st;
-    st.currentMap = map;
+    //st.currentMap = map;
     st.playerFood = player.food;
     st.playerGold = player.gold;
 

@@ -7,6 +7,7 @@
 #include "../src/gui/Window.h"
 #include <chrono>
 #include <fstream>
+#include <random>
 
 std::string StringReplay(){
     State s;
@@ -19,14 +20,14 @@ std::string StringReplay(){
     s.playerStructs.push_back(new TownHall(Vec2(10, 2)));
     for (int i = 0; i < 5; i++) {
         s.playerUnits.push_back(new Peasant());
-        s.playerUnits[i]->coordinate.x = 0;
-        s.playerUnits[i]->coordinate.y = 0;
+        s.playerUnits[i]->coordinate.x = 0 + i;
+        s.playerUnits[i]->coordinate.y = 0 + i;
     }
     s.enemyStructs.push_back(new TownHall(Vec2(10, 2)));
     for (int i = 0; i < 5; i++) {
         s.enemyUnits.push_back(new Peasant());
-        s.enemyUnits[i]->coordinate.x = 10;
-        s.enemyUnits[i]->coordinate.y = 10;
+        s.enemyUnits[i]->coordinate.x = 10 - i;
+        s.enemyUnits[i]->coordinate.y = 10 - i;
     }
     actionT act = MoveAction(s.playerUnits[0], Vec2(3, 4));
     Transition trans(s, act, s);
@@ -51,45 +52,39 @@ std::string BinaryReplay(){
     s.playerFood.y = 4;
     s.enemyGold = 100;
     s.playerGold = 100;
-    s.playerStructs.push_back(new TownHall(Vec2(10, 2)));
-    for (int i = 0; i < 5; i++) {
-        s.playerUnits.push_back(new Peasant());
-        s.playerUnits[i]->coordinate.x = 0;
-        s.playerUnits[i]->coordinate.y = 0;
-    }
-    s.enemyStructs.push_back(new TownHall(Vec2(10, 2)));
-    for (int i = 0; i < 5; i++) {
-        s.enemyUnits.push_back(new Peasant());
-        s.enemyUnits[i]->coordinate.x = 10;
-        s.enemyUnits[i]->coordinate.y = 10;
-    }
-    actionT act = MoveAction(s.enemyUnits[0], Vec2(3, 4));
-    Transition trans(s, act, s);
+        
+    std::random_device ran;
+    std::default_random_engine e1(ran());
+    std::uniform_int_distribution<int> uniform_dist(0, 100);
     DQN obj;  
-    for(int i = 0; i < 1000; i++)
+    for(int i = 0; i < 1000; i++){
+        s.playerStructs.push_back(new TownHall(Vec2(10, 2)));
+        for (int i = 0; i < 5; i++) {
+            s.playerUnits.push_back(new Peasant());
+            s.playerUnits[i]->coordinate.x = uniform_dist(e1);
+            s.playerUnits[i]->coordinate.y = uniform_dist(e1);
+        }
+        s.enemyStructs.push_back(new TownHall(Vec2(10, 2)));
+
+        for (int i = 0; i < 5; i++) {
+            s.enemyUnits.push_back(new Peasant());
+            s.enemyUnits[i]->coordinate.x = uniform_dist(e1);
+            s.enemyUnits[i]->coordinate.y = uniform_dist(e1);
+        }
+        actionT act = MoveAction(s.enemyUnits[0], Vec2(3, 4));
+        Transition trans(s, act, s);
+        s.playerUnits.clear();
+        s.enemyUnits.clear();
+        s.playerStructs.clear();
+        s.enemyStructs.clear();
         obj.AddExperience(trans);
+    }
     obj.SaveMemoryAsBinary(); 
-    auto b = std::chrono::high_resolution_clock::now();
+//    auto b = std::chrono::high_resolution_clock::now();
     obj.LoadMemoryAsBinary();
-    auto c = std::chrono::high_resolution_clock::now();
-
-    std::cout<<duration_cast<milliseconds>(c-b).count() << " ";
-
-//    for (int i = 0 ; i < obj.memory.size(); i++){
-//        for (int j = 0; j < s.playerUnits.size(); j++){
-//            if (obj.memory[i].state.playerUnits[j]->health != s.playerUnits[j]->health)
-//                std::cout<<"not equal";
-//            if (obj.memory[i].state.playerUnits[j]->mana != s.playerUnits[j]->mana)
-//                std::cout<<"not equal mana";
-//            if (obj.memory[i].state.playerUnits[j]->coordinate.x != s.playerUnits[j]->coordinate.x)
-//                std::cout<<"not equal x";
-//            if (obj.memory[i].state.playerUnits[j]->coordinate.y != s.playerUnits[j]->coordinate.y)
-//                std::cout<<"not equal y";
-//            if (obj.memory[i].state.playerUnits[j]->is != s.playerUnits[j]->is)
-//                std::cout<<"not equal type";
-//        }
+//    auto c = std::chrono::high_resolution_clock::now();
 //
-//    }
+//    std::cout<<duration_cast<milliseconds>(c-b).count() << " ";
     return "";
 }
 
@@ -97,18 +92,13 @@ bool MapRender(){
     Window win(Vec2(1000, 1000));
     int a;
     DQN obj;
-    auto b = std::chrono::high_resolution_clock::now();
     obj.LoadMemoryAsBinary();
-    auto c = std::chrono::high_resolution_clock::now();
-    std::cout<<duration_cast<milliseconds>(c-b).count() << " ";
-    std::cout<<obj.memory.size() << "\n\n";
     while(true){
-        int a = rand() % 1000;
-        std::cout<<a << " \n";
-        win.Render(obj.memory[a].state.playerUnits, obj.memory[a].state.enemyUnits);
-        std::cin>>a;
-        if (a == 0)
-            exit(0);
+        int b = rand() % 1000;
+        win.Render(obj.memory[b].state.playerUnits, obj.memory[b].state.enemyUnits);
+        //std::cin>>a;
+        //if (a == 0)
+        //    exit(0);
 
     }
     return true;
@@ -116,7 +106,7 @@ bool MapRender(){
 
 
 TEST_CASE("Serializing and Deserialzing Replays...", "[ReplaySystem]") {
-    //REQUIRE(BinaryReplay() == ""); 
+    REQUIRE(BinaryReplay() == ""); 
 }
 
 TEST_CASE("Runtimes of replay system", "[Replay System]") {

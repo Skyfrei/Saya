@@ -10,6 +10,9 @@ struct RenderStruct{
 };
 
 Window::Window(Vec2 s) : window_size(s){
+    canvas_start = Vec2(win_start_x * 4, win_start_y * 4);
+    canvas_size_x = algo_start_x - win_start_x - canvas_start.x;
+    canvas_size_y = window_size.y - canvas_start.y;
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         SDL_Log("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
     }
@@ -49,25 +52,22 @@ void Window::RenderUI(){
 
 void Window::RenderMap(std::vector<Unit*>& game_objects, std::vector<Unit*>& game_objects2){
     SDL_SetRenderDrawColor(renderer, 160, 150, 200, 255);
+    float ratiox = canvas_size_x / MAP_SIZE;
+    float ratioy = canvas_size_y / MAP_SIZE;
+
     for (auto& obj : game_objects){
-        float ratio_x = obj->coordinate.x / float(MAP_SIZE);
-        float ratio_y = obj->coordinate.y / float(MAP_SIZE);
-        
-        float gui_x = (algo_start_x - 10) * ratio_x + win_start_x * 8;
-        float gui_y = ((window_size.y / scale) - 10) * ratio_y + win_start_y * 4;
-        std::cout << gui_x << " " << gui_y << "\n";
-        
+        float gui_x = canvas_start.x + obj->coordinate.x * ratiox;
+        float gui_y = canvas_start.y + obj->coordinate.y * ratioy;
+        std::cout<<obj->coordinate.x << " " << obj->coordinate.y<<std::endl;
+
         SDL_FRect point = {gui_x, gui_y, 3.0f, 3.0f};
         SDL_RenderFillRect(renderer, &point);
     }
     for (auto& obj : game_objects2){
-        float ratio_x = obj->coordinate.x / float(MAP_SIZE);
-        float ratio_y = obj->coordinate.y / float(MAP_SIZE);
-        
-        float gui_x = (algo_start_x - 10) * ratio_x + win_start_x * 8;
-        float gui_y = ((window_size.y / scale) - 10) * ratio_y + win_start_y * 4;
-        std::cout << gui_x << " " << gui_y << "\n";
-        
+        float gui_x = canvas_start.x + obj->coordinate.x * ratiox;
+        float gui_y = canvas_start.y + obj->coordinate.y * ratioy;
+        std::cout<<obj->coordinate.x << " " << obj->coordinate.y<<std::endl;
+
         SDL_FRect point = {gui_x, gui_y, 3.0f, 3.0f};
         SDL_RenderFillRect(renderer, &point);
     }

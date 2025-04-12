@@ -16,9 +16,9 @@ struct State
     State();
     State(const State &s);
     State(const State &s, actionT a);
-    bool operator<(const State &other) const;
+    //bool operator<(const State &other) const;
 
-    Map currentMap;
+    //Map currentMap;
     int playerGold;
     Vec2 playerFood;
     std::vector<Unit *> playerUnits;

@@ -62,7 +62,7 @@ class DQN : public torch::nn::Module
 struct TensorStruct
 {
     TensorStruct(const State &state) {
-        currentMap = GetMapTensor(state.currentMap);
+        //currentMap = GetMapTensor(state.currentMap);
         playerGold = torch::tensor(state.playerGold).view({-1, 1});
         playerFood = GetVec(state.playerFood);
         playerUnits = GetUnitsTensor(state.playerUnits);
@@ -134,7 +134,7 @@ struct TensorStruct
             torch::zeros({1, (MAX_STRUCTS - enemyStructs.size(1) / strucVar) * strucVar});
 
         std::vector<torch::Tensor> tensors = {
-            currentMap, playerGold, playerFood, playerUnits,      paddedUnits,  playerStructs,     paddedStructs,
+            playerGold, playerFood, playerUnits,      paddedUnits,  playerStructs,     paddedStructs,
             enemyGold,  enemyFood,  enemyUnits, paddedUnitsEnemy, enemyStructs, paddedStructsEnemy};
 
         torch::Tensor concatenatedTensor = torch::cat(tensors, 1);
@@ -145,7 +145,7 @@ struct TensorStruct
     const int unitVar = 8;
     const int strucVar = 4;
 
-    torch::Tensor currentMap;
+    //torch::Tensor currentMap;
     torch::Tensor playerGold;
     torch::Tensor playerFood;
     torch::Tensor playerUnits;

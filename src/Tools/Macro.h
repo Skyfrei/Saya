@@ -2,7 +2,7 @@
 #define MACRO_H
 
 
-#define MAP_SIZE 5
+#define MAP_SIZE 100
 
 
 

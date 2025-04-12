@@ -303,7 +303,7 @@ Transition Transition::DeserializeBinary(std::vector<binary> &bin) {
 
     for (int i = 0; i < euSize; i++)
     {
-        state.enemyUnits[1] = GetUnit(std::span(start, start + 5));
+        state.enemyUnits[i] = GetUnit(std::span(start, start + 5));
         start += 5;
     }
 
@@ -458,7 +458,7 @@ State::State(const State &s) {
     enemyGold = s.enemyGold;
     playerFood = s.playerFood;
     playerGold = s.playerGold;
-    currentMap = s.currentMap;
+    //currentMap = s.currentMap;
 
     enemyUnits = s.enemyUnits;
     enemyStructs = s.enemyStructs;
@@ -470,8 +470,8 @@ State::State(const State &s, actionT a) : State(s) {
     action = a;
 }
 
-bool State::operator<(const State &other) const {
-    if (currentMap == other.currentMap && action == other.action)
-        return false;
-    return true;
-}
+//bool State::operator<(const State &other) const {
+//    if (currentMap == other.currentMap && action == other.action)
+//        return false;
+//    return true;
+//}
