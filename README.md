@@ -1,8 +1,8 @@
 # Simplified Saya version with DQN and PPO
 Sandbox Saya without any graphics. Trying to code a way to use reinforcement learning and MTCS in Real time strategy games.
 
-Game **will** not have any graphics for a long time if ever because the point of the project is to create an RTS game which can be deeplearned with different
-algorithms, following previously published licensed papers. At the end of the project the AI will be able to go toe to toe with a human enemy and make the best
+Game was initially though **NOT** to contain graphs. This quickly changed as I needed a way to visualize
+AI movement, I am using SDL3. At the end of the project the AI will be able to go toe to toe with a human enemy and make the best
 possible decisions to win the game.
 
 # How can you collaborate
