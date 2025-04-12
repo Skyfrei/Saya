@@ -51,10 +51,9 @@ void Window::RenderUI(){
 }
 
 void Window::RenderMap(std::vector<Unit*>& game_objects, std::vector<Unit*>& game_objects2){
-    SDL_SetRenderDrawColor(renderer, 160, 150, 200, 255);
     float ratiox = canvas_size_x / MAP_SIZE;
     float ratioy = canvas_size_y / MAP_SIZE;
-
+    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
     for (auto& obj : game_objects){
         float gui_x = canvas_start.x + obj->coordinate.x * ratiox;
         float gui_y = canvas_start.y + obj->coordinate.y * ratioy;
@@ -63,6 +62,7 @@ void Window::RenderMap(std::vector<Unit*>& game_objects, std::vector<Unit*>& gam
         SDL_FRect point = {gui_x, gui_y, 3.0f, 3.0f};
         SDL_RenderFillRect(renderer, &point);
     }
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     for (auto& obj : game_objects2){
         float gui_x = canvas_start.x + obj->coordinate.x * ratiox;
         float gui_y = canvas_start.y + obj->coordinate.y * ratioy;

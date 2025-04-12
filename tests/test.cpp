@@ -96,9 +96,9 @@ bool MapRender(){
     while(true){
         int b = rand() % 1000;
         win.Render(obj.memory[b].state.playerUnits, obj.memory[b].state.enemyUnits);
-        std::cin>>a;
-        if (a == 0)
-            exit(0);
+        //std::cin>>a;
+        //if (a == 0)
+        //    exit(0);
 
     }
     return true;
