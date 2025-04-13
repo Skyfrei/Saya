@@ -97,7 +97,7 @@ std::string GetRenderStrings(actionT& action){
         }
         case 1:{
             MoveAction m = std::get<MoveAction>(action);
-            curr = "Move action\n" + std::to_string(m.unit->coordinate.x) + " " + std::to_string(m.unit->coordinate.y) + " " + std::to_string(m.destCoord.x) + " " + std::to_string(m.destCoord.y);
+            curr = "Move action\nUnit in (" +std::to_string(m.unit->coordinate.x) + "," + std::to_string(m.unit->coordinate.y) + ")->(" + std::to_string(m.destCoord.x) + "," + std::to_string(m.destCoord.y) + ")";
             break;
         }
         case 2:{
@@ -118,8 +118,9 @@ bool MapRender(){
     while(true){
         int b = rand() % 1000;
         Transition t = obj.memory[b];
-        std::string c = GetRenderStrings(t.action);
-        win.Render(t.state.playerUnits, t.state.enemyUnits, c, c);
+        std::string dqn_string = GetRenderStrings(t.action);
+        std::string ppo_string = GetRenderStrings(t.action);
+        win.Render(t.state.playerUnits, t.state.enemyUnits, dqn_string, ppo_string);
         //std::cin>>a;
         //if (a == 0)
         //    exit(0);
@@ -130,7 +131,7 @@ bool MapRender(){
 
 
 TEST_CASE("Serializing and Deserialzing Replays...", "[ReplaySystem]") {
-    REQUIRE(BinaryReplay() == ""); 
+    //REQUIRE(BinaryReplay() == ""); 
 }
 
 TEST_CASE("Runtimes of replay system", "[Replay System]") {

@@ -27,6 +27,7 @@ class Player
   public:
     Player(Map &m, Side en);
     Player(const Player &other);
+    ~Player();
     void Initialize();
     void SetInitialCoordinates(Vec2 v);
     bool HasStructure(StructureType structType);

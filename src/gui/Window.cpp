@@ -3,18 +3,19 @@
 #include "../Race/Unit/Unit.h"
 #include <iostream>
 
-struct RenderStruct{
-    RenderStruct(const char* txt, Vec2 p) : text(txt), pos(p){}
-    const char* text;
-    Vec2 pos;
-};
-
 Window::Window(Vec2 s) : window_size(s){
     canvas_start = Vec2(win_start_x * 4, win_start_y * 4);
     canvas_size_x = algo_start_x - win_start_x - canvas_start.x;
     canvas_size_y = window_size.y - canvas_start.y;
-    extern unsigned char tiny_ttf[];
-    extern unsigned int tiny_ttf_len;
+    
+    map.text = "Map";
+    map.pos = Vec2(win_start_x, win_start_y);
+    dqn.text = "DQN";
+    dqn.pos = Vec2(algo_start_x, win_start_y);
+    ppo.text = "PPO";
+    ppo.pos = Vec2(algo_start_x, 200);
+    moves.text = "Moves";
+    moves.pos = Vec2(algo_start_x, 400);
 
     SDL_AppResult result = InitSdl();
 }
@@ -41,20 +42,15 @@ SDL_AppResult Window::InitSdl(){
         return SDL_APP_FAILURE;
     }
    
-    font = TTF_OpenFontIO(stream, true, 18.0f);
+    font = TTF_OpenFontIO(stream, true, 22.0f);
     if (!font) {
         SDL_Log("Couldn't open font: %s\n", SDL_GetError());
         return SDL_APP_FAILURE;
     }
     return SDL_APP_CONTINUE;
-
 }
 void Window::RenderUI(){
-    RenderStruct map("Map", Vec2(win_start_x, win_start_y));
-    RenderStruct dqn("DQN", Vec2(algo_start_x, win_start_y));
-    RenderStruct ppo("PPO", Vec2(algo_start_x, 200));
-    RenderStruct moves("Moves", Vec2(algo_start_x, 400));
-                                                                                                            
+                                                                                                                
     SDL_SetRenderScale(renderer, scale, scale); 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderDebugText(renderer, map.pos.x, map.pos.y, map.text);
@@ -70,42 +66,37 @@ void Window::RenderUI(){
 }
 
 void Window::RenderMoves(std::string& dqn_action, std::string& ppo_action){
-//    const char* txt = "zoom";
-//    int dqn_index = dqn_action.index();
-//    std::string curr;
-//    switch(dqn_index){
-//        case 0:{
-//            txt = "zoom1";
-//        }
-//        case 1:{
-//            MoveAction m = std::get<MoveAction>(dqn_action);
-//            curr = std::to_string(m.unit->coordinate.x) + " " + std::to_string(m.unit->coordinate.y);
-//            txt = "yes";
-//            break;
-//        }
-//        case 2:{
-//            std::string b;
-//            break;
-//        }
-//        case 3:{
-//            std::string c;
-//            break;
-//        }
-//    }
     SDL_FRect dst;
     SDL_Color color = { 255, 255, 255, SDL_ALPHA_OPAQUE };
-    SDL_Surface* text = TTF_RenderText_Blended(font, dqn_action.data(), dqn_action.length(), color);
+    text = TTF_RenderText_Blended_Wrapped(font, dqn_action.data(), dqn_action.length(), color, 250);
     if (text) {
         texture = SDL_CreateTextureFromSurface(renderer, text);
-        //SDL_DestroySurface(text);
+        SDL_DestroySurface(text);
     }
     if (!texture) {
         SDL_Log("Couldn't create text: %s\n", SDL_GetError());
     }
-    dst.x = algo_start_x;
-    dst.y = 220;
+    dst.x = algo_start_x + 5;
+    dst.y = win_start_y + 10;
+    SDL_GetTextureSize(texture, &dst.w, &dst.h);
+    dst.h /= 2;
+    dst.w /= 2;
     SDL_RenderTexture(renderer, texture, NULL, &dst);
-    //SDL_RenderDebugText(renderer, algo_start_x, 220, dqn_action.data());
+
+    text = TTF_RenderText_Blended_Wrapped(font, dqn_action.data(), dqn_action.length(), color, 250);
+    if (text) {
+        texture = SDL_CreateTextureFromSurface(renderer, text);
+        SDL_DestroySurface(text);
+    }
+    if (!texture) {
+        SDL_Log("Couldn't create text: %s\n", SDL_GetError());
+    }
+    dst.x = algo_start_x + 5;
+    dst.y = 220;
+    SDL_GetTextureSize(texture, &dst.w, &dst.h);
+    dst.h /= 2;
+    dst.w /= 2;
+    SDL_RenderTexture(renderer, texture, NULL, &dst);
 }
 
 void Window::RenderMap(std::vector<Unit*>& game_objects, std::vector<Unit*>& game_objects2){
@@ -115,7 +106,7 @@ void Window::RenderMap(std::vector<Unit*>& game_objects, std::vector<Unit*>& gam
     for (auto& obj : game_objects){
         float gui_x = canvas_start.x + obj->coordinate.x * ratiox;
         float gui_y = canvas_start.y + obj->coordinate.y * ratioy;
-        std::cout<<obj->coordinate.x << " " << obj->coordinate.y<<std::endl;
+        //std::cout<<obj->coordinate.x << " " << obj->coordinate.y<<std::endl;
 
         SDL_FRect point = {gui_x, gui_y, 3.0f, 3.0f};
         SDL_RenderFillRect(renderer, &point);
@@ -124,7 +115,7 @@ void Window::RenderMap(std::vector<Unit*>& game_objects, std::vector<Unit*>& gam
     for (auto& obj : game_objects2){
         float gui_x = canvas_start.x + obj->coordinate.x * ratiox;
         float gui_y = canvas_start.y + obj->coordinate.y * ratioy;
-        std::cout<<obj->coordinate.x << " " << obj->coordinate.y<<std::endl;
+        //std::cout<<obj->coordinate.x << " " << obj->coordinate.y<<std::endl;
 
         SDL_FRect point = {gui_x, gui_y, 3.0f, 3.0f};
         SDL_RenderFillRect(renderer, &point);

@@ -4,12 +4,15 @@
 #include <SDL3_ttf/SDL_ttf.h>
 #include <vector>
 #include <string>
-
 #include "../Tools/Vec2.h"
 
 class Unit;
-
 // Just decouple this into sending only strings, but keep for testingv purposes rn
+struct RenderStruct{
+    RenderStruct(){}
+    const char* text;
+    Vec2 pos;
+};
 
 class Window{
     public:
@@ -23,9 +26,15 @@ class Window{
         void RenderMoves(std::string& dqn_action, std::string& ppo_action);
         
     private:
+        RenderStruct map;
+        RenderStruct dqn;
+        RenderStruct ppo;
+        RenderStruct moves;
         TTF_Font* font;
-        const char* fontPath = "~/.local/share/fonts/github/MonaspaceXenonFrozen-Light.ttf";
+        const char* fontPath = "./MonaspaceXenonFrozen-Regular.ttf";
+        SDL_Surface* text;
         SDL_Texture *texture;
+
         Vec2 window_size;
         const float scale = 1.5f;
         const char* project_name = "Saya";
@@ -37,8 +46,6 @@ class Window{
         Vec2 canvas_start;
         int canvas_size_x;
         int canvas_size_y;
-                
 };
-
 
 #endif

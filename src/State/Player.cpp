@@ -38,6 +38,9 @@ Player::Player(const Player &other) : map(other.map) {
 
     side = other.side;
 }
+Player::~Player(){
+
+}
 void Player::TakeAction(actionT action) {
     // if (std::holds_alternative<MoveAction>(action)) {
     //   MoveAction &a = std::get<MoveAction>(action);
