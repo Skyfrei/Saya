@@ -10,6 +10,7 @@ set(CMAKE_CXX_FLAGS ${TORCH_CXX_FLAGS})
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+
 #add_subdirectory(SDL EXCLUDE_FROM_ALL)
 file(GLOB_RECURSE CPPSRC
     "src/*.cpp"
@@ -25,10 +26,11 @@ file (GLOB_RECURSE SDLSRC
     "src/gui/*.cpp"
     "src/gui/*.h"
 )
-
+set(SDLTTF_VENDORED ON)
 add_subdirectory(SDL EXCLUDE_FROM_ALL)
+add_subdirectory(SDL/SDL_ttf EXCLUDE_FROM_ALL)
 add_executable(sdl-test src/gui/start.cpp ${SDLSRC})
-target_link_libraries(sdl-test PRIVATE SDL3::SDL3)
+target_link_libraries(sdl-test PRIVATE SDL3::SDL3 SDL3_ttf::SDL3_ttf)
 
 
 find_package(Catch2 3 REQUIRED)
@@ -38,5 +40,6 @@ list(REMOVE_ITEM SDLSRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gui/start.cpp)
 add_executable(tester tests/test.cpp ${CPPSRC} ${SDLSRC})
 target_link_libraries(tester PRIVATE Catch2::Catch2WithMain)
 target_link_libraries(tester PRIVATE "${TORCH_LIBRARIES}")
-target_link_libraries(tester PRIVATE SDL3::SDL3)
+target_link_libraries(tester PRIVATE SDL3::SDL3 SDL3_ttf::SDL3_ttf)
+
 

@@ -5,6 +5,7 @@
 #include "../src/Race/Structure/TownHall.h"
 #include "../src/Race/Unit/Peasant.h"
 #include "../src/gui/Window.h"
+#include "../src/Race/Unit/Action.h"
 #include <chrono>
 #include <fstream>
 #include <random>
@@ -88,6 +89,27 @@ std::string BinaryReplay(){
     return "";
 }
 
+std::string GetRenderStrings(actionT& action){
+    int dqn_index = action.index();
+    std::string curr;
+    switch(dqn_index){
+        case 0:{
+        }
+        case 1:{
+            MoveAction m = std::get<MoveAction>(action);
+            curr = "Move action\n" + std::to_string(m.unit->coordinate.x) + " " + std::to_string(m.unit->coordinate.y) + " " + std::to_string(m.destCoord.x) + " " + std::to_string(m.destCoord.y);
+            break;
+        }
+        case 2:{
+            break;
+        }
+        case 3:{
+            break;
+        }
+    }
+    return curr;
+}
+
 bool MapRender(){
     Window win(Vec2(1000, 1000));
     int a;
@@ -95,7 +117,9 @@ bool MapRender(){
     obj.LoadMemoryAsBinary();
     while(true){
         int b = rand() % 1000;
-        win.Render(obj.memory[b].state.playerUnits, obj.memory[b].state.enemyUnits);
+        Transition t = obj.memory[b];
+        std::string c = GetRenderStrings(t.action);
+        win.Render(t.state.playerUnits, t.state.enemyUnits, c, c);
         //std::cin>>a;
         //if (a == 0)
         //    exit(0);

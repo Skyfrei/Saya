@@ -1,7 +1,7 @@
 #include "Window.h"
 #include "../Tools/Macro.h"
-#include <iostream>
 #include "../Race/Unit/Unit.h"
+#include <iostream>
 
 struct RenderStruct{
     RenderStruct(const char* txt, Vec2 p) : text(txt), pos(p){}
@@ -13,18 +13,37 @@ Window::Window(Vec2 s) : window_size(s){
     canvas_start = Vec2(win_start_x * 4, win_start_y * 4);
     canvas_size_x = algo_start_x - win_start_x - canvas_start.x;
     canvas_size_y = window_size.y - canvas_start.y;
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        SDL_Log("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
-    }
+    extern unsigned char tiny_ttf[];
+    extern unsigned int tiny_ttf_len;
+
     SDL_AppResult result = InitSdl();
-    
 }
 
 SDL_AppResult Window::InitSdl(){
-     
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        SDL_Log("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
+    }
+
     if (!SDL_CreateWindowAndRenderer(project_name, window_size.x, window_size.y, SDL_WINDOW_RESIZABLE, &window, &renderer))
     {
         SDL_Log("Couldn't create window and renderer: %s", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
+
+    SDL_IOStream* stream = SDL_IOFromFile(fontPath, "rb");
+    if (!stream) {
+        SDL_Log("Failed to open font file: %s", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
+    
+    if (!TTF_Init()) {
+        SDL_Log("Couldn't initialise SDL_ttf: %s\n", SDL_GetError());
+        return SDL_APP_FAILURE;
+    }
+   
+    font = TTF_OpenFontIO(stream, true, 18.0f);
+    if (!font) {
+        SDL_Log("Couldn't open font: %s\n", SDL_GetError());
         return SDL_APP_FAILURE;
     }
     return SDL_APP_CONTINUE;
@@ -50,6 +69,45 @@ void Window::RenderUI(){
     SDL_RenderFillRect(renderer, &vertical_line);
 }
 
+void Window::RenderMoves(std::string& dqn_action, std::string& ppo_action){
+//    const char* txt = "zoom";
+//    int dqn_index = dqn_action.index();
+//    std::string curr;
+//    switch(dqn_index){
+//        case 0:{
+//            txt = "zoom1";
+//        }
+//        case 1:{
+//            MoveAction m = std::get<MoveAction>(dqn_action);
+//            curr = std::to_string(m.unit->coordinate.x) + " " + std::to_string(m.unit->coordinate.y);
+//            txt = "yes";
+//            break;
+//        }
+//        case 2:{
+//            std::string b;
+//            break;
+//        }
+//        case 3:{
+//            std::string c;
+//            break;
+//        }
+//    }
+    SDL_FRect dst;
+    SDL_Color color = { 255, 255, 255, SDL_ALPHA_OPAQUE };
+    SDL_Surface* text = TTF_RenderText_Blended(font, dqn_action.data(), dqn_action.length(), color);
+    if (text) {
+        texture = SDL_CreateTextureFromSurface(renderer, text);
+        //SDL_DestroySurface(text);
+    }
+    if (!texture) {
+        SDL_Log("Couldn't create text: %s\n", SDL_GetError());
+    }
+    dst.x = algo_start_x;
+    dst.y = 220;
+    SDL_RenderTexture(renderer, texture, NULL, &dst);
+    //SDL_RenderDebugText(renderer, algo_start_x, 220, dqn_action.data());
+}
+
 void Window::RenderMap(std::vector<Unit*>& game_objects, std::vector<Unit*>& game_objects2){
     float ratiox = canvas_size_x / MAP_SIZE;
     float ratioy = canvas_size_y / MAP_SIZE;
@@ -73,16 +131,18 @@ void Window::RenderMap(std::vector<Unit*>& game_objects, std::vector<Unit*>& gam
     }
 }
 
-SDL_AppResult Window::Render(std::vector<Unit*>& game_objects, std::vector<Unit*>& game_objects2){
+SDL_AppResult Window::Render(std::vector<Unit*>& game_objects, std::vector<Unit*>& game_objects2, std::string& dqn_action, std::string& ppo_action){
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     RenderUI();
+    RenderMoves(dqn_action, ppo_action);
     RenderMap(game_objects, game_objects2);
     SDL_RenderPresent(renderer);
     return SDL_APP_CONTINUE;
 }
 
 void Window::SDL_AppQuit(){
-
+    if (font)
+        TTF_CloseFont(font);
 }
 

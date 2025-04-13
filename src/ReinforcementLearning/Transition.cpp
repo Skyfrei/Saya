@@ -396,7 +396,7 @@ actionT Transition::GetAction(std::span<binary> bin) {
     }
 
     case 4: {
-        UnitType unitType = static_cast<UnitType>(std::get<int>(bin[0]));
+        UnitType unitType = static_cast<UnitType>(std::get<int>(bin[1]));
         start += 1;
         Structure *binStru = GetStructure(std::span(start, start + 4));
         RecruitAction recruitAction(unitType, binStru);
