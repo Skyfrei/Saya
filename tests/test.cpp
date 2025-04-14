@@ -72,8 +72,9 @@ std::string BinaryReplay(){
             s.enemyUnits[i]->coordinate.x = uniform_dist(e1);
             s.enemyUnits[i]->coordinate.y = uniform_dist(e1);
         }
+        actionT act1 = BuildAction(s.enemyUnits[0], HALL, Vec2(3, 3));
         actionT act = MoveAction(s.enemyUnits[0], Vec2(3, 4));
-        Transition trans(s, act, s);
+        Transition trans(s, act1, s);
         s.playerUnits.clear();
         s.enemyUnits.clear();
         s.playerStructs.clear();
@@ -94,13 +95,20 @@ std::string GetRenderStrings(actionT& action){
     std::string curr;
     switch(dqn_index){
         case 0:{
-        }
-        case 1:{
             MoveAction m = std::get<MoveAction>(action);
             curr = "Move action\nUnit in (" +std::to_string(m.unit->coordinate.x) + "," + std::to_string(m.unit->coordinate.y) + ")->(" + std::to_string(m.destCoord.x) + "," + std::to_string(m.destCoord.y) + ")";
             break;
         }
+        case 1:{
+            AttackAction m = std::get<AttackAction>(action);
+            curr = "Attack action\nUnit in (" +std::to_string(m.unit->coordinate.x) + "," + std::to_string(m.unit->coordinate.y) + ")->(" + std::to_string(m.object->coordinate.x) + "," + std::to_string(m.object->coordinate.y) + ")";
+            break;
+        }
         case 2:{
+            BuildAction m = std::get<BuildAction>(action);
+            curr = "Attack action\nUnit in (" +std::to_string(m.peasant->coordinate.x) + "," + std::to_string(m.peasant->coordinate.y) + ")->(" + std::to_string(m.coordinate.x) + "," + std::to_string(m.coordinate.y) + ")";
+            break;
+
             break;
         }
         case 3:{
@@ -131,7 +139,7 @@ bool MapRender(){
 
 
 TEST_CASE("Serializing and Deserialzing Replays...", "[ReplaySystem]") {
-    //REQUIRE(BinaryReplay() == ""); 
+    REQUIRE(BinaryReplay() == ""); 
 }
 
 TEST_CASE("Runtimes of replay system", "[Replay System]") {

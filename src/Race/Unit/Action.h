@@ -21,7 +21,7 @@ struct FarmGoldAction;
 struct RecruitAction;
 struct BuildAction;
 
-using actionT = std::variant<AttackAction, MoveAction, BuildAction, FarmGoldAction, RecruitAction>;
+using actionT = std::variant<MoveAction, AttackAction, BuildAction, FarmGoldAction, RecruitAction>;
 
 Unit *GetUnit(std::vector<binary> &bin);
 Structure *GetStructure(std::vector<binary> &bin);
@@ -38,6 +38,7 @@ class Action
 };
 struct MoveAction : public Action
 {
+    MoveAction();
     MoveAction(Vec2 c);
     MoveAction(Unit *un, Vec2 c);
     ActionType GetType() override;
@@ -48,7 +49,6 @@ struct MoveAction : public Action
 };
 struct AttackAction : public Action
 {
-    AttackAction();
     AttackAction(Living *o);
     AttackAction(Unit *un, Living *o);
     ActionType GetType() override;

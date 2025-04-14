@@ -10,6 +10,12 @@ if [ ! -d "SDL" ]; then
     mv SDL_ttf SDL/
 fi
 
+if [ ! -f "MonaspaceXenonFrozen-Regular.ttf" ]; then
+    echo "MonaspaceXenonFrozen-Regular.ttf which is used for font is not in the dir"
+    cp /usr/share/fonts/github/MonaspaceXenonFrozen-Regular.ttf .
+fi
+
+
 cd build/
 ninja
 mv Saya ..

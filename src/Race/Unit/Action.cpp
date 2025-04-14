@@ -133,15 +133,15 @@ std::deque<binary> Action::SerializeBinary() {
     return result;
 }
 
+MoveAction::MoveAction(){
+    type = MOVE;
+}
 MoveAction::MoveAction(Vec2 c) : destCoord(c) {
     type = MOVE;
 }
 MoveAction::MoveAction(Unit *un, Vec2 c) : destCoord(c), unit(un) {
     type = MOVE;
     prevCoord = un->coordinate;
-}
-AttackAction::AttackAction() {
-    type = ATTACK;
 }
 AttackAction::AttackAction(Living *o) : object(o) {
     type = ATTACK;
