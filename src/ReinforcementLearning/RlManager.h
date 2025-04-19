@@ -9,18 +9,21 @@
 class RlManager
 {
   public:
-    RlManager();
-    void InitializeDQN(Map map, Player player, Player enemy);
-    void StartPolicy(Map m, Player player, Player enemy);
+    RlManager(Player& pl, Player& en, Map& map);
+    void InitializeDQN();
+    void InitializePPO();
     double CalculateStateReward(State state);
 
   private:
-    State CreateCurrentState(Map map, Player player, Player enemy);
-    Transition CreateTransition(State s, actionT a, State nextS);
+    State CreateCurrentState(Map& map, Player& player, Player& enemy);
+    Transition CreateTransition(State s, actionT a, State rextS);
 
   private:
     DQN policy_net;
     DQN target_net;
+    Player player;
+    Player enemy;
+    Map map;
 
     float gamma = 0.92f;
     bool calledMemOnce = false;

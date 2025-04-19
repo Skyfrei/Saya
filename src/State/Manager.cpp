@@ -5,15 +5,9 @@
 #include "../Race/Structure/TownHall.h"
 #include "../Race/Unit/Peasant.h"
 
-Manager::Manager() : player(map, PLAYER), enemy(map, ENEMY) {
-    // game start
-
+Manager::Manager() : player(map, PLAYER), enemy(map, ENEMY), trainerManager(player, enemy, map){
     player.SetInitialCoordinates(Vec2(8, 2));
     enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 2));
-
-    // Peasant &p = static_cast<Peasant &>(*player.units[0].get());
-    // TownHall &h = static_cast<TownHall &>(*player.structures[0].get());
-    // player.FarmGold(&p, Vec2(10, 10), &h);
     MainLoop();
 }
 

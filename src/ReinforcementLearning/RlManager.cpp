@@ -11,7 +11,7 @@
 #include "../Race/Unit/Peasant.h"
 #include "../Race/Unit/Unit.h"
 
-RlManager::RlManager() {
+RlManager::RlManager(Player& pl, Player& en, Map& map) : player(pl), enemy(en), map(map){
 }
 
 double RlManager::CalculateStateReward(State state) {
@@ -25,42 +25,26 @@ double RlManager::CalculateStateReward(State state) {
     return reward;
 }
 
-void RlManager::StartPolicy(Map map, Player player, Player enemy) {
-    if (calledMemOnce == false)
-    {
-        InitializeDQN(map, player, enemy);
-        calledMemOnce = true;
-    }
-
-    State currentState = CreateCurrentState(map, player, enemy);
-
-    actionT playerAction = policy_net.SelectAction(currentState);
-    player.TakeAction(playerAction);
-    actionT enemyAction = policy_net.SelectAction(currentState);
-    enemy.TakeAction(enemyAction);
-
-    State nextState = CreateCurrentState(map, player, enemy);
-    // Transition egal = CreateTransition(currentState, playerAction, nextState);
-    // memory.push_back(egal);
-}
-
-void RlManager::InitializeDQN(Map map, Player player, Player enemy) {
+void RlManager::InitializeDQN() {
     State st = CreateCurrentState(map, player, enemy);
 
     policy_net.Initialize(st);
     target_net.Initialize(st);
-
     torch::Device device(torch::kCPU);
+
     if (torch::cuda::is_available())
-    {
         device = torch::Device(torch::DeviceType::CUDA);
-    }
+
     policy_net.to(device);
     target_net.to(device);
     torch::optim::AdamW optimizer(policy_net.parameters(), torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
 }
 
-State RlManager::CreateCurrentState(Map map, Player player, Player enemy) {
+void RlManager::InitializePPO() {
+
+}
+
+State RlManager::CreateCurrentState(Map& map, Player& player, Player& enemy) {
     State st;
     //st.currentMap = map;
     st.playerFood = player.food;

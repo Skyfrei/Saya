@@ -18,7 +18,6 @@ class Manager
 {
   public:
     Manager();
-
     void MainLoop();
     void ManageLiving(Player &pl);
     float GetTime();

@@ -46,10 +46,8 @@ class DQN : public torch::nn::Module
     int episodeNumber = 50;
     int stepsDone = 0;
     int epochNumber = 100;
-    float startEpsilon = 0.9f;
-    float endEpsilon = 0.05f;
-    float epsilonDecay = 1000.0f;
-    float learningRate = 0.01f;
+    float epsilon = 0.9f;
+    float epsilonDecay = 1e-5;
     int actionSize = 0;
     int inputSize = 0;
     torch::nn::Linear layer1{nullptr}, layer2{nullptr}, layer3{nullptr};
