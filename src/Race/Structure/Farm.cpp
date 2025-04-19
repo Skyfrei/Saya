@@ -27,8 +27,8 @@ std::string Farm::GetDescription() {
 void Farm::FinishBuilding() {
 }
 
-std::unique_ptr<Structure> Farm::Clone() const {
-    return std::make_unique<Farm>(*this);
+Structure* Farm::Clone() const {
+    return new Farm(*this);
 }
 int Farm::GetFood() {
     return 5;

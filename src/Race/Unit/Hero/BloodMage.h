@@ -59,7 +59,7 @@ class BloodMage : public Hero
     std::string GetDescription() override {
         return "Bloodmage hero";
     }
-    std::unique_ptr<Unit> Clone() const override {
-        return std::make_unique<BloodMage>(*this);
+    Unit* Clone() const override {
+        return new BloodMage(*this);
     }
 };

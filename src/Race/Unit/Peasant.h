@@ -18,8 +18,8 @@ class Peasant : public Unit
     std::string GetDescription() override {
         return "Slave.";
     }
-    std::unique_ptr<Unit> Clone() const override {
-        return std::make_unique<Peasant>(*this);
+    Unit* Clone() const override {
+        return new Peasant(*this);
     }
 
   public:

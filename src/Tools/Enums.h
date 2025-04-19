@@ -35,7 +35,13 @@ enum ActionType
     BUILD,
     FARMGOLD,
     RECRUIT,
+    EMPTY,
     NR_OF_ACTIONS
+};
+enum Side
+{
+    PLAYER,
+    ENEMY
 };
 
 #endif

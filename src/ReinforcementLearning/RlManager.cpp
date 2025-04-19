@@ -26,10 +26,8 @@ double RlManager::CalculateStateReward(State state) {
 }
 
 void RlManager::InitializeDQN() {
-    State st = CreateCurrentState(map, player, enemy);
-
-    policy_net.Initialize(st);
-    target_net.Initialize(st);
+    policy_net.Initialize(player, enemy, map);
+    target_net.Initialize(player, enemy, map);
     torch::Device device(torch::kCPU);
 
     if (torch::cuda::is_available())

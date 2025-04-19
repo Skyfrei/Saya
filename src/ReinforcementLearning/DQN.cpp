@@ -5,7 +5,8 @@
 #include <random>
 #include "../Tools/Macro.h"
 #include "../Tools/Binary.h"
-#include "../Tools/Enum.h"
+#include "../Tools/Enums.h"
+#include "../Race/Structure/TownHall.h"
 
 int mapSize = MAP_SIZE * MAP_SIZE;
 int moveAction = mapSize * MAX_UNITS;
@@ -18,9 +19,9 @@ int recruitAction = farmAction + 2 * NR_OF_UNITS * BARRACK_INDEX_IN_STRUCTS; // 
 DQN::DQN(){
 }
 
-void DQN::Initialize(State state) {
-    TensorStruct ts(state);
-    inputSize = ts.GetTensor().size(1);
+void DQN::Initialize(Player& pl, Player& en, Map& map) {
+    torch::Tensor dqn_input = TurnStateInInput(pl, en, map);
+    inputSize = dqn_input.size(1);
     actionSize = recruitAction;
     layer1 = register_module("layer1", torch::nn::Linear(inputSize, 128));
     layer2 = register_module("layer2", torch::nn::Linear(128, 128));
@@ -128,14 +129,14 @@ void DQN::LoadMemoryAsBinary() {
 
 void DQN::Train(Player& pl, Player& en, Map& map) {
     //torch::optim::SGD optimizer(this->parameters(), learningRate);
-    float epsilon = 0.8f;
     float loss = 0.0f;
 
     for (int i = 0; i < epochNumber; i++)
     {
         for (int j = 0; j < 1000; j++){
-              
             actionT action = SelectAction(pl, en, map);
+            if (epsilon - epsilonDecay >= 0)
+                epsilon -= epsilonDecay;
         }
     }
 }
@@ -143,7 +144,8 @@ void DQN::Train(Player& pl, Player& en, Map& map) {
 actionT DQN::SelectAction(Player& pl, Player& en, Map& map) {
     std::random_device dev;
     std::mt19937 rng(dev());
-    std::uniform_int_distribution<std::mt19937::result_type> dist1(0.0, 1.0);
+    
+    std::uniform_real_distribution<float> dist1(0.0, 1.0);
     std::uniform_int_distribution<std::mt19937::result_type> dist2(0, NR_OF_ACTIONS - 1);
     std::uniform_int_distribution<std::mt19937::result_type> pun(0, pl.units.size() - 1);
     std::uniform_int_distribution<std::mt19937::result_type> pstru(0, pl.structures.size() - 1);
@@ -159,18 +161,20 @@ actionT DQN::SelectAction(Player& pl, Player& en, Map& map) {
     int eUnit = eun(rng);
     int pStru = pstru(rng);
     int eStru = estru(rng);
+    std::cout<<random_number<<std::endl;
 
     if (random_number > epsilon){
-        at::Tensor action = std::get<1>(Forward(TurnStateInInput(state)).max(1)).view({1, 1});
+        torch::Tensor dqn_input = TurnStateInInput(pl, en, map);
+        at::Tensor action = std::get<1>(Forward(dqn_input).max(1)).view({1, 1});
         actionT result = MapIndexToAction(action.item<int>());
+        std::cout<<action.item<int>()<<std::endl;
         return result;
     }
     else{
         ActionType action_index = static_cast<ActionType>(dist2(rng));
-        
         switch(action_index){
             case MOVE:{
-                MoveAction action = MoveAction(pl.units[pUnit], Vec2(cx, cy));
+                MoveAction action = MoveAction(pl.units[pUnit].get(), Vec2(cx, cy));
                 return action;
             }
 
@@ -178,68 +182,70 @@ actionT DQN::SelectAction(Player& pl, Player& en, Map& map) {
                 std::uniform_int_distribution<std::mt19937::result_type> struOrEn(0, 1);
                 int ran = struOrEn(rng);
                 if (ran == 0){
-                    AttackAction action = AttackAction(pl.units[pUnit], en.units[eUnit]);
+                    AttackAction action = AttackAction(pl.units[pUnit].get(), en.units[eUnit].get());
                     return action;
                 }
                 else{
-                    AttackAction action = AttackAction(pl.units[pUnit], en.structures[eStru]);
+                    AttackAction action = AttackAction(pl.units[pUnit].get(), en.structures[eStru].get());
                     return action;
                 }
             }
 
             case BUILD:{
-                std::uniform_int_distribution<std::mt19937::result_type> struType1(0, NR_OF_STRUCTURES - 1);
+                std::uniform_int_distribution<std::mt19937::result_type> struType1(0, NR_OF_STRUCTS - 1);
                 StructureType struType = static_cast<StructureType>(struType1(rng));
-                std::vector<Units*> peasants;
-                for (auto p : pl.units){
-                    if (p->Type == PEASANT)
-                        peasants.push_back(p);
+                std::vector<Unit*> peasants;
+                for (auto& p : pl.units){
+                    if (p->is == PEASANT)
+                        peasants.push_back(p.get());
                 }
                 if (peasants.size() <= 0)
-                    break;
+                    return EmptyAction();
                 std::uniform_int_distribution<std::mt19937::result_type> peasantX(0, peasants.size() - 1);
-                BuildAction action = BuildAction(pl.peasants[peasantX(rng)], struType, Vec2(cx, cy));
+                BuildAction action = BuildAction(peasants[peasantX(rng)], struType, Vec2(cx, cy));
                 return action;
             }
             
             case FARMGOLD:{
-                std::vector<Units*> peasants;
+                std::vector<Unit*> peasants;
                 std::vector<Structure*> halls;
-                for (auto p : pl.units){
-                    if (p->Type == PEASANT)
-                        peasants.push_back(p);
+                for (auto& p : pl.units){
+                    if (p->is == PEASANT)
+                        peasants.push_back(p.get());
                 }
-                for (auto s : pl.structures){
+                for (auto& s : pl.structures){
                     if (s->is == HALL)
-                        halls.push_back(s);
+                        halls.push_back(s.get());
                 }
 
-                if (peasants.size() <= 0)
-                    break;
-                if (halls.size() <= 0)
-                    break;
+                if (peasants.size() <= 0 || halls.size() <= 0)
+                    return EmptyAction();
                 std::uniform_int_distribution<std::mt19937::result_type> peasantX(0, peasants.size() - 1);
                 std::uniform_int_distribution<std::mt19937::result_type> struX(0, halls.size() - 1);
                 pUnit = peasantX(rng);
                 pStru = struX(rng);
 
-                FarmGoldAction action = FarmGoldAction(pl.peasants[pUnit], Vec2(cx, cy), pl.structures[pStru]);  
+                FarmGoldAction action = FarmGoldAction(peasants[pUnit], Vec2(cx, cy), static_cast<TownHall*>(halls[pStru]));  
                 return action;
             }
 
             case RECRUIT:{
                 std::uniform_int_distribution<std::mt19937::result_type> unTypeRng(0, NR_OF_UNITS - 1);
                 std::vector<Structure*> barracks;
-                for (auto p : pl.structures){
+                for (auto& p : pl.structures){
                     if (p->is == BARRACK)
-                        barracks.push_back(p);
+                        barracks.push_back(p.get());
                 }
-
+                if (barracks.size() <= 0)
+                    return EmptyAction();
                 std::uniform_int_distribution<std::mt19937::result_type> struType(0, barracks.size() - 1);
                 UnitType unType = static_cast<UnitType>(unTypeRng(rng));
                 int barrackIndex = struType(rng);
-                RecruitAction action = RecruitAction(unType, p.barracks[barrackIndex]);
+                RecruitAction action = RecruitAction(unType, barracks[barrackIndex]);
                 return action;
+            }
+            case EMPTY:{
+                return EmptyAction();
             }
         }
     }
@@ -306,7 +312,31 @@ actionT DQN::MapIndexToAction(int actionIndex) {
 
 
 
-torch::Tensor DQN::TurnStateInInput(State state) {
+torch::Tensor DQN::TurnStateInInput(Player& pl, Player& en, Map& map) {
+    State state;
+    state.playerGold = pl.gold;
+    state.playerFood.x = pl.food.x;
+    state.playerFood.y = pl.food.y; 
+    state.enemyGold = en.gold; 
+    state.enemyFood.x = en.food.x;
+    state.enemyFood.y = en.food.y;
+    state.playerUnits.resize(pl.units.size());
+    state.enemyUnits.resize(en.units.size());
+    state.playerStructs.resize(pl.structures.size());
+    state.enemyStructs.resize(en.structures.size());
+    
+    for (int i = 0; i < pl.units.size(); i++)
+        state.playerUnits[i] = pl.units[i]->Clone();
+
+    for (int i = 0; i < pl.structures.size(); i++)
+        state.playerStructs[i] = pl.structures[i]->Clone();
+
+    for (int i = 0; i < en.units.size(); i++)
+        state.enemyUnits[i] = en.units[i]->Clone();
+
+    for (int i = 0; i < en.structures.size(); i++)
+        state.enemyStructs[i] = en.structures[i]->Clone();
+
     TensorStruct ts(state);
     return ts.GetTensor();
 }

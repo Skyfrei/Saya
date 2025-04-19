@@ -23,11 +23,11 @@ class DQN : public torch::nn::Module
   public:
     DQN();
     torch::Tensor Forward(torch::Tensor x);
-    void Initialize(State state);
-    actionT SelectAction(State state); // gotta return an
+    void Initialize(Player& pl, Player& en, Map& map);
+    actionT SelectAction(Player& pl, Player& en, Map& map); // gotta return an
     void PrintWeight();
     void AttachAgent(Player &pl);
-    void Train();
+    void Train(Player& pl, Player& en, Map& map);
     void Test();
 
     void AddExperience(Transition trans);
@@ -39,7 +39,7 @@ class DQN : public torch::nn::Module
 
   private:
     void OptimizeModel(std::deque<Transition> memory);
-    torch::Tensor TurnStateInInput(State state);
+    torch::Tensor TurnStateInInput(Player& pl, Player& en, Map& map);
     actionT MapIndexToAction(int actionIndex);
 
   private:
@@ -59,7 +59,7 @@ class DQN : public torch::nn::Module
 
 struct TensorStruct
 {
-    TensorStruct(const State &state) {
+    TensorStruct(const State& state) {
         //currentMap = GetMapTensor(state.currentMap);
         playerGold = torch::tensor(state.playerGold).view({-1, 1});
         playerFood = GetVec(state.playerFood);

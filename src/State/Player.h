@@ -8,6 +8,7 @@
 #include "../Race/Unit/Unit.h"
 #include "../State/Map.h"
 #include "../Tools/Vec2.h"
+#include "../Tools/Enums.h"
 
 class Peasant;
 class Structure;
@@ -15,12 +16,6 @@ class Footman;
 class TownHall;
 class Barrack;
 class Farm;
-
-enum Side
-{
-    PLAYER,
-    ENEMY
-};
 
 class Player
 {

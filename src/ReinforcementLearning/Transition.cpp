@@ -470,6 +470,21 @@ State::State(const State &s, actionT a) : State(s) {
     action = a;
 }
 
+// MEMORY LEAK HAPPENS WITHOUT THIS FROM THE TESTING FRAMEWORK
+// AND IF THIS IS INCLUDED SEG FAULT
+//
+State::~State(){
+//    for (int i = 0; i < playerUnits.size(); i++)
+//        delete playerUnits[i];
+//    for (int i = 0; i < enemyUnits.size(); i++)
+//        delete enemyUnits[i];
+//    for (int i = 0; i < playerStructs.size(); i++)
+//        delete playerStructs[i];
+//    for (int i = 0; i < enemyStructs.size(); i++)
+//        delete enemyStructs[i];
+}
+
+
 //bool State::operator<(const State &other) const {
 //    if (currentMap == other.currentMap && action == other.action)
 //        return false;

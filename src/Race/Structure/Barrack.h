@@ -21,8 +21,8 @@ class Barrack : public Structure
   public:
     void FinishBuilding() override {
     }
-    std::unique_ptr<Structure> Clone() const override {
-        return std::make_unique<Barrack>(*this);
+    Structure* Clone() const override {
+        return new Barrack(*this);
     }
     std::string GetDescription() override {
         return "Recruit soldiers.";

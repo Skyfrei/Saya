@@ -166,7 +166,7 @@ RecruitAction::RecruitAction(UnitType typeOfUnit, Structure *s) : unitType(typeO
     type = RECRUIT;
 }
 EmptyAction::EmptyAction(){
-    type = EMPTY;
+    type = EMPTY_ACTION;
 }
 bool MoveAction::operator==(const MoveAction &b) const {
     if (destCoord.x == b.destCoord.x && destCoord.y == b.destCoord.y)
@@ -191,9 +191,6 @@ bool RecruitAction::operator==(const RecruitAction &a) const {
         return true;
     return false;
 }
-bool EmptyAction::operator==(const EmptyAction &a) const {
-    return true;
-}
 ActionType MoveAction::GetType() {
     return type;
 }
@@ -209,6 +206,4 @@ ActionType FarmGoldAction::GetType() {
 ActionType RecruitAction::GetType() {
     return type;
 }
-ActionType EmptyAction::GetType() {
-    return type;
-}
+

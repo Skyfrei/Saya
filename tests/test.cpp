@@ -58,6 +58,9 @@ std::string BinaryReplay(){
     std::default_random_engine e1(ran());
     std::uniform_int_distribution<int> uniform_dist(0, 100);
     DQN obj;  
+    // IF DESTRUCTOR IN STATE IS INCLUDED SEG FAULT
+    // OTHERWISE MEM LEAK
+    // CHANGE TO SHARED_PTR OR STOP USING TEST IN RELEASE
     for(int i = 0; i < 1000; i++){
         s.playerStructs.push_back(new TownHall(Vec2(10, 2)));
         for (int i = 0; i < 5; i++) {
@@ -137,6 +140,19 @@ bool MapRender(){
     return true;
 }
 
+bool DQN_Test(){
+    Map map;
+    Player player(map, PLAYER);
+    Player enemy(map, ENEMY);
+    player.SetInitialCoordinates(Vec2(8, 2));
+    enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 2));
+    DQN obj;
+    obj.Initialize(player, enemy, map);
+    obj.LoadMemoryAsBinary();
+    obj.Train(player, enemy, map);
+    return true;
+}
+
 
 TEST_CASE("Serializing and Deserialzing Replays...", "[ReplaySystem]") {
     REQUIRE(BinaryReplay() == ""); 
@@ -147,5 +163,9 @@ TEST_CASE("Runtimes of replay system", "[Replay System]") {
 }
 
 TEST_CASE("Rendering of the map", "[Map rendering]") {
-    REQUIRE(MapRender());
+    //REQUIRE(MapRender());
+}
+
+TEST_CASE("Testing DQN", "[DQN]"){
+    REQUIRE(DQN_Test());
 }

@@ -20,8 +20,9 @@ struct AttackAction;
 struct FarmGoldAction;
 struct RecruitAction;
 struct BuildAction;
+struct EmptyAction;
 
-using actionT = std::variant<MoveAction, AttackAction, BuildAction, FarmGoldAction, RecruitAction>;
+using actionT = std::variant<MoveAction, AttackAction, BuildAction, FarmGoldAction, RecruitAction, EmptyAction>;
 
 Unit *GetUnit(std::vector<binary> &bin);
 Structure *GetStructure(std::vector<binary> &bin);
@@ -95,5 +96,11 @@ struct RecruitAction : public Action
     bool operator==(const RecruitAction &a) const;
     UnitType unitType;
     Structure *stru;
+};
+struct EmptyAction : public Action
+{
+    EmptyAction();
+    ActionType GetType() override;
+    bool operator==(const EmptyAction &a) const;
 };
 #endif

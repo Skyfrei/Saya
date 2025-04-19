@@ -34,6 +34,6 @@ std::string Footman::GetDescription() {
     return "Footman.";
 }
 
-std::unique_ptr<Unit> Footman::Clone() const {
-    return std::make_unique<Footman>(*this);
+Unit* Footman::Clone() const {
+    return new Footman(*this);
 }
