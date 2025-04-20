@@ -16,12 +16,11 @@ int farmAction =
     buildAction + PEASANT_INDEX_IN_UNITS * mapSize * HALL_INDEX_IN_STRCTS;   // town hall size multipled here as well
 int recruitAction = farmAction + 2 * NR_OF_UNITS * BARRACK_INDEX_IN_STRUCTS; // barrack size
 
-DQN::DQN(){
-}
-
+DQN::DQN(){}
 void DQN::Initialize(Player& pl, Player& en, Map& map) {
-    torch::Tensor dqn_input = TurnStateInInput(pl, en, map);
-    inputSize = dqn_input.size(1);
+    State s = GetState(pl, en, map);
+    TensorStruct tensor = TensorStruct(s);
+    inputSize = tensor.GetTensor().size(1);
     actionSize = recruitAction;
     layer1 = register_module("layer1", torch::nn::Linear(inputSize, 128));
     layer2 = register_module("layer2", torch::nn::Linear(128, 128));
@@ -134,7 +133,16 @@ void DQN::Train(Player& pl, Player& en, Map& map) {
     for (int i = 0; i < epochNumber; i++)
     {
         for (int j = 0; j < 1000; j++){
+            State state = GetState(pl, en, map);
             actionT action = SelectAction(pl, en, map);
+            // int reward = player.ExecuteAction(action);  
+            State next_state = GetState(pl, en, map);
+            Transition trans(state, action, next_state);
+            AddExperience(trans);
+            // Sample random from experience
+            //  
+
+            
             if (epsilon - epsilonDecay >= 0)
                 epsilon -= epsilonDecay;
         }
@@ -161,13 +169,12 @@ actionT DQN::SelectAction(Player& pl, Player& en, Map& map) {
     int eUnit = eun(rng);
     int pStru = pstru(rng);
     int eStru = estru(rng);
-    std::cout<<random_number<<std::endl;
 
     if (random_number > epsilon){
-        torch::Tensor dqn_input = TurnStateInInput(pl, en, map);
-        at::Tensor action = std::get<1>(Forward(dqn_input).max(1)).view({1, 1});
+        State s = GetState(pl, en, map);
+        TensorStruct dqn_input = TensorStruct(s);
+        at::Tensor action = std::get<1>(Forward(dqn_input.GetTensor()).max(1)).view({1, 1});
         actionT result = MapIndexToAction(action.item<int>());
-        std::cout<<action.item<int>()<<std::endl;
         return result;
     }
     else{
@@ -253,8 +260,7 @@ actionT DQN::SelectAction(Player& pl, Player& en, Map& map) {
 
 void DQN::Test() {
 }
-// mapSize = 3 * 3 = 9
-// MAP_SIZE = 3
+
 actionT DQN::MapIndexToAction(int actionIndex) {
     actionT action;
 
@@ -310,9 +316,7 @@ actionT DQN::MapIndexToAction(int actionIndex) {
     return action;
 }
 
-
-
-torch::Tensor DQN::TurnStateInInput(Player& pl, Player& en, Map& map) {
+State DQN::GetState(Player& pl, Player& en, Map& map) {
     State state;
     state.playerGold = pl.gold;
     state.playerFood.x = pl.food.x;
@@ -336,11 +340,22 @@ torch::Tensor DQN::TurnStateInInput(Player& pl, Player& en, Map& map) {
 
     for (int i = 0; i < en.structures.size(); i++)
         state.enemyStructs[i] = en.structures[i]->Clone();
-
-    TensorStruct ts(state);
-    return ts.GetTensor();
+    
+    return state;
 }
 
 void DQN::PrintWeight() {
     std::cout << this->layer1->weight[0][0] << std::endl;
+}
+
+void DQN::SaveModel(){
+    torch::serialize::OutputArchive archive;
+    this->save(archive);
+    archive.save_to(model_file);
+}
+
+void DQN::LoadModel(){
+    torch::serialize::InputArchive archive;
+    archive.load_from(model_file);
+    this->load(archive);
 }

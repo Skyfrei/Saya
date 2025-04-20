@@ -41,56 +41,48 @@ Player::Player(const Player &other) : map(other.map) {
 Player::~Player(){
 
 }
-void Player::TakeAction(actionT action) {
-    // if (std::holds_alternative<MoveAction>(action)) {
-    //   MoveAction &a = std::get<MoveAction>(action);
-    //   Move(a.unit, a.v);
-    // } else if (std::holds_alternative<AttackAction>(action)) {
-    //   AttackAction &a = std::get<AttackAction>(action);
-    //   Attack(a.unit, a.l);
-    // } else if (std::holds_alternative<BuildAction>(action)) {
-    //   BuildAction &a = std::get<BuildAction>(action);
-    //   Build(a.p, a.type, a.v);
-    // } else if (std::holds_alternative<FarmGoldAction>(action)) {
-    //   FarmGoldAction &a = std::get<FarmGoldAction>(action);
-    //   FarmGold(a.p, a.v, a.hall);
-    // }
+void Player::TakeAction(actionT act) {
+    if (std::holds_alternative<MoveAction>(act)){
+        MoveAction& action = std::get<MoveAction>(act);
+        Move(action);
+    }
+    else if (std::holds_alternative<AttackAction>(act)){
+        AttackAction& action = std::get<AttackAction>(act);
+        Attack(action);
+    }
+    else if (std::holds_alternative<BuildAction>(act)){
+        BuildAction& action = std::get<BuildAction>(act);
+        Build(action);
+    }
+    else if (std::holds_alternative<FarmGoldAction>(act)){
+        FarmGoldAction& action = std::get<FarmGoldAction>(act);
+        FarmGold(action);
+    }
+    else if (std::holds_alternative<RecruitAction>(act)){
+        RecruitAction& action = std::get<RecruitAction>(act);
+    }
 }
-void Player::Move(Unit *u, Vec2 v) {
-    actionT t = MoveAction(v);
-    u->InsertAction(t);
+void Player::Move(MoveAction& action) {
+    action.unit->InsertAction(action);
 }
-void Player::Attack(Unit *u, Living *l) {
-    AttackAction b(l);
-    actionT t = b;
-    u->InsertAction(t);
+void Player::Attack(AttackAction& action) {
+    action.unit->InsertAction(action);
 }
-void Player::Build(Peasant *p, StructureType type, Vec2 v) {
-    Terrain &ter = map.GetTerrainAtCoordinate(v);
-    if (ter.structureOnTerrain == nullptr && ter.resourceLeft == 0)
-    {
-        std::unique_ptr<Structure> &s = structures.emplace_back(ChooseToBuild(type));
-        if (gold - s->goldCost >= 0)
-        {
+void Player::Build(BuildAction& action){
+    Terrain& ter = map.GetTerrainAtCoordinate(action.coordinate);
+    if (ter.structureOnTerrain == nullptr && ter.resourceLeft == 0){
+        std::unique_ptr<Structure> s = ChooseToBuild(action.struType);
+        if (gold - s->goldCost >= 0){
             s->health = 1;
-            s->coordinate = v;
-            BuildAction b(s.get());
-            p->InsertAction(b);
-            map.AddOwnership(b.stru);
+            s->coordinate = action.coordinate;
+            structures.emplace_back(std::move(s));
+            action.peasant->InsertAction(action);
+            map.AddOwnership(action.stru);
         }
     }
 }
-void Player::FarmGold(Peasant *p, Vec2 v, TownHall *hall) {
-    Terrain &ter = map.GetTerrainAtCoordinate(v);
-
-    if (ter.resourceLeft <= 0)
-    {
-        MoveAction action(ter.coord);
-        p->InsertAction(action);
-        return;
-    }
-    FarmGoldAction action(v, &ter, hall);
-    p->InsertAction(action);
+void Player::FarmGold(FarmGoldAction& action) {
+    action.peasant->InsertAction(action);
 }
 void Player::RecruitSoldier(UnitType unitType, Structure *stru) {
     if (auto s = dynamic_cast<Barrack *>(stru))

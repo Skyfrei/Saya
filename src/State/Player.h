@@ -34,10 +34,10 @@ class Player
     std::unique_ptr<Unit> ChooseToRecruit(UnitType);
     std::vector<std::unique_ptr<Unit>> SelectUnits();
     void TakeAction(actionT action);
-    void Move(Unit *, Vec2);
-    void Attack(Unit *, Living *);
-    void Build(Peasant *, StructureType, Vec2);
-    void FarmGold(Peasant *, Vec2, TownHall *);
+    void Move(MoveAction& action);
+    void Attack(AttackAction& action);
+    void Build(BuildAction& action);
+    void FarmGold(FarmGoldAction& action);
     void RecruitSoldier(UnitType unitType, Structure *);
 
   public:

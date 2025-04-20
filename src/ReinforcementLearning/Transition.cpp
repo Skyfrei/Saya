@@ -9,7 +9,7 @@
 
 // #include <chrono>
 
-Transition::Transition(State s, actionT act, State n) : state(s, act), nextState(n), action(act) {
+Transition::Transition(State s, actionT act, State n, float r) : state(s, act), nextState(n), action(act), reward(r) {
 }
 
 Transition::Transition() {
@@ -171,7 +171,7 @@ std::vector<binary> Transition::SerializeBinary() {
     int npsSize = nextState.playerStructs.size();
     int neuSize = nextState.enemyUnits.size();
     int nesSize = nextState.enemyStructs.size();
-    int byte_number = 20 + (puSize * 5) + (psSize * 4) + (euSize * 5) + (esSize * 4) + (npuSize * 5) + (npsSize * 4) +
+    int byte_number = 21 + (puSize * 5) + (psSize * 4) + (euSize * 5) + (esSize * 4) + (npuSize * 5) + (npsSize * 4) +
                       (neuSize * 5) + (nesSize * 4);
 
     binary_data.push_back(byte_number);
@@ -196,6 +196,8 @@ std::vector<binary> Transition::SerializeBinary() {
     binary_data.push_back(npsSize);
     binary_data.push_back(neuSize);
     binary_data.push_back(nesSize);
+
+    binary_data.push_back(reward);
 
     for (int i = 0; i < puSize; i++)
     {
@@ -279,6 +281,7 @@ Transition Transition::DeserializeBinary(std::vector<binary> &bin) {
     int npsSize = std::get<int>(bin[17]);
     int neuSize = std::get<int>(bin[18]);
     int nesSize = std::get<int>(bin[19]);
+    float reward = std::get<float>(bin[20]);
     state.playerUnits.resize(puSize);
     state.enemyUnits.resize(euSize);
     nextState.playerUnits.resize(npuSize);
@@ -288,7 +291,7 @@ Transition Transition::DeserializeBinary(std::vector<binary> &bin) {
     nextState.playerStructs.resize(npsSize);
     nextState.enemyStructs.resize(nesSize);
 
-    std::vector<binary>::iterator start = bin.begin() + 20;
+    std::vector<binary>::iterator start = bin.begin() + 21;
     for (int i = 0; i < puSize; i++)
     {
         state.playerUnits[i] = GetUnit(std::span(start, start + 5));

@@ -18,6 +18,7 @@
 #define BARRACK_INDEX_IN_STRUCTS 5
 #define MAX_UNITS_TYPE 3
 
+
 class DQN : public torch::nn::Module
 {
   public:
@@ -39,8 +40,10 @@ class DQN : public torch::nn::Module
 
   private:
     void OptimizeModel(std::deque<Transition> memory);
-    torch::Tensor TurnStateInInput(Player& pl, Player& en, Map& map);
+    State GetState(Player& pl, Player& en, Map& map);
     actionT MapIndexToAction(int actionIndex);
+    void SaveModel();
+    void LoadModel();
 
   private:
     int episodeNumber = 50;
@@ -55,11 +58,12 @@ class DQN : public torch::nn::Module
     int memory_size = 1000;
     const std::string memory_file = "dqn_memory.say";
     const std::string memory_file_binary = "binary.bay";
+    const std::string model_file = "model.pt";
 };
 
 struct TensorStruct
 {
-    TensorStruct(const State& state) {
+    TensorStruct(State& state) {
         //currentMap = GetMapTensor(state.currentMap);
         playerGold = torch::tensor(state.playerGold).view({-1, 1});
         playerFood = GetVec(state.playerFood);
