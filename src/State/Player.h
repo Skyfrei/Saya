@@ -9,6 +9,7 @@
 #include "../State/Map.h"
 #include "../Tools/Vec2.h"
 #include "../Tools/Enums.h"
+#include "../Race/Unit/Action.h"
 
 class Peasant;
 class Structure;
@@ -38,7 +39,7 @@ class Player
     void Attack(AttackAction& action);
     void Build(BuildAction& action);
     void FarmGold(FarmGoldAction& action);
-    void RecruitSoldier(UnitType unitType, Structure *);
+    void Recruit(RecruitAction& action);
 
   public:
     int gold = 300;

@@ -60,6 +60,7 @@ void Player::TakeAction(actionT act) {
     }
     else if (std::holds_alternative<RecruitAction>(act)){
         RecruitAction& action = std::get<RecruitAction>(act);
+        Recruit(action);
     }
 }
 void Player::Move(MoveAction& action) {
@@ -84,22 +85,12 @@ void Player::Build(BuildAction& action){
 void Player::FarmGold(FarmGoldAction& action) {
     action.peasant->InsertAction(action);
 }
-void Player::RecruitSoldier(UnitType unitType, Structure *stru) {
-    if (auto s = dynamic_cast<Barrack *>(stru))
-    {
-        Terrain &ter = map.GetTerrainAtCoordinate(stru->coordinate);
-        if (unitType == ARCHMAGE)
-        {
-            if (HasUnit(BLOODMAGE))
-                return;
-        }
-        else if (unitType == BLOODMAGE)
-        {
-            if (HasUnit(ARCHMAGE))
-                return;
-        }
-        std::unique_ptr<Unit> &un = units.emplace_back(ChooseToRecruit(unitType));
-        un->coordinate = stru->coordinate;
+void Player::Recruit(RecruitAction& action) {
+    if (action.stru != nullptr && action.stru->is == BARRACK){
+        std::unique_ptr<Unit> un = ChooseToRecruit(action.unitType);
+        un->coordinate = action.stru->coordinate;
+        if (gold >= un->goldCost)
+            units.emplace_back(std::move(un));
         map.AddOwnership(un.get());
     }
 }
@@ -150,7 +141,7 @@ bool Player::HasUnit(UnitType unitType) {
     return false;
 }
 
-// std::vector<Living> &Player::Select() {}
+// std::vect<Living> &Player::Select() {}
 
 Structure &Player::FindClosestStructure(Unit &unit, StructureType type) {
     double min = 100;
