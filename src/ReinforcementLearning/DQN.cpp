@@ -3,6 +3,7 @@
 #include <fstream>
 #include <map>
 #include <random>
+#include <algorithm>
 #include "../Tools/Macro.h"
 #include "../Tools/Binary.h"
 #include "../Tools/Enums.h"
@@ -129,16 +130,23 @@ void DQN::LoadMemoryAsBinary() {
 void DQN::Train(Player& pl, Player& en, Map& map) {
     //torch::optim::SGD optimizer(this->parameters(), learningRate);
     float loss = 0.0f;
+    float discount = 0.7f;
+    int batch_size = 100;
 
     for (int i = 0; i < epochNumber; i++)
     {
         for (int j = 0; j < 1000; j++){
             State state = GetState(pl, en, map);
             actionT action = SelectAction(pl, en, map);
-            float reward = player.TakeAction(action);  
+            float reward = pl.TakeAction(action);  
             State next_state = GetState(pl, en, map);
             Transition trans(state, action, next_state);
             AddExperience(trans);
+            std::deque<Transition> samples;
+            //std::sample(memory.begin(), memory.end(),
+            //            std::back_inserter(samples), batch_size,
+            //            std::mt19937 {std::random_device{}()});
+
             // Sample random from experience
             //  
 
@@ -171,11 +179,12 @@ actionT DQN::SelectAction(Player& pl, Player& en, Map& map) {
     int eStru = estru(rng);
 
     if (random_number > epsilon){
-        State s = GetState(pl, en, map);
-        TensorStruct dqn_input = TensorStruct(s);
-        at::Tensor action = std::get<1>(Forward(dqn_input.GetTensor()).max(1)).view({1, 1});
-        actionT result = MapIndexToAction(action.item<int>());
-        return result;
+        //State s = GetState(pl, en, map);
+        //TensorStruct dqn_input = TensorStruct(s);
+        //at::Tensor action = std::get<1>(Forward(dqn_input.GetTensor()).max(1)).view({1, 1});
+        //actionT result = MapIndexToAction(action.item<int>());
+        MoveAction action = MoveAction(pl.units[pUnit].get(), Vec2(cx, cy));
+        return action;
     }
     else{
         ActionType action_index = static_cast<ActionType>(dist2(rng));

@@ -2,6 +2,7 @@
 #include "../Race/Structure/Structure.h"
 #include "Terrain.h"
 #include "../Tools/Macro.h"
+#include <iostream>
 
 Map::Map() {
     std::vector<Terrain> tempTerr;
@@ -18,7 +19,6 @@ Map::Map() {
                 temp.resourceLeft = 2000;
             }
             tempTerr.push_back(temp);
-            // terrain[i][j] = temp;
         }
         terrain.push_back(tempTerr);
         tempTerr.clear();
@@ -45,6 +45,7 @@ void Map::RemoveOwnership(Living *l, Vec2 v) {
 }
 void Map::AddOwnership(Living *l) {
     Terrain &terr = GetTerrainAtCoordinate(l->coordinate);
+     
     if (auto s = dynamic_cast<Structure *>(l))
     {
         terr.structureOnTerrain = s;
@@ -56,7 +57,7 @@ std::vector<Living *> Map::GetObjectsAtTerrain(Vec2 v) {
     Terrain &t = GetTerrainAtCoordinate(v);
     return t.onTerrainLiving;
 }
-Terrain &Map::GetTerrainAtCoordinate(Vec2 v) {
+Terrain& Map::GetTerrainAtCoordinate(Vec2 v) {
     for (int i = 0; i < terrain.size(); i++)
     {
         for (int j = 0; j < terrain.size(); j++)

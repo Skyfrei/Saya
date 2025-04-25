@@ -31,7 +31,7 @@ class Player
     Structure &FindClosestStructure(Unit &unit, StructureType type);
     void ValidateFood();
     void UpdateGold(int g);
-    std::unique_ptr<Structure> ChooseToBuild(StructureType structType);
+    std::unique_ptr<Structure> ChooseToBuild(StructureType structType, Vec2& coord);
     std::unique_ptr<Unit> ChooseToRecruit(UnitType);
     std::vector<std::unique_ptr<Unit>> SelectUnits();
     float TakeAction(actionT& action);

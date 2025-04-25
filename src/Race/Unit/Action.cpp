@@ -177,8 +177,8 @@ bool AttackAction::operator==(const AttackAction &b) const {
     return object == b.object;
 }
 bool BuildAction::operator==(const BuildAction &b) const {
-    if (stru->coordinate.x == b.stru->coordinate.x && stru->coordinate.y == b.stru->coordinate.y && stru == b.stru)
-        return true;
+    if (stru->coordinate.x == b.stru->coordinate.x && stru->coordinate.y == b.stru->coordinate.y && stru->is == b.stru->is)
+               return true;
     return false;
 }
 bool FarmGoldAction::operator==(const FarmGoldAction &a) const {

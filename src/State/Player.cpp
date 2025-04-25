@@ -43,7 +43,8 @@ Player::~Player(){
 
 }
 float Player::TakeAction(actionT& act) {
-    float reward = GetRewardFromAction(act);
+    float reward = 0.0f;
+    //float reward = GetRewardFromAction(act);
     if (std::holds_alternative<MoveAction>(act)){
         MoveAction& action = std::get<MoveAction>(act);
         Move(action);
@@ -75,13 +76,14 @@ void Player::Attack(AttackAction& action) {
 void Player::Build(BuildAction& action){
     Terrain& ter = map.GetTerrainAtCoordinate(action.coordinate);
     if (ter.structureOnTerrain == nullptr && ter.resourceLeft == 0){
-        std::unique_ptr<Structure> s = ChooseToBuild(action.struType);
+        std::unique_ptr<Structure> s = ChooseToBuild(action.struType, action.coordinate);
         if (gold - s->goldCost >= 0){
             s->health = 1;
             s->coordinate = action.coordinate;
+            map.AddOwnership(s.get());
+            action.stru = s.get();
             structures.emplace_back(std::move(s));
             action.peasant->InsertAction(action);
-            map.AddOwnership(action.stru);
         }
     }
 }
@@ -92,9 +94,9 @@ void Player::Recruit(RecruitAction& action) {
     if (action.stru != nullptr && action.stru->is == BARRACK){
         std::unique_ptr<Unit> un = ChooseToRecruit(action.unitType);
         un->coordinate = action.stru->coordinate;
+        map.AddOwnership(un.get());
         if (gold >= un->goldCost)
             units.emplace_back(std::move(un));
-        map.AddOwnership(un.get());
     }
 }
 void Player::Initialize() {
@@ -185,20 +187,20 @@ void Player::UpdateGold(int g) {
     gold += g;
 }
 
-std::unique_ptr<Structure> Player::ChooseToBuild(StructureType structType) {
+std::unique_ptr<Structure> Player::ChooseToBuild(StructureType structType, Vec2& coord) {
     std::unique_ptr<Structure> str;
     switch (structType)
     {
     case HALL:
-        str = std::make_unique<TownHall>(Vec2(0, 0));
+        str = std::make_unique<TownHall>(coord);
         break;
 
     case BARRACK:
-        str = std::make_unique<Barrack>(Vec2(0, 0));
+        str = std::make_unique<Barrack>(coord);
         break;
 
     case FARM:
-        str = std::make_unique<Farm>(Vec2(0, 0));
+        str = std::make_unique<Farm>(coord);
         break;
 
     default:
