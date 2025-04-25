@@ -34,7 +34,7 @@ class Player
     std::unique_ptr<Structure> ChooseToBuild(StructureType structType);
     std::unique_ptr<Unit> ChooseToRecruit(UnitType);
     std::vector<std::unique_ptr<Unit>> SelectUnits();
-    void TakeAction(actionT action);
+    float TakeAction(actionT& action);
     void Move(MoveAction& action);
     void Attack(AttackAction& action);
     void Build(BuildAction& action);

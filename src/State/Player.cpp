@@ -15,8 +15,9 @@
 #include "../Race/Unit/Hero/BloodMage.h"
 #include "../Race/Unit/Peasant.h"
 #include "../State/Terrain.h"
-
 #include "../Race/Structure/Structure.h"
+#include "../ReinforcementLearning/Reward.h"
+
 Player::Player(Map &m, Side en) : map(m), side(en) {
     Initialize();
     food.y = 10;
@@ -41,7 +42,8 @@ Player::Player(const Player &other) : map(other.map) {
 Player::~Player(){
 
 }
-void Player::TakeAction(actionT act) {
+float Player::TakeAction(actionT& act) {
+    float reward = GetRewardFromAction(act);
     if (std::holds_alternative<MoveAction>(act)){
         MoveAction& action = std::get<MoveAction>(act);
         Move(action);
@@ -62,6 +64,7 @@ void Player::TakeAction(actionT act) {
         RecruitAction& action = std::get<RecruitAction>(act);
         Recruit(action);
     }
+    return reward;
 }
 void Player::Move(MoveAction& action) {
     action.unit->InsertAction(action);

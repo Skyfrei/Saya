@@ -135,7 +135,7 @@ void DQN::Train(Player& pl, Player& en, Map& map) {
         for (int j = 0; j < 1000; j++){
             State state = GetState(pl, en, map);
             actionT action = SelectAction(pl, en, map);
-            // int reward = player.ExecuteAction(action);  
+            float reward = player.TakeAction(action);  
             State next_state = GetState(pl, en, map);
             Transition trans(state, action, next_state);
             AddExperience(trans);
