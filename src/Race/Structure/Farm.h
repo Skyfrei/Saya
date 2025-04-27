@@ -12,7 +12,7 @@ class Farm : public Structure
   public:
     std::string GetDescription() override;
     void FinishBuilding() override;
-    Structure* Clone() const;
+    Structure *Clone() const;
 
   public:
     int GetFood();

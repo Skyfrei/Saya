@@ -59,7 +59,7 @@ class BloodMage : public Hero
     std::string GetDescription() override {
         return "Bloodmage hero";
     }
-    Unit* Clone() const override {
+    Unit *Clone() const override {
         return new BloodMage(*this);
     }
 };

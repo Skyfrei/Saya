@@ -1,8 +1,8 @@
 #include "RlManager.h"
 
 #include <chrono>
-#include <memory>
-#include <variant>
+#include <fstream>
+#include <random>
 
 #include "../Race/Structure/Barrack.h"
 #include "../Race/Structure/Farm.h"
@@ -11,136 +11,292 @@
 #include "../Race/Unit/Peasant.h"
 #include "../Race/Unit/Unit.h"
 
-RlManager::RlManager(Player& pl, Player& en, Map& map) : player(pl), enemy(en), map(map){
+RlManager::RlManager() {
 }
 
-double RlManager::CalculateStateReward(State state) {
-    double reward = 0.0;
-
-    if (state.enemyUnits.size() <= 0 && state.enemyStructs.size() <= 0)
-        reward = 1;
-    else if (state.playerUnits.size() <= 0 && state.playerStructs.size() <= 0)
-        reward = -1;
-
-    return reward;
-}
-
-void RlManager::InitializeDQN() {
-    policy_net.Initialize(player, enemy, map);
-    target_net.Initialize(player, enemy, map);
+void RlManager::InitializeDQN(Player &pl, Player &en, Map &map) {
+    State s = GetState(pl, en, map);
+    policyNet.Initialize(pl, en, map, s);
+    targetNet.Initialize(pl, en, map, s);
     torch::Device device(torch::kCPU);
 
     if (torch::cuda::is_available())
         device = torch::Device(torch::DeviceType::CUDA);
 
-    policy_net.to(device);
-    target_net.to(device);
-    torch::optim::AdamW optimizer(policy_net.parameters(), torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
+    policyNet.to(device);
+    targetNet.to(device);
 }
 
-void RlManager::InitializePPO() {
+void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
+    float loss = 0.0f;
+    float discount = 0.7f;
+    int batch_size = 100;
+    // torch::optim::AdamW optimizer(this->parameters(), 0.01);
+    torch::optim::AdamW optimizer(policyNet.parameters(), torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
 
+    for (int i = 0; i < epochNumber; i++)
+    {
+        for (int j = 0; j < 1000; j++)
+        {
+            std::deque<Transition> samples;
+            std::sample(memory.begin(), memory.end(), std::back_inserter(samples), batch_size,
+                        std::mt19937{std::random_device{}()});
+
+            State state = GetState(pl, en, map);
+            actionT action = policyNet.SelectAction(pl, en, map, state, epsilon);
+            float reward = pl.TakeAction(action);
+            State next_state = GetState(pl, en, map);
+            Transition trans(state, action, next_state);
+            AddExperience(trans);
+            // Sample random from experience
+            //
+            // with torch.no_grad():
+            auto criterion = torch::nn::SmoothL1Loss();
+            // auto loss = criterion();
+            optimizer.zero_grad();
+            // loss.backward();
+            torch::nn::utils::clip_grad_value_(policyNet.parameters(), 100);
+            optimizer.step();
+
+            if (epsilon - epsilonDecay > 0)
+                epsilon -= epsilonDecay;
+        }
+    }
 }
 
-State RlManager::CreateCurrentState(Map& map, Player& player, Player& enemy) {
-    State st;
-    //st.currentMap = map;
-    st.playerFood = player.food;
-    st.playerGold = player.gold;
+State RlManager::GetState(Player &pl, Player &en, Map &map) {
+    State state;
+    state.playerGold = pl.gold;
+    state.playerFood.x = pl.food.x;
+    state.playerFood.y = pl.food.y;
+    state.enemyGold = en.gold;
+    state.enemyFood.x = en.food.x;
+    state.enemyFood.y = en.food.y;
+    state.playerUnits.resize(pl.units.size());
+    state.enemyUnits.resize(en.units.size());
+    state.playerStructs.resize(pl.structures.size());
+    state.enemyStructs.resize(en.structures.size());
 
-    st.enemyGold = enemy.gold;
-    st.enemyFood = enemy.food;
-    for (int i = 0; i < player.units.size(); i++)
-    {
-        Footman *footman = nullptr;
-        Peasant *peasant = nullptr;
-        switch (player.units[i]->is)
-        {
-        case FOOTMAN:
-            footman = dynamic_cast<Footman *>(player.units[i].get());
-            st.playerUnits.push_back(new Footman(*footman));
-            break;
-        case PEASANT:
-            peasant = dynamic_cast<Peasant *>(player.units[i].get());
-            st.playerUnits.push_back(new Peasant(*peasant));
-            break;
-        default:
-            break;
-        }
-    }
-    for (int i = 0; i < enemy.units.size(); i++)
-    {
-        Footman *footman = nullptr;
-        Peasant *peasant = nullptr;
-        switch (enemy.units[i]->is)
-        {
-        case FOOTMAN:
-            footman = dynamic_cast<Footman *>(enemy.units[i].get());
-            st.enemyUnits.push_back(new Footman(*footman));
-            break;
-        case PEASANT:
-            peasant = dynamic_cast<Peasant *>(enemy.units[i].get());
-            st.enemyUnits.push_back(new Peasant(*peasant));
-            break;
-        default:
-            break;
-        }
-    }
+    for (int i = 0; i < pl.units.size(); i++)
+        state.playerUnits[i] = pl.units[i].get();
 
-    for (int i = 0; i < player.structures.size(); i++)
-    {
-        Barrack *barracks = nullptr;
-        Farm *farm = nullptr;
-        TownHall *townHall = nullptr;
-        switch (player.structures[i]->is)
-        {
-        case BARRACK:
-            barracks = dynamic_cast<Barrack *>(player.structures[i].get());
-            st.playerStructs.push_back(new Barrack(*barracks));
-            break;
-        case FARM:
-            farm = dynamic_cast<Farm *>(player.structures[i].get());
-            st.playerStructs.push_back(new Farm(*farm));
-            break;
-        case HALL:
-            townHall = dynamic_cast<TownHall *>(player.structures[i].get());
-            st.playerStructs.push_back(new TownHall(*townHall));
-            break;
-        default:
-            break;
-        }
-    }
+    for (int i = 0; i < pl.structures.size(); i++)
+        state.playerStructs[i] = pl.structures[i].get();
 
-    for (int i = 0; i < enemy.structures.size(); i++)
-    {
-        Barrack *barracks = nullptr;
-        Farm *farm = nullptr;
-        TownHall *townHall = nullptr;
-        switch (enemy.structures[i]->is)
-        {
-        case BARRACK:
-            barracks = dynamic_cast<Barrack *>(enemy.structures[i].get());
-            st.enemyStructs.push_back(new Barrack(*barracks));
-            break;
-        case FARM:
-            farm = dynamic_cast<Farm *>(enemy.structures[i].get());
-            st.enemyStructs.push_back(new Farm(*farm));
-            break;
-        case HALL:
-            townHall = dynamic_cast<TownHall *>(enemy.structures[i].get());
-            st.enemyStructs.push_back(new TownHall(*townHall));
-            break;
-        default:
-            break;
-        }
-    }
-    return st;
+    for (int i = 0; i < en.units.size(); i++)
+        state.enemyUnits[i] = en.units[i].get();
+
+    for (int i = 0; i < en.structures.size(); i++)
+        state.enemyStructs[i] = en.structures[i].get();
+
+    return state;
 }
 
-Transition RlManager::CreateTransition(State s, actionT a, State nextS) {
-    Transition t(s, a, nextS);
-    return t;
+void RlManager::AddExperience(Transition trans) {
+    if (memory.size() >= memory_size)
+    {
+        memory.pop_front();
+    }
+    memory.push_back(trans);
 }
+
+void RlManager::SaveMemory() {
+    std::string data_to_save = "";
+    for (int i = 0; i < memory.size(); i++)
+    {
+        data_to_save += memory[i].Serialize() + "\n";
+    }
+    std::ofstream file;
+    file.open(memory_file);
+    file << data_to_save;
+    file.close();
+}
+
+void RlManager::LoadMemory() {
+    std::ifstream file(memory_file);
+    std::vector<std::string> lines;
+    std::string line;
+
+    if (!file.is_open())
+    {
+        std::cout << "String replay file couldn't be opened.";
+        return;
+    }
+    while (std::getline(file, line))
+    {
+        Transition trans;
+        trans = trans.Deserialize(line);
+        // trans = trans.Deserialize(line);
+        // AddExperience(trans);
+    }
+    file.close();
+}
+
+void RlManager::SaveMemoryAsBinary() {
+    std::vector<binary> data_to_save;
+    std::ofstream file;
+    file.open(memory_file_binary, std::ios::binary);
+
+    for (int i = 0; i < memory.size(); i++)
+    {
+        std::vector<binary> data = memory[i].SerializeBinary();
+        file.write(reinterpret_cast<char *>(data.data()), data.size() * sizeof(binary));
+    }
+
+    file.close();
+}
+// 0-11 first bytes,
+void RlManager::LoadMemoryAsBinary() {
+    std::ifstream file(memory_file_binary, std::ios::binary);
+    std::vector<binary> binaryData;
+    int expectedBytes = 0;
+    binary temp;
+    int count = 0;
+
+    if (!file.is_open())
+    {
+        std::cout << "Binary replay file couldn't be opened.";
+        return;
+    }
+
+    while (file.read(reinterpret_cast<char *>(&temp), sizeof(binary)))
+    {
+        if (binaryData.size() == 0)
+        {
+            expectedBytes = std::get<int>(temp);
+            binaryData.resize(expectedBytes);
+            // std::cout<<expectedBytes<<" ";
+            continue;
+        }
+        binaryData[count] = temp;
+
+        if (count == expectedBytes - 1)
+        {
+            Transition trans;
+            trans = trans.DeserializeBinary(binaryData);
+            AddExperience(trans);
+            binaryData.clear();
+            count = 0;
+            continue;
+        }
+        count++;
+    }
+    file.close();
+}
+
+// double RlManager::CalculateStateReward(State state) {
+//     double reward = 0.0;
+//
+//     if (state.enemyUnits.size() <= 0 && state.enemyStructs.size() <= 0)
+//         reward = 1;
+//     else if (state.playerUnits.size() <= 0 && state.playerStructs.size() <= 0)
+//         reward = -1;
+//
+//     return reward;
+// }
+
+// void RlManager::InitializePPO() {
+// }
+//
+// State RlManager::CreateCurrentState(Map &map, Player &player, Player &enemy) {
+//     State st;
+//     // st.currentMap = map;
+//     st.playerFood = player.food;
+//     st.playerGold = player.gold;
+//
+//     st.enemyGold = enemy.gold;
+//     st.enemyFood = enemy.food;
+//     for (int i = 0; i < player.units.size(); i++)
+//     {
+//         Footman *footman = nullptr;
+//         Peasant *peasant = nullptr;
+//         switch (player.units[i]->is)
+//         {
+//         case FOOTMAN:
+//             footman = dynamic_cast<Footman *>(player.units[i].get());
+//             st.playerUnits.push_back(new Footman(*footman));
+//             break;
+//         case PEASANT:
+//             peasant = dynamic_cast<Peasant *>(player.units[i].get());
+//             st.playerUnits.push_back(new Peasant(*peasant));
+//             break;
+//         default:
+//             break;
+//         }
+//     }
+//     for (int i = 0; i < enemy.units.size(); i++)
+//     {
+//         Footman *footman = nullptr;
+//         Peasant *peasant = nullptr;
+//         switch (enemy.units[i]->is)
+//         {
+//         case FOOTMAN:
+//             footman = dynamic_cast<Footman *>(enemy.units[i].get());
+//             st.enemyUnits.push_back(new Footman(*footman));
+//             break;
+//         case PEASANT:
+//             peasant = dynamic_cast<Peasant *>(enemy.units[i].get());
+//             st.enemyUnits.push_back(new Peasant(*peasant));
+//             break;
+//         default:
+//             break;
+//         }
+//     }
+//
+//     for (int i = 0; i < player.structures.size(); i++)
+//     {
+//         Barrack *barracks = nullptr;
+//         Farm *farm = nullptr;
+//         TownHall *townHall = nullptr;
+//         switch (player.structures[i]->is)
+//         {
+//         case BARRACK:
+//             barracks = dynamic_cast<Barrack *>(player.structures[i].get());
+//             st.playerStructs.push_back(new Barrack(*barracks));
+//             break;
+//         case FARM:
+//             farm = dynamic_cast<Farm *>(player.structures[i].get());
+//             st.playerStructs.push_back(new Farm(*farm));
+//             break;
+//         case HALL:
+//             townHall = dynamic_cast<TownHall *>(player.structures[i].get());
+//             st.playerStructs.push_back(new TownHall(*townHall));
+//             break;
+//         default:
+//             break;
+//         }
+//     }
+//
+//     for (int i = 0; i < enemy.structures.size(); i++)
+//     {
+//         Barrack *barracks = nullptr;
+//         Farm *farm = nullptr;
+//         TownHall *townHall = nullptr;
+//         switch (enemy.structures[i]->is)
+//         {
+//         case BARRACK:
+//             barracks = dynamic_cast<Barrack *>(enemy.structures[i].get());
+//             st.enemyStructs.push_back(new Barrack(*barracks));
+//             break;
+//         case FARM:
+//             farm = dynamic_cast<Farm *>(enemy.structures[i].get());
+//             st.enemyStructs.push_back(new Farm(*farm));
+//             break;
+//         case HALL:
+//             townHall = dynamic_cast<TownHall *>(enemy.structures[i].get());
+//             st.enemyStructs.push_back(new TownHall(*townHall));
+//             break;
+//         default:
+//             break;
+//         }
+//     }
+//     return st;
+// }
+//
+// Transition RlManager::CreateTransition(State s, actionT a, State nextS) {
+//     Transition t(s, a, nextS);
+//     return t;
+// }
 
 // void RlManager::OptimizeModel(std::deque<Transition> memory) {
 //   if (memory.size() < batchSize) {

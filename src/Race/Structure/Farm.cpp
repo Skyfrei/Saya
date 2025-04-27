@@ -27,7 +27,7 @@ std::string Farm::GetDescription() {
 void Farm::FinishBuilding() {
 }
 
-Structure* Farm::Clone() const {
+Structure *Farm::Clone() const {
     return new Farm(*this);
 }
 int Farm::GetFood() {

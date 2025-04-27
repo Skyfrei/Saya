@@ -6,8 +6,6 @@
 #include <algorithm>
 #include <vector>
 
-
-
 class Terrain;
 class Map
 {

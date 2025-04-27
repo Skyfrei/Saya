@@ -4,7 +4,6 @@
 #include "Transition.h"
 
 float CalculateReward(const State &currentState, const actionT &action, const State &nextState);
-float GetRewardFromAction(actionT& action);
-
+float GetRewardFromAction(actionT &action);
 
 #endif // REWARD_H

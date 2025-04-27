@@ -33,7 +33,7 @@ class Unit : public Living
   public:
     Unit();
     virtual ~Unit() = default;
-    virtual Unit* Clone() const = 0;
+    virtual Unit *Clone() const = 0;
 
     void Move(Vec2 terr);
     void Attack(Living &un);

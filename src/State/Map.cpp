@@ -1,7 +1,7 @@
 #include "Map.h"
 #include "../Race/Structure/Structure.h"
-#include "Terrain.h"
 #include "../Tools/Macro.h"
+#include "Terrain.h"
 #include <iostream>
 
 Map::Map() {
@@ -23,7 +23,7 @@ Map::Map() {
         terrain.push_back(tempTerr);
         tempTerr.clear();
     }
-    //graph = Graph(terrain);
+    // graph = Graph(terrain);
 }
 
 bool Map::operator==(const Map &other) const {
@@ -45,7 +45,7 @@ void Map::RemoveOwnership(Living *l, Vec2 v) {
 }
 void Map::AddOwnership(Living *l) {
     Terrain &terr = GetTerrainAtCoordinate(l->coordinate);
-     
+
     if (auto s = dynamic_cast<Structure *>(l))
     {
         terr.structureOnTerrain = s;
@@ -57,7 +57,7 @@ std::vector<Living *> Map::GetObjectsAtTerrain(Vec2 v) {
     Terrain &t = GetTerrainAtCoordinate(v);
     return t.onTerrainLiving;
 }
-Terrain& Map::GetTerrainAtCoordinate(Vec2 v) {
+Terrain &Map::GetTerrainAtCoordinate(Vec2 v) {
     for (int i = 0; i < terrain.size(); i++)
     {
         for (int j = 0; j < terrain.size(); j++)

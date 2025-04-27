@@ -5,11 +5,11 @@
 #include <vector>
 
 #include "../Living.h"
+#include "../Race/Unit/Action.h"
 #include "../Race/Unit/Unit.h"
 #include "../State/Map.h"
-#include "../Tools/Vec2.h"
 #include "../Tools/Enums.h"
-#include "../Race/Unit/Action.h"
+#include "../Tools/Vec2.h"
 
 class Peasant;
 class Structure;
@@ -31,15 +31,15 @@ class Player
     Structure &FindClosestStructure(Unit &unit, StructureType type);
     void ValidateFood();
     void UpdateGold(int g);
-    std::unique_ptr<Structure> ChooseToBuild(StructureType structType, Vec2& coord);
+    std::unique_ptr<Structure> ChooseToBuild(StructureType structType, Vec2 &coord);
     std::unique_ptr<Unit> ChooseToRecruit(UnitType);
     std::vector<std::unique_ptr<Unit>> SelectUnits();
-    float TakeAction(actionT& action);
-    void Move(MoveAction& action);
-    void Attack(AttackAction& action);
-    void Build(BuildAction& action);
-    void FarmGold(FarmGoldAction& action);
-    void Recruit(RecruitAction& action);
+    float TakeAction(actionT &action);
+    void Move(MoveAction &action);
+    void Attack(AttackAction &action);
+    void Build(BuildAction &action);
+    void FarmGold(FarmGoldAction &action);
+    void Recruit(RecruitAction &action);
 
   public:
     int gold = 300;

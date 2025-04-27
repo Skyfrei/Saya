@@ -21,7 +21,7 @@ class Barrack : public Structure
   public:
     void FinishBuilding() override {
     }
-    Structure* Clone() const override {
+    Structure *Clone() const override {
         return new Barrack(*this);
     }
     std::string GetDescription() override {

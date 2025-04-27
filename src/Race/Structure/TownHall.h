@@ -21,7 +21,7 @@ class TownHall : public Structure
     Upgrade currentUpgrade = WOOD;
     void UpgradeEquipment(Upgrade &curr);
     void FinishBuilding() override;
-    Structure* Clone() const override;
+    Structure *Clone() const override;
     std::string GetDescription();
 };
 

@@ -18,7 +18,7 @@ class Peasant : public Unit
     std::string GetDescription() override {
         return "Slave.";
     }
-    Unit* Clone() const override {
+    Unit *Clone() const override {
         return new Peasant(*this);
     }
 

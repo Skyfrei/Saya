@@ -68,70 +68,70 @@ std::deque<binary> Action::SerializeBinary() {
     result.push_back(actionType);
     switch (type)
     {
-        case MOVE: {
-            MoveAction *moveAction = dynamic_cast<MoveAction *>(this);
-            std::vector<binary> unBin = moveAction->unit->SerializeBinary();
-            result.insert(result.end(), unBin.begin(), unBin.end());
-            result.push_back(moveAction->destCoord.x);
-            result.push_back(moveAction->destCoord.y);
-            break;
-        }
+    case MOVE: {
+        MoveAction *moveAction = dynamic_cast<MoveAction *>(this);
+        std::vector<binary> unBin = moveAction->unit->SerializeBinary();
+        result.insert(result.end(), unBin.begin(), unBin.end());
+        result.push_back(moveAction->destCoord.x);
+        result.push_back(moveAction->destCoord.y);
+        break;
+    }
 
-        case ATTACK: {
-            AttackAction *attackAction = dynamic_cast<AttackAction *>(this);
-            std::vector<binary> unBin = attackAction->unit->SerializeBinary();
-            result.insert(result.end(), unBin.begin(), unBin.end());
-            Structure *objStru = dynamic_cast<Structure *>(attackAction->object);
-            Unit *objUn = dynamic_cast<Unit *>(attackAction->object);
-            if (objUn != nullptr)
-            {
-                result.push_back(0);
-                std::vector<binary> objectBin = objUn->SerializeBinary();
-                result.insert(result.end(), objectBin.begin(), objectBin.end());
-            }
-            else if (objStru != nullptr)
-            {
-                result.push_back(1);
-                std::vector<binary> objectBin = objStru->SerializeBinary();
-                result.insert(result.end(), objectBin.begin(), objectBin.end());
-            }
-            break;
+    case ATTACK: {
+        AttackAction *attackAction = dynamic_cast<AttackAction *>(this);
+        std::vector<binary> unBin = attackAction->unit->SerializeBinary();
+        result.insert(result.end(), unBin.begin(), unBin.end());
+        Structure *objStru = dynamic_cast<Structure *>(attackAction->object);
+        Unit *objUn = dynamic_cast<Unit *>(attackAction->object);
+        if (objUn != nullptr)
+        {
+            result.push_back(0);
+            std::vector<binary> objectBin = objUn->SerializeBinary();
+            result.insert(result.end(), objectBin.begin(), objectBin.end());
         }
-
-        case BUILD: {
-            BuildAction *buildAction = dynamic_cast<BuildAction *>(this);
-            int structureType = static_cast<int>(buildAction->struType);
-            std::vector<binary> unBin = buildAction->peasant->SerializeBinary();
-            result.insert(result.end(), unBin.begin(), unBin.end());
-            result.push_back(structureType);
-            result.push_back(buildAction->coordinate.x);
-            result.push_back(buildAction->coordinate.y);
-            break;
+        else if (objStru != nullptr)
+        {
+            result.push_back(1);
+            std::vector<binary> objectBin = objStru->SerializeBinary();
+            result.insert(result.end(), objectBin.begin(), objectBin.end());
         }
+        break;
+    }
 
-        case FARMGOLD: {
-            FarmGoldAction *farmAction = dynamic_cast<FarmGoldAction *>(this);
-            std::vector<binary> unBin = farmAction->peasant->SerializeBinary();
-            result.insert(result.end(), unBin.begin(), unBin.end());
-            result.push_back(farmAction->terr->coord.x);
-            result.push_back(farmAction->terr->coord.y);
-            break;
-        }
+    case BUILD: {
+        BuildAction *buildAction = dynamic_cast<BuildAction *>(this);
+        int structureType = static_cast<int>(buildAction->struType);
+        std::vector<binary> unBin = buildAction->peasant->SerializeBinary();
+        result.insert(result.end(), unBin.begin(), unBin.end());
+        result.push_back(structureType);
+        result.push_back(buildAction->coordinate.x);
+        result.push_back(buildAction->coordinate.y);
+        break;
+    }
 
-        case RECRUIT: {
-            RecruitAction *recruitAction = dynamic_cast<RecruitAction *>(this);
-            int unitType = static_cast<int>(recruitAction->unitType);
-            std::vector<binary> struBin = recruitAction->stru->SerializeBinary();
+    case FARMGOLD: {
+        FarmGoldAction *farmAction = dynamic_cast<FarmGoldAction *>(this);
+        std::vector<binary> unBin = farmAction->peasant->SerializeBinary();
+        result.insert(result.end(), unBin.begin(), unBin.end());
+        result.push_back(farmAction->terr->coord.x);
+        result.push_back(farmAction->terr->coord.y);
+        break;
+    }
 
-            result.push_back(unitType);
-            result.insert(result.end(), struBin.begin(), struBin.end());
-            break;
-        }
+    case RECRUIT: {
+        RecruitAction *recruitAction = dynamic_cast<RecruitAction *>(this);
+        int unitType = static_cast<int>(recruitAction->unitType);
+        std::vector<binary> struBin = recruitAction->stru->SerializeBinary();
+
+        result.push_back(unitType);
+        result.insert(result.end(), struBin.begin(), struBin.end());
+        break;
+    }
     }
     return result;
 }
 
-MoveAction::MoveAction(){
+MoveAction::MoveAction() {
     type = MOVE;
 }
 MoveAction::MoveAction(Vec2 c) : destCoord(c) {
@@ -165,7 +165,7 @@ FarmGoldAction::FarmGoldAction(Unit *p, Vec2 v, TownHall *h) : peasant(p), destC
 RecruitAction::RecruitAction(UnitType typeOfUnit, Structure *s) : unitType(typeOfUnit), stru(s) {
     type = RECRUIT;
 }
-EmptyAction::EmptyAction(){
+EmptyAction::EmptyAction() {
     type = EMPTY;
 }
 bool MoveAction::operator==(const MoveAction &b) const {
@@ -177,8 +177,9 @@ bool AttackAction::operator==(const AttackAction &b) const {
     return object == b.object;
 }
 bool BuildAction::operator==(const BuildAction &b) const {
-    if (stru->coordinate.x == b.stru->coordinate.x && stru->coordinate.y == b.stru->coordinate.y && stru->is == b.stru->is)
-               return true;
+    if (stru->coordinate.x == b.stru->coordinate.x && stru->coordinate.y == b.stru->coordinate.y &&
+        stru->is == b.stru->is)
+        return true;
     return false;
 }
 bool FarmGoldAction::operator==(const FarmGoldAction &a) const {

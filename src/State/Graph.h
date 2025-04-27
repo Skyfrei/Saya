@@ -4,9 +4,9 @@
 #include <map>
 #include <vector>
 
+#include "../Tools/Macro.h"
 #include "../Tools/Vec2.h"
 #include "Terrain.h"
-#include "../Tools/Macro.h"
 
 struct Node
 {

@@ -25,7 +25,7 @@ TownHall::TownHall(Vec2 coord, float hp) {
     buildTime = 180;
     description = "Can build unit upgrades.";
 }
-Structure* TownHall::Clone() const {
+Structure *TownHall::Clone() const {
     return new TownHall(*this);
 }
 std::string TownHall::GetDescription() {

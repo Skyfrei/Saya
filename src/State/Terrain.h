@@ -1,9 +1,8 @@
 #ifndef TERRAIN_H
 #define TERRAIN_H
+#include "../Tools/Vec2.h"
 #include <memory>
 #include <vector>
-#include "../Tools/Vec2.h"
-
 
 enum TerrainType
 {

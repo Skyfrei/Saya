@@ -23,33 +23,20 @@ class DQN : public torch::nn::Module
   public:
     DQN();
     torch::Tensor Forward(torch::Tensor x);
-    void Initialize(Player& pl, Player& en, Map& map);
-    actionT SelectAction(Player& pl, Player& en, Map& map); // gotta return an
+    void Initialize(Player &pl, Player &en, Map &map, State &s);
+    actionT SelectAction(Player &pl, Player &en, Map &map, State &s, float epsilon); // gotta return an
     void PrintWeight();
     void AttachAgent(Player &pl);
-    void Train(Player& pl, Player& en, Map& map);
     void Test();
 
-    void AddExperience(Transition trans);
-    void SaveMemory();
-    void LoadMemory();
-    void SaveMemoryAsBinary();
-    void LoadMemoryAsBinary();
-    std::deque<Transition> memory;
-
   private:
-    void OptimizeModel(std::deque<Transition> memory);
-    State GetState(Player& pl, Player& en, Map& map);
-    actionT MapIndexToAction(Player& pl, Player& en, int actionIndex);
+    actionT MapIndexToAction(Player &pl, Player &en, int actionIndex);
     void SaveModel();
     void LoadModel();
 
   private:
     int episodeNumber = 50;
     int stepsDone = 0;
-    int epochNumber = 100;
-    float epsilon = 0.9f;
-    float epsilonDecay = 1e-3;
     int actionSize = 0;
     int inputSize = 0;
     torch::nn::Linear layer1{nullptr}, layer2{nullptr}, layer3{nullptr};
@@ -62,7 +49,7 @@ class DQN : public torch::nn::Module
 
 struct TensorStruct
 {
-    TensorStruct(State& state, Map& map);
+    TensorStruct(State &state, Map &map);
     torch::Tensor GetMapTensor(Map &map);
     torch::Tensor GetVec(Vec2 food);
     torch::Tensor GetUnitsTensor(std::vector<Unit *> &units);

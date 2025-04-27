@@ -11,7 +11,7 @@ class Footman : public Unit
     Footman();
 
     std::string GetDescription() override;
-    Unit* Clone() const override;
+    Unit *Clone() const override;
     Footman(Vec2 coord, float hp, float man);
 };
 #endif

@@ -5,7 +5,7 @@
 #include "../Race/Structure/TownHall.h"
 #include "../Race/Unit/Peasant.h"
 
-Manager::Manager() : player(map, PLAYER), enemy(map, ENEMY), trainerManager(player, enemy, map){
+Manager::Manager() : player(map, PLAYER), enemy(map, ENEMY) {
     player.SetInitialCoordinates(Vec2(8, 2));
     enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 2));
     MainLoop();

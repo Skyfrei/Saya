@@ -34,6 +34,6 @@ std::string Footman::GetDescription() {
     return "Footman.";
 }
 
-Unit* Footman::Clone() const {
+Unit *Footman::Clone() const {
     return new Footman(*this);
 }

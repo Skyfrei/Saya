@@ -6,6 +6,7 @@
 #include "../src/Race/Unit/Peasant.h"
 #include "../src/gui/Window.h"
 #include "../src/Race/Unit/Action.h"
+#include "../src/ReinforcementLearning/RlManager.h"
 #include <chrono>
 #include <fstream>
 #include <random>
@@ -32,7 +33,7 @@ std::string StringReplay(){
     }
     actionT act = MoveAction(s.playerUnits[0], Vec2(3, 4));
     Transition trans(s, act, s);
-    DQN obj;  
+    RlManager obj;
     for(int i = 0; i < 1000; i++)
         obj.AddExperience(trans);
     auto a = std::chrono::high_resolution_clock::now();
@@ -57,7 +58,7 @@ std::string BinaryReplay(){
     std::random_device ran;
     std::default_random_engine e1(ran());
     std::uniform_int_distribution<int> uniform_dist(0, 100);
-    DQN obj;  
+    RlManager obj;  
     // IF DESTRUCTOR IN STATE IS INCLUDED SEG FAULT
     // OTHERWISE MEM LEAK
     // CHANGE TO SHARED_PTR OR STOP USING TEST IN RELEASE
@@ -124,7 +125,7 @@ std::string GetRenderStrings(actionT& action){
 bool MapRender(){
     Window win(Vec2(1000, 1000));
     int a;
-    DQN obj;
+    RlManager obj;
     obj.LoadMemoryAsBinary();
     while(true){
         int b = rand() % 1000;
@@ -146,10 +147,10 @@ bool DQN_Test(){
     Player enemy(map, ENEMY);
     player.SetInitialCoordinates(Vec2(8, 2));
     enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 2));
-    DQN obj;
-    obj.Initialize(player, enemy, map);
-    obj.LoadMemoryAsBinary();
-    obj.Train(player, enemy, map);
+    RlManager man;
+    man.InitializeDQN(player, enemy, map);
+    man.LoadMemoryAsBinary();
+    man.TrainDQN(player, enemy, map);
     return true;
 }
 

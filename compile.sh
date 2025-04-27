@@ -15,7 +15,7 @@ if [ ! -f "MonaspaceXenonFrozen-Regular.ttf" ]; then
     cp /usr/share/fonts/github/MonaspaceXenonFrozen-Regular.ttf .
 fi
 
-
+find src/ -name "*.cpp" -o -name "*.h" | xargs clang-format -i
 cd build/
 ninja
 mv Saya ..

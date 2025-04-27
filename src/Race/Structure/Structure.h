@@ -13,7 +13,7 @@ class Structure : public Living
   public:
     Structure() {
     }
-    virtual Structure* Clone() const = 0;
+    virtual Structure *Clone() const = 0;
     virtual void FinishBuilding() = 0;
     bool operator==(const Structure &other);
     std::string Serialize();

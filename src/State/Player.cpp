@@ -9,14 +9,14 @@
 
 #include "../Race/Structure/Barrack.h"
 #include "../Race/Structure/Farm.h"
+#include "../Race/Structure/Structure.h"
 #include "../Race/Structure/TownHall.h"
 #include "../Race/Unit/Footman.h"
 #include "../Race/Unit/Hero/Archmage.h"
 #include "../Race/Unit/Hero/BloodMage.h"
 #include "../Race/Unit/Peasant.h"
-#include "../State/Terrain.h"
-#include "../Race/Structure/Structure.h"
 #include "../ReinforcementLearning/Reward.h"
+#include "../State/Terrain.h"
 
 Player::Player(Map &m, Side en) : map(m), side(en) {
     Initialize();
@@ -26,58 +26,64 @@ Player::Player(const Player &other) : map(other.map) {
     gold = other.gold;
     food = other.food;
 
-   // // Deep copy structures
-   // for (const auto &structure : other.structures)
-   // {
-   //     structures.push_back(structure->Clone());
-   // }
-   // // Deep copy units
-   // for (const auto &unit : other.units)
-   // {
-   //     units.push_back(unit->Clone());
-   // }
+    // // Deep copy structures
+    // for (const auto &structure : other.structures)
+    // {
+    //     structures.push_back(structure->Clone());
+    // }
+    // // Deep copy units
+    // for (const auto &unit : other.units)
+    // {
+    //     units.push_back(unit->Clone());
+    // }
 
-   // side = other.side;
+    // side = other.side;
 }
-Player::~Player(){
-
+Player::~Player() {
 }
-float Player::TakeAction(actionT& act) {
+float Player::TakeAction(actionT &act) {
     float reward = 0.0f;
-    //float reward = GetRewardFromAction(act);
-    if (std::holds_alternative<MoveAction>(act)){
-        MoveAction& action = std::get<MoveAction>(act);
+    // float reward = GetRewardFromAction(act);
+    if (std::holds_alternative<MoveAction>(act))
+    {
+        MoveAction &action = std::get<MoveAction>(act);
         Move(action);
     }
-    else if (std::holds_alternative<AttackAction>(act)){
-        AttackAction& action = std::get<AttackAction>(act);
+    else if (std::holds_alternative<AttackAction>(act))
+    {
+        AttackAction &action = std::get<AttackAction>(act);
         Attack(action);
     }
-    else if (std::holds_alternative<BuildAction>(act)){
-        BuildAction& action = std::get<BuildAction>(act);
+    else if (std::holds_alternative<BuildAction>(act))
+    {
+        BuildAction &action = std::get<BuildAction>(act);
         Build(action);
     }
-    else if (std::holds_alternative<FarmGoldAction>(act)){
-        FarmGoldAction& action = std::get<FarmGoldAction>(act);
+    else if (std::holds_alternative<FarmGoldAction>(act))
+    {
+        FarmGoldAction &action = std::get<FarmGoldAction>(act);
         FarmGold(action);
     }
-    else if (std::holds_alternative<RecruitAction>(act)){
-        RecruitAction& action = std::get<RecruitAction>(act);
+    else if (std::holds_alternative<RecruitAction>(act))
+    {
+        RecruitAction &action = std::get<RecruitAction>(act);
         Recruit(action);
     }
     return reward;
 }
-void Player::Move(MoveAction& action) {
+void Player::Move(MoveAction &action) {
     action.unit->InsertAction(action);
 }
-void Player::Attack(AttackAction& action) {
+void Player::Attack(AttackAction &action) {
     action.unit->InsertAction(action);
 }
-void Player::Build(BuildAction& action){
-    Terrain& ter = map.GetTerrainAtCoordinate(action.coordinate);
-    if (ter.structureOnTerrain == nullptr && ter.resourceLeft == 0){
+void Player::Build(BuildAction &action) {
+    Terrain &ter = map.GetTerrainAtCoordinate(action.coordinate);
+    if (ter.structureOnTerrain == nullptr && ter.resourceLeft == 0)
+    {
         std::unique_ptr<Structure> s = ChooseToBuild(action.struType, action.coordinate);
-        if (gold - s->goldCost >= 0){
+        if (gold - s->goldCost >= 0)
+        {
             gold -= s->goldCost;
             s->health = 1;
             s->coordinate = action.coordinate;
@@ -88,13 +94,15 @@ void Player::Build(BuildAction& action){
         }
     }
 }
-void Player::FarmGold(FarmGoldAction& action) {
+void Player::FarmGold(FarmGoldAction &action) {
     action.peasant->InsertAction(action);
 }
-void Player::Recruit(RecruitAction& action) {
-    if (action.stru != nullptr && action.stru->is == BARRACK){
+void Player::Recruit(RecruitAction &action) {
+    if (action.stru != nullptr && action.stru->is == BARRACK)
+    {
         std::unique_ptr<Unit> un = ChooseToRecruit(action.unitType);
-        if (gold - un->goldCost >= 0){
+        if (gold - un->goldCost >= 0)
+        {
             gold -= un->goldCost;
             un->coordinate = action.stru->coordinate;
             map.AddOwnership(un.get());
@@ -190,7 +198,7 @@ void Player::UpdateGold(int g) {
     gold += g;
 }
 
-std::unique_ptr<Structure> Player::ChooseToBuild(StructureType structType, Vec2& coord) {
+std::unique_ptr<Structure> Player::ChooseToBuild(StructureType structType, Vec2 &coord) {
     std::unique_ptr<Structure> str;
     switch (structType)
     {

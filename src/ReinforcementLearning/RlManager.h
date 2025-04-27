@@ -5,29 +5,44 @@
 #include "../State/Player.h"
 #include "DQN.h"
 #include "Transition.h"
+#include <deque>
 
 class RlManager
 {
   public:
-    RlManager(Player& pl, Player& en, Map& map);
-    void InitializeDQN();
-    void InitializePPO();
+    RlManager();
+    void InitializeDQN(Player &pl, Player &en, Map &map);
+    void InitializePPO(Player &pl, Player &en, Map &map);
     double CalculateStateReward(State state);
+    void TrainDQN(Player &pl, Player &en, Map &map);
+
+    void AddExperience(Transition trans);
+    void SaveMemory();
+    void LoadMemory();
+    void SaveMemoryAsBinary();
+    void LoadMemoryAsBinary();
+
+  public:
+    std::deque<Transition> memory;
 
   private:
-    State CreateCurrentState(Map& map, Player& player, Player& enemy);
+    State CreateCurrentState(Map &map, Player &player, Player &enemy);
     Transition CreateTransition(State s, actionT a, State rextS);
+    State GetState(Player &pl, Player &en, Map &map);
 
   private:
-    DQN policy_net;
-    DQN target_net;
-    Player player;
-    Player enemy;
-    Map map;
+    DQN policyNet;
+    DQN targetNet;
 
     float gamma = 0.92f;
     bool calledMemOnce = false;
     const int batchSize = 32;
     const int maxSize = 10000;
+    int memory_size = 1000;
+    const std::string memory_file = "dqn_memory.say";
+    const std::string memory_file_binary = "binary.bay";
+    float epsilon = 0.9f;
+    float epsilonDecay = 1e-3;
+    int epochNumber = 100;
 };
 #endif
