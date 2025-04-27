@@ -41,20 +41,20 @@ void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
             std::deque<Transition> samples;
             std::sample(memory.begin(), memory.end(), std::back_inserter(samples), batch_size,
                         std::mt19937{std::random_device{}()});
-
             State state = GetState(pl, en, map);
             actionT action = policyNet.SelectAction(pl, en, map, state, epsilon);
             float reward = pl.TakeAction(action);
             State next_state = GetState(pl, en, map);
             Transition trans(state, action, next_state);
+            actionT next_action = targetNet.SelectAction(pl, en, map, next_state, epsilon);
+            float next_reward = (pl.TakeAction(action) * gamma); // + reward_batch;
             AddExperience(trans);
-            // Sample random from experience
-            //
             // with torch.no_grad():
             auto criterion = torch::nn::SmoothL1Loss();
-            // auto loss = criterion();
+            // LOSS ERRORING
+            auto loss = criterion(torch::tensor(reward).view({-1, 1}), torch::tensor(next_reward).view({-1, 1}));
             optimizer.zero_grad();
-            // loss.backward();
+            loss.backward();
             torch::nn::utils::clip_grad_value_(policyNet.parameters(), 100);
             optimizer.step();
 
