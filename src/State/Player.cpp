@@ -78,12 +78,14 @@ void Player::Build(BuildAction& action){
     if (ter.structureOnTerrain == nullptr && ter.resourceLeft == 0){
         std::unique_ptr<Structure> s = ChooseToBuild(action.struType, action.coordinate);
         if (gold - s->goldCost >= 0){
+            gold -= s->goldCost;
             s->health = 1;
             s->coordinate = action.coordinate;
             map.AddOwnership(s.get());
             action.stru = s.get();
             structures.emplace_back(std::move(s));
             action.peasant->InsertAction(action);
+
         }
     }
 }
@@ -93,11 +95,12 @@ void Player::FarmGold(FarmGoldAction& action) {
 void Player::Recruit(RecruitAction& action) {
     if (action.stru != nullptr && action.stru->is == BARRACK){
         std::unique_ptr<Unit> un = ChooseToRecruit(action.unitType);
-        un->coordinate = action.stru->coordinate;
-        map.AddOwnership(un.get());
-        if (gold >= un->goldCost)
+        if (gold - un->goldCost >= 0)
+            gold -= un->goldCost;
+            un->coordinate = action.stru->coordinate;
+            map.AddOwnership(un.get());
             units.emplace_back(std::move(un));
-    }
+        }
 }
 void Player::Initialize() {
     structures.push_back(std::make_unique<TownHall>(Vec2(0, 0)));
