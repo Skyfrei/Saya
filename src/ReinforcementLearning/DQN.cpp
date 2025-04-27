@@ -144,10 +144,10 @@ void DQN::Train(Player& pl, Player& en, Map& map) {
                         std::mt19937 {std::random_device{}()});
 
             State state = GetState(pl, en, map);
+            std::cout<<pl.units.size()<<std::endl;
             actionT action = SelectAction(pl, en, map);
             float reward = pl.TakeAction(action);  
-            if (reward > 0.0f)
-                std::cout<<reward;
+            std::cout<<pl.units.size()<<std::endl;
             State next_state = GetState(pl, en, map);
             Transition trans(state, action, next_state);
             AddExperience(trans);
@@ -188,14 +188,12 @@ actionT DQN::SelectAction(Player& pl, Player& en, Map& map) {
     int eUnit = eun(rng);
     int pStru = pstru(rng);
     int eStru = estru(rng);
-    std::cout<<epsilon;
 
     if (random_number > epsilon){
         State s = GetState(pl, en, map);
         TensorStruct dqn_input = TensorStruct(s, map);
         at::Tensor action = std::get<1>(Forward(dqn_input.GetTensor()).max(1)).view({1, 1});
         actionT result = MapIndexToAction(pl, en, action.item<int>());
-        std::cout<<"k"<<std::endl;
         return result;
     }
     else{
@@ -337,6 +335,8 @@ actionT DQN::MapIndexToAction(Player& pl, Player& en, int actionIndex) {
         int row = mapSelect / MAP_SIZE;
         if (peasantIndex >= pl.units.size())
             return EmptyAction();
+        if (hallIndex >= pl.structures.size())
+            return EmptyAction();
         if (pl.units[peasantIndex]->is != PEASANT)
             return EmptyAction();
         if (pl.structures[hallIndex]->is != HALL)
@@ -371,16 +371,16 @@ State DQN::GetState(Player& pl, Player& en, Map& map) {
     state.enemyStructs.resize(en.structures.size());
     
     for (int i = 0; i < pl.units.size(); i++)
-        state.playerUnits[i] = pl.units[i]->Clone();
+        state.playerUnits[i] = pl.units[i].get();
 
     for (int i = 0; i < pl.structures.size(); i++)
-        state.playerStructs[i] = pl.structures[i]->Clone();
+        state.playerStructs[i] = pl.structures[i].get();
 
     for (int i = 0; i < en.units.size(); i++)
-        state.enemyUnits[i] = en.units[i]->Clone();
+        state.enemyUnits[i] = en.units[i].get();
 
     for (int i = 0; i < en.structures.size(); i++)
-        state.enemyStructs[i] = en.structures[i]->Clone();
+        state.enemyStructs[i] = en.structures[i].get();
     
     return state;
 }

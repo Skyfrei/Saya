@@ -85,7 +85,6 @@ void Player::Build(BuildAction& action){
             action.stru = s.get();
             structures.emplace_back(std::move(s));
             action.peasant->InsertAction(action);
-
         }
     }
 }
@@ -95,12 +94,13 @@ void Player::FarmGold(FarmGoldAction& action) {
 void Player::Recruit(RecruitAction& action) {
     if (action.stru != nullptr && action.stru->is == BARRACK){
         std::unique_ptr<Unit> un = ChooseToRecruit(action.unitType);
-        if (gold - un->goldCost >= 0)
+        if (gold - un->goldCost >= 0){
             gold -= un->goldCost;
             un->coordinate = action.stru->coordinate;
             map.AddOwnership(un.get());
             units.emplace_back(std::move(un));
         }
+    }
 }
 void Player::Initialize() {
     structures.push_back(std::make_unique<TownHall>(Vec2(0, 0)));
