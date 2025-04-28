@@ -24,13 +24,15 @@ class DQN : public torch::nn::Module
     DQN();
     torch::Tensor Forward(torch::Tensor x);
     void Initialize(Player &pl, Player &en, Map &map, State &s);
-    actionT SelectAction(Player &pl, Player &en, Map &map, State &s, float epsilon); // gotta return an
+    actionT SelectAction(Player &pl, Player &en, Map &map, State &s,
+                         float epsilon); // gotta return an
+    actionT SelectAction(State &state, Map &map, float epsilon);
     void PrintWeight();
     void AttachAgent(Player &pl);
-    void Test();
 
   private:
     actionT MapIndexToAction(Player &pl, Player &en, int actionIndex);
+    actionT MapIndexToAction(State &state, int actionIndex);
     void SaveModel();
     void LoadModel();
 

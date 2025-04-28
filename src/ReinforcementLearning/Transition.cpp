@@ -9,7 +9,8 @@
 
 // #include <chrono>
 
-Transition::Transition(State s, actionT act, State n, float r) : state(s, act), nextState(n), action(act), reward(r) {
+Transition::Transition(State s, actionT act, State n, float r)
+    : state(s, act), nextState(n), action(act), reward(r) {
 }
 
 Transition::Transition() {
@@ -18,13 +19,17 @@ Transition::Transition() {
 std::string Transition::Serialize() {
     std::string result;
     result += std::to_string(state.playerGold) + ",";
-    result += std::to_string(state.playerFood.x) + "," + std::to_string(state.playerFood.y) + ",";
+    result += std::to_string(state.playerFood.x) + "," +
+              std::to_string(state.playerFood.y) + ",";
     result += std::to_string(state.enemyGold) + ",";
-    result += std::to_string(state.enemyFood.x) + "," + std::to_string(state.enemyFood.y) + ",";
+    result +=
+        std::to_string(state.enemyFood.x) + "," + std::to_string(state.enemyFood.y) + ",";
     result += std::to_string(nextState.playerGold) + ",";
-    result += std::to_string(nextState.playerFood.x) + "," + std::to_string(nextState.playerFood.y) + ",";
+    result += std::to_string(nextState.playerFood.x) + "," +
+              std::to_string(nextState.playerFood.y) + ",";
     result += std::to_string(nextState.enemyGold) + ",";
-    result += std::to_string(nextState.enemyFood.x) + "," + std::to_string(nextState.enemyFood.y) + ",";
+    result += std::to_string(nextState.enemyFood.x) + "," +
+              std::to_string(nextState.enemyFood.y) + ",";
 
     result += std::to_string(state.playerUnits.size()) + ",";
     result += std::to_string(state.playerStructs.size()) + ",";
@@ -96,7 +101,8 @@ Transition Transition::Deserialize(std::string &trans) {
 
     for (int i = 0; i < sp_unitSize; i++)
     {
-        std::string un = objs[0] + " " + objs[1] + " " + objs[2] + " " + objs[3] + " " + objs[4];
+        std::string un =
+            objs[0] + " " + objs[1] + " " + objs[2] + " " + objs[3] + " " + objs[4];
         // deserialize unit on string
         // Unit* u = Factory.Deserialize(un);
         for (int j = 0; j < 5; j++)
@@ -112,7 +118,8 @@ Transition Transition::Deserialize(std::string &trans) {
     }
     for (int i = 0; i < se_unitSize; i++)
     {
-        std::string un = objs[0] + " " + objs[1] + " " + objs[2] + " " + objs[3] + " " + objs[4];
+        std::string un =
+            objs[0] + " " + objs[1] + " " + objs[2] + " " + objs[3] + " " + objs[4];
         for (int j = 0; j < 5; j++)
             objs.pop_front();
         std::cout << un << "\n";
@@ -126,7 +133,8 @@ Transition Transition::Deserialize(std::string &trans) {
     }
     for (int i = 0; i < np_unitSize; i++)
     {
-        std::string un = objs[0] + " " + objs[1] + " " + objs[2] + " " + objs[3] + " " + objs[4];
+        std::string un =
+            objs[0] + " " + objs[1] + " " + objs[2] + " " + objs[3] + " " + objs[4];
         // deserialize unit on string
         // Unit* u = Factory.Deserialize(un);
         for (int j = 0; j < 5; j++)
@@ -142,7 +150,8 @@ Transition Transition::Deserialize(std::string &trans) {
     }
     for (int i = 0; i < ne_unitSize; i++)
     {
-        std::string un = objs[0] + " " + objs[1] + " " + objs[2] + " " + objs[3] + " " + objs[4];
+        std::string un =
+            objs[0] + " " + objs[1] + " " + objs[2] + " " + objs[3] + " " + objs[4];
         // deserialize unit on string
         // Unit* u = Factory.Deserialize(un);
         for (int j = 0; j < 5; j++)
@@ -171,8 +180,8 @@ std::vector<binary> Transition::SerializeBinary() {
     int npsSize = nextState.playerStructs.size();
     int neuSize = nextState.enemyUnits.size();
     int nesSize = nextState.enemyStructs.size();
-    int byte_number = 21 + (puSize * 5) + (psSize * 4) + (euSize * 5) + (esSize * 4) + (npuSize * 5) + (npsSize * 4) +
-                      (neuSize * 5) + (nesSize * 4);
+    int byte_number = 21 + (puSize * 5) + (psSize * 4) + (euSize * 5) + (esSize * 4) +
+                      (npuSize * 5) + (npsSize * 4) + (neuSize * 5) + (nesSize * 4);
 
     binary_data.push_back(byte_number);
     binary_data.push_back(state.playerGold);
@@ -250,7 +259,8 @@ std::vector<binary> Transition::SerializeBinary() {
     std::visit(
         [&binary_data](auto &act) {
             std::deque<binary> actionData = act.SerializeBinary();
-            binary_data[0] = static_cast<int>(std::get<int>(binary_data[0]) + actionData.size());
+            binary_data[0] =
+                static_cast<int>(std::get<int>(binary_data[0]) + actionData.size());
             binary_data.insert(binary_data.end(), actionData.begin(), actionData.end());
         },
         action);

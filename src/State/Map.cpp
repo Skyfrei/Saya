@@ -90,7 +90,9 @@ std::vector<Node *> Map::GetClosestDestNode(Vec2 &coord, Vec2 &dest) {
 
     while (q.size() > 0)
     {
-        auto i_node = std::min_element(q.begin(), q.end(), [&dist](Node *n1, Node *n2) { return dist[n1] < dist[n2]; });
+        auto i_node = std::min_element(q.begin(), q.end(), [&dist](Node *n1, Node *n2) {
+            return dist[n1] < dist[n2];
+        });
         Node *u = *i_node;
         q.erase(i_node);
         for (Node *n : graph.GetAllNeighbors(*u))

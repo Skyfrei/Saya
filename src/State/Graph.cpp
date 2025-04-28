@@ -16,9 +16,11 @@ Graph::Graph(std::vector<std::vector<Terrain>> m) {
                         continue; // Skip the current cell because its our cell
                     int neighborY = i + dy;
                     int neighborX = j + dx;
-                    if (neighborY >= 0 && neighborY < MAP_SIZE && neighborX >= 0 && neighborX < MAP_SIZE)
+                    if (neighborY >= 0 && neighborY < MAP_SIZE && neighborX >= 0 &&
+                        neighborX < MAP_SIZE)
                     {
-                        neighbors.push_back(&GetNodeAtLocation(Vec2(neighborX, neighborY)));
+                        neighbors.push_back(
+                            &GetNodeAtLocation(Vec2(neighborX, neighborY)));
                     }
                 }
             }

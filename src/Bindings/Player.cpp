@@ -7,7 +7,8 @@
 //
 // oid init_Player(py::module &m)
 //
-//    py::class_<Player, std::unique_ptr<Player>>(m, "Player")  // Change to shared_ptr
+//    py::class_<Player, std::unique_ptr<Player>>(m, "Player")  // Change to
+//    shared_ptr
 //        .def(py::init<>())
 //        .def("Initialize", &Player::Initialize)
 //        .def("SetInitialCoordinates", &Player::SetInitialCoordinates)

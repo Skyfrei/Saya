@@ -4,12 +4,7 @@
 #include <fstream>
 #include <random>
 
-#include "../Race/Structure/Barrack.h"
-#include "../Race/Structure/Farm.h"
-#include "../Race/Structure/TownHall.h"
-#include "../Race/Unit/Footman.h"
-#include "../Race/Unit/Peasant.h"
-#include "../Race/Unit/Unit.h"
+#include "Reward.h"
 
 RlManager::RlManager() {
 }
@@ -21,7 +16,10 @@ void RlManager::InitializeDQN(Player &pl, Player &en, Map &map) {
     torch::Device device(torch::kCPU);
 
     if (torch::cuda::is_available())
+    {
         device = torch::Device(torch::DeviceType::CUDA);
+        episodeNumber = 200;
+    }
 
     policyNet.to(device);
     targetNet.to(device);
@@ -31,28 +29,35 @@ void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
     float loss = 0.0f;
     float discount = 0.7f;
     int batch_size = 100;
-    // torch::optim::AdamW optimizer(this->parameters(), 0.01);
-    torch::optim::AdamW optimizer(policyNet.parameters(), torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
+    torch::optim::AdamW optimizer(policyNet.parameters(),
+                                  torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
+    std::random_device dev;
+    std::mt19937 rng(dev());
 
-    for (int i = 0; i < epochNumber; i++)
+    for (int i = 0; i < episodeNumber; i++)
     {
         for (int j = 0; j < 1000; j++)
         {
             std::deque<Transition> samples;
-            std::sample(memory.begin(), memory.end(), std::back_inserter(samples), batch_size,
-                        std::mt19937{std::random_device{}()});
-            State state = GetState(pl, en, map);
-            actionT action = policyNet.SelectAction(pl, en, map, state, epsilon);
-            float reward = pl.TakeAction(action);
-            State next_state = GetState(pl, en, map);
-            Transition trans(state, action, next_state);
-            actionT next_action = targetNet.SelectAction(pl, en, map, next_state, epsilon);
-            float next_reward = (pl.TakeAction(action) * gamma); // + reward_batch;
-            AddExperience(trans);
-            // with torch.no_grad():
+            std::sample(memory.begin(), memory.end(), std::back_inserter(samples),
+                        batch_size, std::mt19937{std::random_device{}()});
+            std::uniform_int_distribution<std::mt19937::result_type> sampleIndex(
+                0, batch_size - 1);
+
+            int sample_index = sampleIndex(rng);
+
+            Transition &trans = samples[sample_index];
+            actionT action = policyNet.SelectAction(pl, en, map, trans.state, epsilon);
+            float reward = GetRewardFromAction(action);
+            actionT next_action =
+                targetNet.SelectAction(pl, en, map, trans.nextState, epsilon);
+            float next_reward = (pl.TakeAction(action) * gamma) + trans.reward;
+
+            torch::NoGradGuard no_grad;
             auto criterion = torch::nn::SmoothL1Loss();
             // LOSS ERRORING
-            auto loss = criterion(torch::tensor(reward).view({-1, 1}), torch::tensor(next_reward).view({-1, 1}));
+            auto loss = criterion(torch::tensor(reward).view({-1, 1}),
+                                  torch::tensor(next_reward).view({-1, 1}));
             optimizer.zero_grad();
             loss.backward();
             torch::nn::utils::clip_grad_value_(policyNet.parameters(), 100);
@@ -189,7 +194,8 @@ void RlManager::LoadMemoryAsBinary() {
 //
 //     if (state.enemyUnits.size() <= 0 && state.enemyStructs.size() <= 0)
 //         reward = 1;
-//     else if (state.playerUnits.size() <= 0 && state.playerStructs.size() <= 0)
+//     else if (state.playerUnits.size() <= 0 && state.playerStructs.size() <=
+//     0)
 //         reward = -1;
 //
 //     return reward;
@@ -198,7 +204,8 @@ void RlManager::LoadMemoryAsBinary() {
 // void RlManager::InitializePPO() {
 // }
 //
-// State RlManager::CreateCurrentState(Map &map, Player &player, Player &enemy) {
+// State RlManager::CreateCurrentState(Map &map, Player &player, Player &enemy)
+// {
 //     State st;
 //     // st.currentMap = map;
 //     st.playerFood = player.food;
@@ -304,14 +311,15 @@ void RlManager::LoadMemoryAsBinary() {
 //   }
 //   std::vector<Transition> samples = Sample(batchSize);
 //
-//   std::vector<torch::Tensor> state_batch, action_batch, reward_batch, next_state_batch;
-//   for (const auto& t : samples) {
+//   std::vector<torch::Tensor> state_batch, action_batch, reward_batch,
+//   next_state_batch; for (const auto& t : samples) {
 //     TensorStruct s(t.state);
 //     TensorStruct ns(t.nextState);
 //     state_batch.push_back(s.GetTensor());
-//     //action_batch.push_back(torch::tensor(t.stateAction.action, torch::kFloat32)); // fix this shit
-//     reward_batch.push_back(torch::tensor(t.nextState.reward, torch::kFloat32));
-//     next_state_batch.push_back(ns.GetTensor());
+//     //action_batch.push_back(torch::tensor(t.stateAction.action,
+//     torch::kFloat32)); // fix this shit
+//     reward_batch.push_back(torch::tensor(t.nextState.reward,
+//     torch::kFloat32)); next_state_batch.push_back(ns.GetTensor());
 //   }
 //
 //   torch::Tensor state_tensor = torch::stack(state_batch);
@@ -319,24 +327,30 @@ void RlManager::LoadMemoryAsBinary() {
 //   torch::Tensor reward_tensor = torch::stack(reward_batch);
 //   torch::Tensor next_state_tensor = torch::stack(next_state_batch);
 //
-//   auto state_action_values = policy_net.Forward(state_tensor).gather(1, action_tensor);
-//   // torch::Tensor next_state_values = torch::zeros({batchSize}, torch::kFloat32);
+//   auto state_action_values = policy_net.Forward(state_tensor).gather(1,
+//   action_tensor);
+//   // torch::Tensor next_state_values = torch::zeros({batchSize},
+//   torch::kFloat32);
 //   // {
 //   //     torch::NoGradGuard no_grad; // Disable gradient computation
-//   //     torch::Tensor non_final_mask = torch::ones({batchSize}, torch::kBool);
+//   //     torch::Tensor non_final_mask = torch::ones({batchSize},
+//   torch::kBool);
 //   //     for (int i = 0; i < batchSize; ++i) {
 //   //         if (!next_state_tensor[i].defined()) {
 //   //             non_final_mask[i] = false;
 //   //         }
 //   //     }
-//   //     auto next_state_values_tensor = target_net.Forward(next_state_tensor);
+//   //     auto next_state_values_tensor =
+//   target_net.Forward(next_state_tensor);
 //   //     next_state_values.index_put_({non_final_mask},
 //   next_state_values_tensor.max(1).values.index({non_final_mask}));
 //   //     next_state_values = next_state_values.detach();
 //   // }
-//   // torch::Tensor expected_state_action_values = (next_state_values * gamma) + reward_tensor;
+//   // torch::Tensor expected_state_action_values = (next_state_values * gamma)
+//   + reward_tensor;
 //   // torch::nn::SmoothL1Loss criterion;
-//   // torch::Tensor loss = criterion->forward(state_action_values, expected_state_action_values.unsqueeze(1));
+//   // torch::Tensor loss = criterion->forward(state_action_values,
+//   expected_state_action_values.unsqueeze(1));
 //   // optimizer.zero_grad();
 //   // loss.backward();
 //   // optimizer.step();

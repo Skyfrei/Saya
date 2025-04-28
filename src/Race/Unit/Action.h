@@ -22,7 +22,8 @@ struct RecruitAction;
 struct BuildAction;
 struct EmptyAction;
 
-using actionT = std::variant<MoveAction, AttackAction, BuildAction, FarmGoldAction, RecruitAction, EmptyAction>;
+using actionT = std::variant<MoveAction, AttackAction, BuildAction, FarmGoldAction,
+                             RecruitAction, EmptyAction>;
 
 Unit *GetUnit(std::vector<binary> &bin);
 Structure *GetStructure(std::vector<binary> &bin);

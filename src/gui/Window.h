@@ -7,7 +7,8 @@
 #include <vector>
 
 class Unit;
-// Just decouple this into sending only strings, but keep for testingv purposes rn
+// Just decouple this into sending only strings, but keep for testingv purposes
+// rn
 struct RenderStruct
 {
     RenderStruct() {
@@ -20,7 +21,8 @@ class Window
 {
   public:
     Window(Vec2 s);
-    SDL_AppResult Render(std::vector<Unit *> &game_objects, std::vector<Unit *> &game_objects2, std::string &dqn_Action,
+    SDL_AppResult Render(std::vector<Unit *> &game_objects,
+                         std::vector<Unit *> &game_objects2, std::string &dqn_Action,
                          std::string &ppo_action);
     void SDL_AppQuit();
 

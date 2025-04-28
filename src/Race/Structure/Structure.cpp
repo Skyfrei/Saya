@@ -5,7 +5,8 @@ std::string Structure::Serialize() {
     int type = static_cast<int>(is);
     int x = coordinate.x;
     int y = coordinate.y;
-    result += std::to_string(type) + "," + std::to_string(health) + "," + std::to_string(x) + "," + std::to_string(y);
+    result += std::to_string(type) + "," + std::to_string(health) + "," +
+              std::to_string(x) + "," + std::to_string(y);
     return result;
 }
 

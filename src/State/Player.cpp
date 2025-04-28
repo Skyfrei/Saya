@@ -42,8 +42,7 @@ Player::Player(const Player &other) : map(other.map) {
 Player::~Player() {
 }
 float Player::TakeAction(actionT &act) {
-    float reward = 0.0f;
-    // float reward = GetRewardFromAction(act);
+    float reward = GetRewardFromAction(act);
     if (std::holds_alternative<MoveAction>(act))
     {
         MoveAction &action = std::get<MoveAction>(act);
@@ -168,7 +167,8 @@ Structure &Player::FindClosestStructure(Unit &unit, StructureType type) {
         if (structures[i]->is == type)
         {
             Vec2 difference = unit.FindDifference(structures[i]->coordinate);
-            double temp = std::sqrt(std::pow(difference.x, 2) + std::pow(difference.y, 2));
+            double temp =
+                std::sqrt(std::pow(difference.x, 2) + std::pow(difference.y, 2));
             if (temp <= min)
             {
                 min = temp;

@@ -43,6 +43,6 @@ class RlManager
     const std::string memory_file_binary = "binary.bay";
     float epsilon = 0.9f;
     float epsilonDecay = 1e-3;
-    int epochNumber = 100;
+    int episodeNumber = 10;
 };
 #endif

@@ -12,7 +12,8 @@ bool Terrain::ExistsInTerrain(Living &l) {
     return false;
 }
 bool Terrain::operator==(const Terrain &other) const {
-    if (other.resourceLeft != resourceLeft || structureOnTerrain != other.structureOnTerrain ||
+    if (other.resourceLeft != resourceLeft ||
+        structureOnTerrain != other.structureOnTerrain ||
         other.onTerrainLiving.size() != onTerrainLiving.size())
     {
         return false;

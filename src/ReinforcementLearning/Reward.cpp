@@ -34,6 +34,7 @@ float GetRewardFromAction(actionT &action) {
     return reward;
 }
 
-float CalculateReward(const State &currentState, const actionT &action, const State &nextState) {
+float CalculateReward(const State &currentState, const actionT &action,
+                      const State &nextState) {
     return 0.0f;
 }

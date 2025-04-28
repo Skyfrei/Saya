@@ -16,29 +16,35 @@ std::string Action::Serialize() {
     {
     case MOVE: {
         MoveAction *action = dynamic_cast<MoveAction *>(this);
-        result += std::to_string(action->prevCoord.x) + "," + std::to_string(action->prevCoord.y) + "," +
-                  std::to_string(action->destCoord.x) + "," + std::to_string(action->destCoord.y);
+        result += std::to_string(action->prevCoord.x) + "," +
+                  std::to_string(action->prevCoord.y) + "," +
+                  std::to_string(action->destCoord.x) + "," +
+                  std::to_string(action->destCoord.y);
         break;
     }
 
     case ATTACK: {
         AttackAction *action = dynamic_cast<AttackAction *>(this);
-        result += std::to_string(action->prevCoord.x) + "," + std::to_string(action->prevCoord.y) + "," +
-                  action->unit->Serialize() + ","; // not done
+        result += std::to_string(action->prevCoord.x) + "," +
+                  std::to_string(action->prevCoord.y) + "," + action->unit->Serialize() +
+                  ","; // not done
         break;
     }
 
     case BUILD: {
         BuildAction *action = dynamic_cast<BuildAction *>(this);
-        result += std::to_string(action->prevCoord.x) + "," + std::to_string(action->prevCoord.y) + "," +
-                  action->stru->Serialize() + "," + action->peasant->Serialize();
+        result += std::to_string(action->prevCoord.x) + "," +
+                  std::to_string(action->prevCoord.y) + "," + action->stru->Serialize() +
+                  "," + action->peasant->Serialize();
         break;
     }
 
     case FARMGOLD: {
         FarmGoldAction *action = dynamic_cast<FarmGoldAction *>(this);
-        result += std::to_string(action->prevCoord.x) + "," + std::to_string(action->prevCoord.y) + "," +
-                  std::to_string(action->destCoord.x) + "," + std::to_string(action->destCoord.y) + "," +
+        result += std::to_string(action->prevCoord.x) + "," +
+                  std::to_string(action->prevCoord.y) + "," +
+                  std::to_string(action->destCoord.x) + "," +
+                  std::to_string(action->destCoord.y) + "," +
                   action->peasant->Serialize() + "," + action->hall->Serialize() + ",";
         // not done, gold and terrain missing
 
@@ -150,19 +156,23 @@ AttackAction::AttackAction(Unit *un, Living *o) : object(o), unit(un) {
 BuildAction::BuildAction(Structure *s) : stru(s) {
     type = BUILD;
 }
-BuildAction::BuildAction(Unit *p, StructureType s, Vec2 c) : peasant(p), struType(s), coordinate(c) {
+BuildAction::BuildAction(Unit *p, StructureType s, Vec2 c)
+    : peasant(p), struType(s), coordinate(c) {
     type = BUILD;
 }
-FarmGoldAction::FarmGoldAction(Vec2 v, Terrain *te, TownHall *t) : destCoord(v), terr(te), hall(t) {
+FarmGoldAction::FarmGoldAction(Vec2 v, Terrain *te, TownHall *t)
+    : destCoord(v), terr(te), hall(t) {
     type = FARMGOLD;
 }
 FarmGoldAction::FarmGoldAction(Unit *p, Vec2 v) : destCoord(v), peasant(p) {
     type = FARMGOLD;
 }
-FarmGoldAction::FarmGoldAction(Unit *p, Vec2 v, TownHall *h) : peasant(p), destCoord(v), hall(h) {
+FarmGoldAction::FarmGoldAction(Unit *p, Vec2 v, TownHall *h)
+    : peasant(p), destCoord(v), hall(h) {
     type = FARMGOLD;
 }
-RecruitAction::RecruitAction(UnitType typeOfUnit, Structure *s) : unitType(typeOfUnit), stru(s) {
+RecruitAction::RecruitAction(UnitType typeOfUnit, Structure *s)
+    : unitType(typeOfUnit), stru(s) {
     type = RECRUIT;
 }
 EmptyAction::EmptyAction() {
@@ -177,8 +187,8 @@ bool AttackAction::operator==(const AttackAction &b) const {
     return object == b.object;
 }
 bool BuildAction::operator==(const BuildAction &b) const {
-    if (stru->coordinate.x == b.stru->coordinate.x && stru->coordinate.y == b.stru->coordinate.y &&
-        stru->is == b.stru->is)
+    if (stru->coordinate.x == b.stru->coordinate.x &&
+        stru->coordinate.y == b.stru->coordinate.y && stru->is == b.stru->is)
         return true;
     return false;
 }

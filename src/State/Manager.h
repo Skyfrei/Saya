@@ -31,8 +31,10 @@ class Manager
     Player enemy;
     RlManager trainerManager;
     Map map;
-    std::chrono::high_resolution_clock::time_point time1 = std::chrono::high_resolution_clock::now();
-    std::chrono::high_resolution_clock::time_point time = std::chrono::high_resolution_clock::now();
+    std::chrono::high_resolution_clock::time_point time1 =
+        std::chrono::high_resolution_clock::now();
+    std::chrono::high_resolution_clock::time_point time =
+        std::chrono::high_resolution_clock::now();
 
   private:
     int frames = 0;

@@ -21,7 +21,8 @@
 //        .def("__eq__", &Vec2::operator==)
 //        .def("__ne__", &Vec2::operator!=)
 //        .def("__repr__", [](const Vec2 &v) {
-//            return "(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ")";
+//            return "(" + std::to_string(v.x) + ", " + std::to_string(v.y) +
+//            ")";
 //        });
 //
 //    py::enum_<UnitType>(m, "UnitType")

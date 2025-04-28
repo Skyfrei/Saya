@@ -17,8 +17,8 @@ std::string Unit::Serialize() {
     int type = static_cast<int>(is);
     int x = coordinate.x;
     int y = coordinate.y;
-    result += std::to_string(type) + "," + std::to_string(health) + "," + std::to_string(mana) + "," +
-              std::to_string(x) + "," + std::to_string(y);
+    result += std::to_string(type) + "," + std::to_string(health) + "," +
+              std::to_string(mana) + "," + std::to_string(x) + "," + std::to_string(y);
     return result;
 }
 
@@ -178,7 +178,8 @@ void Unit::Attack(Living &un) {
 }
 
 bool Unit::CanAttack() {
-    auto currentCd = std::chrono::duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - attackTime);
+    auto currentCd = std::chrono::duration_cast<std::chrono::milliseconds>(
+        high_resolution_clock::now() - attackTime);
     if (currentCd >= attackCooldown)
     {
 
@@ -189,7 +190,8 @@ bool Unit::CanAttack() {
 }
 
 bool Unit::IsMovable() {
-    auto currentCd = std::chrono::duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - moveTime);
+    auto currentCd = std::chrono::duration_cast<std::chrono::milliseconds>(
+        high_resolution_clock::now() - moveTime);
 
     if (currentCd >= moveCooldown)
     {
@@ -200,7 +202,8 @@ bool Unit::IsMovable() {
 }
 
 void Unit::RegenHealth() {
-    auto currentCd = std::chrono::duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - hpTime);
+    auto currentCd = std::chrono::duration_cast<std::chrono::milliseconds>(
+        high_resolution_clock::now() - hpTime);
 
     if (currentCd >= hpCooldown)
     {

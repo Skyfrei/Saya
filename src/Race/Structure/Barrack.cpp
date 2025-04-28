@@ -25,7 +25,8 @@ Barrack::Barrack(Vec2 coord, float hp) {
     buildTime = 70;
 }
 
-void Barrack::CreateUnit(std::vector<std::unique_ptr<Unit>> &units, int &playerGold, UnitType type) {
+void Barrack::CreateUnit(std::vector<std::unique_ptr<Unit>> &units, int &playerGold,
+                         UnitType type) {
     std::unique_ptr<Unit> unit;
 
     switch (type)

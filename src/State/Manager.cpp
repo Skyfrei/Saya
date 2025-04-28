@@ -46,7 +46,8 @@ void Manager::CheckForOwnership(Player &p, Living *l, actionT actionTaken) {
                 }
             }
         }
-        if (l->coordinate.x != action.prevCoord.x || l->coordinate.y != action.prevCoord.y)
+        if (l->coordinate.x != action.prevCoord.x ||
+            l->coordinate.y != action.prevCoord.y)
         {
             map.RemoveOwnership(l, action.prevCoord);
             map.AddOwnership(l);
@@ -61,7 +62,8 @@ void Manager::CheckForOwnership(Player &p, Living *l, actionT actionTaken) {
     else if (std::holds_alternative<BuildAction>(actionTaken))
     {
         BuildAction &action = std::get<BuildAction>(actionTaken);
-        if (l->coordinate.x != action.prevCoord.x || l->coordinate.y != action.prevCoord.y)
+        if (l->coordinate.x != action.prevCoord.x ||
+            l->coordinate.y != action.prevCoord.y)
         {
             map.RemoveOwnership(l, action.prevCoord);
             map.AddOwnership(l);
@@ -71,7 +73,8 @@ void Manager::CheckForOwnership(Player &p, Living *l, actionT actionTaken) {
     {
         FarmGoldAction &action = std::get<FarmGoldAction>(actionTaken);
         auto s = static_cast<Peasant *>(l);
-        if (l->coordinate.x != action.prevCoord.x || l->coordinate.y != action.prevCoord.y)
+        if (l->coordinate.x != action.prevCoord.x ||
+            l->coordinate.y != action.prevCoord.y)
         {
             map.RemoveOwnership(l, action.prevCoord);
             map.AddOwnership(l);
@@ -106,7 +109,8 @@ void Manager::MainLoop() {
                     CheckForOwnership(enemy, enemy.units[i].get(), actionDone);
                 }
             }
-            // player.Attack(player.units[0].get(), (Living*)enemy.units[0].get());
+            // player.Attack(player.units[0].get(),
+            // (Living*)enemy.units[0].get());
             if (Is10thSecond())
             {
                 // Player pl(player);
@@ -125,7 +129,8 @@ void Manager::PrintVector(Vec2 a) {
 }
 
 bool Manager::Is10thSecond() {
-    auto currentCd = std::chrono::duration_cast<std::chrono::milliseconds>(high_resolution_clock::now() - frameTimer);
+    auto currentCd = std::chrono::duration_cast<std::chrono::milliseconds>(
+        high_resolution_clock::now() - frameTimer);
 
     if (currentCd >= frameCooldown)
     {
