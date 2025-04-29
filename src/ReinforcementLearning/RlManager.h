@@ -24,6 +24,8 @@ class RlManager
 
   public:
     std::deque<Transition> memory;
+    DQN policyNet;
+    DQN targetNet;
 
   private:
     State CreateCurrentState(Map &map, Player &player, Player &enemy);
@@ -31,9 +33,6 @@ class RlManager
     State GetState(Player &pl, Player &en, Map &map);
 
   private:
-    DQN policyNet;
-    DQN targetNet;
-
     float gamma = 0.92f;
     bool calledMemOnce = false;
     const int batchSize = 32;

@@ -119,8 +119,8 @@ std::deque<binary> Action::SerializeBinary() {
         FarmGoldAction *farmAction = dynamic_cast<FarmGoldAction *>(this);
         std::vector<binary> unBin = farmAction->peasant->SerializeBinary();
         result.insert(result.end(), unBin.begin(), unBin.end());
-        result.push_back(farmAction->terr->coord.x);
-        result.push_back(farmAction->terr->coord.y);
+        result.push_back(farmAction->destCoord.x);
+        result.push_back(farmAction->destCoord.y);
         break;
     }
 
@@ -131,6 +131,9 @@ std::deque<binary> Action::SerializeBinary() {
 
         result.push_back(unitType);
         result.insert(result.end(), struBin.begin(), struBin.end());
+        break;
+    }
+    case EMPTY: {
         break;
     }
     }

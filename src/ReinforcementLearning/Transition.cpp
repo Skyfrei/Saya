@@ -352,6 +352,7 @@ Transition Transition::DeserializeBinary(std::vector<binary> &bin) {
     actionT deserAction = GetAction(std::span(start, bin.end()));
 
     Transition trans(state, deserAction, nextState);
+    trans.reward = reward;
 
     return trans;
 }
@@ -414,6 +415,9 @@ actionT Transition::GetAction(std::span<binary> bin) {
         Structure *binStru = GetStructure(std::span(start, start + 4));
         RecruitAction recruitAction(unitType, binStru);
         return recruitAction;
+    }
+    case 5: {
+        return EmptyAction();
     }
     }
 }

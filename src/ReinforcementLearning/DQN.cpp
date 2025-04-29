@@ -354,6 +354,13 @@ torch::Tensor TensorStruct::GetTensor() {
     return concatenatedTensor;
 }
 
+int DQN::GetRandomOutputIndex() {
+    std::random_device ran;
+    std::default_random_engine e1(ran());
+    std::uniform_int_distribution<int> uniform_dist(0, recruitAction - 1);
+    return uniform_dist(e1);
+}
+
 // actionT DQN::SelectAction(State &state, Map &map, float epsilon) {
 //     std::random_device dev;
 //     std::mt19937 rng(dev());

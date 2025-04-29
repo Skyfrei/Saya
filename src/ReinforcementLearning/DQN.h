@@ -27,12 +27,14 @@ class DQN : public torch::nn::Module
     actionT SelectAction(Player &pl, Player &en, Map &map, State &s,
                          float epsilon); // gotta return an
     actionT SelectAction(State &state, Map &map, float epsilon);
+    actionT MapIndexToAction(State &state, int actionIndex);
+    int GetRandomOutputIndex();
+
     void PrintWeight();
     void AttachAgent(Player &pl);
 
   private:
     actionT MapIndexToAction(Player &pl, Player &en, int actionIndex);
-    actionT MapIndexToAction(State &state, int actionIndex);
     void SaveModel();
     void LoadModel();
 

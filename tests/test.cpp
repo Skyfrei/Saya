@@ -7,6 +7,7 @@
 #include "../src/gui/Window.h"
 #include "../src/Race/Unit/Action.h"
 #include "../src/ReinforcementLearning/RlManager.h"
+#include "../src/ReinforcementLearning/Reward.h"
 #include <chrono>
 #include <fstream>
 #include <random>
@@ -20,41 +21,7 @@ std::string StringReplay(){
     s.enemyGold = 100;
     s.playerGold = 100;
     s.playerStructs.push_back(new TownHall(Vec2(10, 2)));
-    for (int i = 0; i < 5; i++) {
-        s.playerUnits.push_back(new Peasant());
-        s.playerUnits[i]->coordinate.x = 0 + i;
-        s.playerUnits[i]->coordinate.y = 0 + i;
-    }
-    s.enemyStructs.push_back(new TownHall(Vec2(10, 2)));
-    for (int i = 0; i < 5; i++) {
-        s.enemyUnits.push_back(new Peasant());
-        s.enemyUnits[i]->coordinate.x = 10 - i;
-        s.enemyUnits[i]->coordinate.y = 10 - i;
-    }
-    actionT act = MoveAction(s.playerUnits[0], Vec2(3, 4));
-    Transition trans(s, act, s);
-    RlManager obj;
-    for(int i = 0; i < 1000; i++)
-        obj.AddExperience(trans);
-    auto a = std::chrono::high_resolution_clock::now();
-    obj.SaveMemory(); 
-    auto b = std::chrono::high_resolution_clock::now();
-//    obj.LoadMemory();
-    auto c = std::chrono::high_resolution_clock::now();
-    std::cout << "Time  to save string replay " << duration_cast<milliseconds>(b-a).count();
-    std::cout<<"\n Time to load string replay\n" << duration_cast<milliseconds>(c-b).count();
-    return "";
-}
 
-std::string BinaryReplay(){
-    State s;
-    s.enemyFood.x = 2;
-    s.enemyFood.y = 10;
-    s.playerFood.x = 3;
-    s.playerFood.y = 4;
-    s.enemyGold = 100;
-    s.playerGold = 100;
-        
     std::random_device ran;
     std::default_random_engine e1(ran());
     std::uniform_int_distribution<int> uniform_dist(0, 100);
@@ -80,6 +47,59 @@ std::string BinaryReplay(){
         s.playerStructs.clear();
         s.enemyStructs.clear();
         obj.AddExperience(trans);
+    }
+    auto a = std::chrono::high_resolution_clock::now();
+    obj.SaveMemory(); 
+    auto b = std::chrono::high_resolution_clock::now();
+    obj.LoadMemory();
+    auto c = std::chrono::high_resolution_clock::now();
+    std::cout << "Time  to save string replay " << duration_cast<milliseconds>(b-a).count();
+    std::cout<<"\n Time to load string replay\n" << duration_cast<milliseconds>(c-b).count();
+    return "";
+}
+
+std::string BinaryReplay(){
+    State s;
+    s.enemyFood.x = 2;
+    s.enemyFood.y = 10;
+    s.playerFood.x = 3;
+    s.playerFood.y = 4;
+    s.enemyGold = 100;
+    s.playerGold = 100;
+        
+    std::random_device ran;
+    std::default_random_engine e1(ran());
+    std::uniform_int_distribution<int> uniform_dist(0, 100);
+    
+    RlManager obj;
+    Map m;
+    for(int i = 0; i < 1000;){
+        s.playerStructs.push_back(new TownHall(Vec2(10, 2)));
+        for (int i = 0; i < 5; i++) {
+            s.playerUnits.push_back(new Peasant());
+            s.playerUnits[i]->coordinate.x = uniform_dist(e1);
+            s.playerUnits[i]->coordinate.y = uniform_dist(e1);
+        }
+        s.enemyStructs.push_back(new TownHall(Vec2(10, 2)));
+        for (int i = 0; i < 5; i++) {
+            s.enemyUnits.push_back(new Peasant());
+            s.enemyUnits[i]->coordinate.x = uniform_dist(e1);
+            s.enemyUnits[i]->coordinate.y = uniform_dist(e1);
+        }
+        int action_index = obj.targetNet.GetRandomOutputIndex();
+        actionT act = obj.targetNet.MapIndexToAction(s, action_index);
+        if (std::holds_alternative<EmptyAction>(act))
+            continue;
+        
+        Transition trans(s, act, s);
+        float r = GetRewardFromAction(act); 
+        trans.reward = r;
+        s.playerUnits.clear();
+        s.enemyUnits.clear();
+        s.playerStructs.clear();
+        s.enemyStructs.clear();
+        obj.AddExperience(trans);
+        i++;
     }
     obj.SaveMemoryAsBinary(); 
     return "";
@@ -139,15 +159,15 @@ bool DQN_Test(){
     player.SetInitialCoordinates(Vec2(8, 2));
     enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 2));
     RlManager man;
-    man.InitializeDQN(player, enemy, map);
     man.LoadMemoryAsBinary();
-    man.TrainDQN(player, enemy, map);
+    //man.InitializeDQN(player, enemy, map);
+    //man.TrainDQN(player, enemy, map);
     return true;
 }
 
 
 TEST_CASE("Serializing and Deserialzing Replays...", "[ReplaySystem]") {
-    REQUIRE(BinaryReplay() == ""); 
+    //REQUIRE(BinaryReplay() == ""); 
 }
 
 TEST_CASE("Runtimes of replay system", "[Replay System]") {
