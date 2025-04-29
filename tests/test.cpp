@@ -59,9 +59,6 @@ std::string BinaryReplay(){
     std::default_random_engine e1(ran());
     std::uniform_int_distribution<int> uniform_dist(0, 100);
     RlManager obj;  
-    // IF DESTRUCTOR IN STATE IS INCLUDED SEG FAULT
-    // OTHERWISE MEM LEAK
-    // CHANGE TO SHARED_PTR OR STOP USING TEST IN RELEASE
     for(int i = 0; i < 1000; i++){
         s.playerStructs.push_back(new TownHall(Vec2(10, 2)));
         for (int i = 0; i < 5; i++) {
@@ -70,14 +67,13 @@ std::string BinaryReplay(){
             s.playerUnits[i]->coordinate.y = uniform_dist(e1);
         }
         s.enemyStructs.push_back(new TownHall(Vec2(10, 2)));
-
         for (int i = 0; i < 5; i++) {
             s.enemyUnits.push_back(new Peasant());
             s.enemyUnits[i]->coordinate.x = uniform_dist(e1);
             s.enemyUnits[i]->coordinate.y = uniform_dist(e1);
         }
-        actionT act1 = BuildAction(s.enemyUnits[0], HALL, Vec2(3, 3));
-        actionT act = MoveAction(s.enemyUnits[0], Vec2(3, 4));
+        actionT act1 = BuildAction(s.playerUnits[0], HALL, Vec2(3, 3));
+        actionT act = MoveAction(s.playerUnits[0], Vec2(3, 4));
         Transition trans(s, act1, s);
         s.playerUnits.clear();
         s.enemyUnits.clear();
@@ -86,11 +82,6 @@ std::string BinaryReplay(){
         obj.AddExperience(trans);
     }
     obj.SaveMemoryAsBinary(); 
-//    auto b = std::chrono::high_resolution_clock::now();
-    obj.LoadMemoryAsBinary();
-//    auto c = std::chrono::high_resolution_clock::now();
-//
-//    std::cout<<duration_cast<milliseconds>(c-b).count() << " ";
     return "";
 }
 

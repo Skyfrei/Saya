@@ -17,11 +17,12 @@ float GetRewardFromAction(actionT &action) {
     }
     else if (std::holds_alternative<BuildAction>(action))
     {
-        const BuildAction &buildAction = std::get<BuildAction>(action);
-        if (buildAction.stru->health >= buildAction.stru->maxHealth)
-        {
-            reward += 0.3;
-        }
+        // const BuildAction &buildAction = std::get<BuildAction>(action);
+        // if (buildAction.stru->health >= buildAction.stru->maxHealth)
+        //{
+        //     reward += 0.3;
+        // }
+        reward += 0.3;
     }
     else if (std::holds_alternative<FarmGoldAction>(action))
     {

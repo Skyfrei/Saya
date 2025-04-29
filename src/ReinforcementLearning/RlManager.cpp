@@ -38,26 +38,28 @@ void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
     {
         for (int j = 0; j < 1000; j++)
         {
-            std::deque<Transition> samples;
-            std::sample(memory.begin(), memory.end(), std::back_inserter(samples),
-                        batch_size, std::mt19937{std::random_device{}()});
+            // std::deque<Transition> samples;
+            // std::sample(memory.begin(), memory.end(), std::back_inserter(samples),
+            //             batch_size, std::mt19937{std::random_device{}()});
             std::uniform_int_distribution<std::mt19937::result_type> sampleIndex(
                 0, batch_size - 1);
 
             int sample_index = sampleIndex(rng);
-
-            Transition &trans = samples[sample_index];
-            actionT action = policyNet.SelectAction(pl, en, map, trans.state, epsilon);
-            float reward = GetRewardFromAction(action);
+            Transition &trans = memory[sample_index];
+            float reward = GetRewardFromAction(trans.action);
             actionT next_action =
                 targetNet.SelectAction(pl, en, map, trans.nextState, epsilon);
-            float next_reward = (pl.TakeAction(action) * gamma) + trans.reward;
+            float next_reward = (GetRewardFromAction(next_action) * gamma) + trans.reward;
 
-            torch::NoGradGuard no_grad;
+            torch::Tensor reward_tensor =
+                torch::tensor({reward}, torch::TensorOptions().requires_grad(true));
+            torch::Tensor next_reward_tensor =
+                torch::tensor({next_reward}, torch::TensorOptions().requires_grad(true));
+
             auto criterion = torch::nn::SmoothL1Loss();
-            // LOSS ERRORING
-            auto loss = criterion(torch::tensor(reward).view({-1, 1}),
-                                  torch::tensor(next_reward).view({-1, 1}));
+            auto loss =
+                criterion(reward_tensor.view({-1, 1}), next_reward_tensor.view({-1, 1}));
+            std::cout << "Loss: " << loss.item<float>() << std::endl;
             optimizer.zero_grad();
             loss.backward();
             torch::nn::utils::clip_grad_value_(policyNet.parameters(), 100);
