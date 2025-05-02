@@ -364,27 +364,25 @@ actionT Transition::GetAction(std::span<binary> bin) {
     {
     case 0: {
         Unit *newUnit = GetUnit(std::span(start, start + 5));
-        Vec2 dest(std::get<int>(bin[5]), std::get<int>(bin[6]));
+        Vec2 dest(std::get<int>(bin[6]), std::get<int>(bin[7]));
         MoveAction move(newUnit, dest);
         return move;
     }
 
     case 1: {
         Unit *newUnit = GetUnit(std::span(start, start + 5));
-        int unitOrStruct = std::get<int>(bin[5]);
+        int unitOrStruct = std::get<int>(bin[6]);
         Unit *targetUnit;
         Structure *targetStructure;
 
-        start += 7;
+        start += 6;
         if (unitOrStruct == 0)
         {
             targetUnit = GetUnit(std::span(start, start + 5));
-            delete targetStructure;
         }
         else
         {
             targetStructure = GetStructure(std::span(start, start + 4));
-            delete targetUnit;
         }
         AttackAction attackAction(targetUnit, targetStructure);
         return attackAction;
@@ -392,8 +390,8 @@ actionT Transition::GetAction(std::span<binary> bin) {
 
     case 2: {
         Unit *newUnit = GetUnit(std::span(start, start + 5));
-        StructureType structType = static_cast<StructureType>(std::get<int>(bin[5]));
-        Vec2 buildCoord(std::get<int>(bin[6]), std::get<int>(bin[7]));
+        StructureType structType = static_cast<StructureType>(std::get<int>(bin[6]));
+        Vec2 buildCoord(std::get<int>(bin[7]), std::get<int>(bin[8]));
 
         BuildAction buildAction(newUnit, structType, buildCoord);
         return buildAction;
@@ -401,8 +399,8 @@ actionT Transition::GetAction(std::span<binary> bin) {
 
     case 3: {
         Unit *newUnit = GetUnit(std::span(start, start + 5));
-        int x = std::get<int>(bin[5]);
-        int y = std::get<int>(bin[6]);
+        int x = std::get<int>(bin[6]);
+        int y = std::get<int>(bin[7]);
         Vec2 dest(x, y);
 
         FarmGoldAction farmAction(newUnit, dest);

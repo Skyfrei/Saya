@@ -33,7 +33,7 @@ std::vector<binary> Unit::SerializeBinary() {
     int type = static_cast<int>(is);
     result[0] = type;
     result[1] = health;
-    result[2] = mana;
+    result[2] = static_cast<float>(mana);
     result[3] = coordinate.x;
     result[4] = coordinate.y;
 

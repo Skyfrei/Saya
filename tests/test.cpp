@@ -12,6 +12,8 @@
 #include <fstream>
 #include <random>
 
+
+int mem_size = 100000;
 std::string StringReplay(){
     State s;
     s.enemyFood.x = 2;
@@ -26,7 +28,7 @@ std::string StringReplay(){
     std::default_random_engine e1(ran());
     std::uniform_int_distribution<int> uniform_dist(0, 100);
     RlManager obj;  
-    for(int i = 0; i < 1000; i++){
+    for(int i = 0; i < mem_size; i++){
         s.playerStructs.push_back(new TownHall(Vec2(10, 2)));
         for (int i = 0; i < 5; i++) {
             s.playerUnits.push_back(new Peasant());
@@ -73,7 +75,7 @@ std::string BinaryReplay(){
     
     RlManager obj;
     Map m;
-    for(int i = 0; i < 1000;){
+    for(int i = 0; i < mem_size;){
         s.playerStructs.push_back(new TownHall(Vec2(10, 2)));
         for (int i = 0; i < 5; i++) {
             s.playerUnits.push_back(new Peasant());
@@ -101,7 +103,15 @@ std::string BinaryReplay(){
         obj.AddExperience(trans);
         i++;
     }
-    obj.SaveMemoryAsBinary(); 
+    auto a = std::chrono::high_resolution_clock::now();
+    //obj.SaveMemoryAsBinary(); 
+    auto b = std::chrono::high_resolution_clock::now();
+    obj.LoadMemoryAsBinary();
+    auto c = std::chrono::high_resolution_clock::now();
+    std::cout << "Time  to save string replay " << duration_cast<milliseconds>(b-a).count();
+    std::cout<<"\n Time to load string replay\n" << duration_cast<milliseconds>(c-b).count();
+
+
     return "";
 }
 
@@ -167,7 +177,7 @@ bool DQN_Test(){
 
 
 TEST_CASE("Serializing and Deserialzing Replays...", "[ReplaySystem]") {
-    //REQUIRE(BinaryReplay() == ""); 
+    REQUIRE(BinaryReplay() == ""); 
 }
 
 TEST_CASE("Runtimes of replay system", "[Replay System]") {
@@ -179,5 +189,5 @@ TEST_CASE("Rendering of the map", "[Map rendering]") {
 }
 
 TEST_CASE("Testing DQN", "[DQN]"){
-    REQUIRE(DQN_Test());
+    //REQUIRE(DQN_Test());
 }

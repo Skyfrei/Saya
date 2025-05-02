@@ -15,7 +15,8 @@ Peasant::Peasant() {
     health = 240;
     maxHealth = health;
     attack = 5.5;
-    mana = 200;
+    maxMana = 200.0f;
+    mana = 200.0f;
     manaRegen = 0.67f;
     goldCost = 75;
     foodCost = 1;
@@ -32,6 +33,8 @@ Peasant::Peasant(Vec2 coord, float hp, float man) {
     maxHealth = 240;
     attack = 5.5;
     manaRegen = 0.67f;
+    maxMana = 200.0f;
+
     goldCost = 75;
     foodCost = 1;
     buildTime = 15;

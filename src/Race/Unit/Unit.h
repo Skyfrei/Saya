@@ -60,8 +60,8 @@ class Unit : public Living
   public:
     bool isInvisible = false;
     float attack{};
-    float mana = 100;
-    int maxMana = 100;
+    float mana;
+    float maxMana;
     float attackRange{};
     int movementSpeed = 1;
     duration<float, std::milli> attackCooldown = std::chrono::milliseconds(200);

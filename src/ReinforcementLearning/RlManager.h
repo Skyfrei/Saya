@@ -37,7 +37,7 @@ class RlManager
     bool calledMemOnce = false;
     const int batchSize = 32;
     const int maxSize = 10000;
-    int memory_size = 1000;
+    int memory_size = 100000;
     const std::string memory_file = "dqn_memory.say";
     const std::string memory_file_binary = "binary.bay";
     float epsilon = 0.9f;

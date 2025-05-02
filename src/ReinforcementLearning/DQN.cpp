@@ -83,7 +83,7 @@ actionT DQN::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
         if (playerUnit >= pl.units.size())
             return EmptyAction();
         int targetIndex = offset % (MAX_STRUCTS + MAX_UNITS);
-        if (targetIndex < MAX_STRUCTS - 1)
+        if (targetIndex <= MAX_STRUCTS - 1)
         {
             if (targetIndex >= en.structures.size())
                 return EmptyAction();
