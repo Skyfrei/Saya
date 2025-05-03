@@ -5,6 +5,8 @@
 #include <torch/nn.h>
 #include <torch/optim.h>
 #include <torch/torch.h>
+#include <tuple>
+
 
 #include "../Race/Unit/Unit.h"
 #include "../State/Player.h"
@@ -24,7 +26,7 @@ class DQN : public torch::nn::Module
     DQN();
     torch::Tensor Forward(torch::Tensor x);
     void Initialize(Player &pl, Player &en, Map &map, State &s);
-    actionT SelectAction(Player &pl, Player &en, Map &map, State &s,
+    std::tuple<actionT, int> SelectAction(Player &pl, Player &en, Map &map, State &s,
                          float epsilon); // gotta return an
     actionT SelectAction(State &state, Map &map, float epsilon);
     actionT MapIndexToAction(State &state, int actionIndex);
@@ -32,12 +34,13 @@ class DQN : public torch::nn::Module
 
     void PrintWeight();
     void AttachAgent(Player &pl);
-
-  private:
-    actionT MapIndexToAction(Player &pl, Player &en, int actionIndex);
     void SaveModel();
     void LoadModel();
 
+
+  private:
+    actionT MapIndexToAction(Player &pl, Player &en, int actionIndex);
+    
   public:
     int episodeNumber = 50;
     int stepsDone = 0;

@@ -31,6 +31,7 @@ class RlManager
     State CreateCurrentState(Map &map, Player &player, Player &enemy);
     Transition CreateTransition(State s, actionT a, State rextS);
     State GetState(Player &pl, Player &en, Map &map);
+    void OptimizeDQN(Map& map);
 
   private:
     float gamma = 0.92f;
@@ -42,6 +43,6 @@ class RlManager
     const std::string memory_file_binary = "binary.bay";
     float epsilon = 0.9f;
     float epsilonDecay = 1e-3;
-    int episodeNumber = 10;
+    int episodeNumber = 100;
 };
 #endif

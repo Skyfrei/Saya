@@ -37,7 +37,7 @@ torch::Tensor DQN::Forward(torch::Tensor x) {
     return x;
 }
 
-actionT DQN::SelectAction(Player &pl, Player &en, Map &map, State &s, float epsilon) {
+std::tuple<actionT, int> DQN::SelectAction(Player &pl, Player &en, Map &map, State &s, float epsilon) {
     std::random_device dev;
     std::mt19937 rng(dev());
     std::uniform_real_distribution<float> dist1(0.0, 1.0);
@@ -48,21 +48,21 @@ actionT DQN::SelectAction(Player &pl, Player &en, Map &map, State &s, float epsi
     if (random_number > epsilon)
     {
         TensorStruct dqn_input = TensorStruct(s, map);
-        at::Tensor action =
-            std::get<1>(Forward(dqn_input.GetTensor()).max(1)).view({1, 1});
-        actionT result = MapIndexToAction(pl, en, action.item<int>());
-        return result;
+        at::Tensor actionIndex =
+            std::get<1>(Forward(dqn_input.GetTensor()).max(1));
+        actionT action = MapIndexToAction(pl, en, actionIndex.item<int>());
+        return {action, actionIndex.item<int>()};
     }
     else
     {
         TensorStruct dqn_input = TensorStruct(s, map);
-        at::Tensor output = Forward(dqn_input.GetTensor()).view({1, 1});
+        at::Tensor output = Forward(dqn_input.GetTensor());
         int num_actions = output.size(1);
         std::uniform_int_distribution<std::mt19937::result_type> dist(0, num_actions - 1);
         int random_action = dist(rng);
         at::Tensor action = torch::tensor({{random_action}}, torch::kLong);
         actionT result = MapIndexToAction(pl, en, action.item<int>());
-        return result;
+        return {result, random_action};
     }
 }
 
@@ -278,6 +278,7 @@ TensorStruct::TensorStruct(State &state, Map &map) {
     playerGold = torch::tensor(state.playerGold).view({-1, 1});
     playerFood = GetVec(state.playerFood);
     playerStructs = GetStructuresTensor(state.playerStructs);
+    playerUnits = GetUnitsTensor(state.playerUnits);
 
     enemyGold = torch::tensor(state.enemyGold).view({-1, 1});
     enemyFood = GetVec(state.enemyFood);

@@ -171,7 +171,7 @@ bool DQN_Test(){
     RlManager man;
     man.LoadMemoryAsBinary();
     man.InitializeDQN(player, enemy, map);
-    //man.TrainDQN(player, enemy, map);
+    man.TrainDQN(player, enemy, map);
     return true;
 }
 
