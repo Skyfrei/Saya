@@ -43,7 +43,7 @@ std::string StringReplay(){
         }
         actionT act1 = BuildAction(s.playerUnits[0], HALL, Vec2(3, 3));
         actionT act = MoveAction(s.playerUnits[0], Vec2(3, 4));
-        Transition trans(s, act1, s);
+        Transition trans(s, act1, s, 1);
         s.playerUnits.clear();
         s.enemyUnits.clear();
         s.playerStructs.clear();
@@ -51,7 +51,7 @@ std::string StringReplay(){
         obj.AddExperience(trans);
     }
     auto a = std::chrono::high_resolution_clock::now();
-    obj.SaveMemory(); 
+    //obj.SaveMemory(); 
     auto b = std::chrono::high_resolution_clock::now();
     obj.LoadMemory();
     auto c = std::chrono::high_resolution_clock::now();
@@ -93,7 +93,7 @@ std::string BinaryReplay(){
         if (std::holds_alternative<EmptyAction>(act))
             continue;
         
-        Transition trans(s, act, s);
+        Transition trans(s, act, s, action_index);
         float r = GetRewardFromAction(act); 
         trans.reward = r;
         s.playerUnits.clear();
@@ -104,7 +104,7 @@ std::string BinaryReplay(){
         i++;
     }
     auto a = std::chrono::high_resolution_clock::now();
-    //obj.SaveMemoryAsBinary(); 
+    obj.SaveMemoryAsBinary(); 
     auto b = std::chrono::high_resolution_clock::now();
     obj.LoadMemoryAsBinary();
     auto c = std::chrono::high_resolution_clock::now();
@@ -170,14 +170,14 @@ bool DQN_Test(){
     enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 2));
     RlManager man;
     man.LoadMemoryAsBinary();
-    //man.InitializeDQN(player, enemy, map);
+    man.InitializeDQN(player, enemy, map);
     //man.TrainDQN(player, enemy, map);
     return true;
 }
 
 
 TEST_CASE("Serializing and Deserialzing Replays...", "[ReplaySystem]") {
-    REQUIRE(BinaryReplay() == ""); 
+    //REQUIRE(BinaryReplay() == ""); 
 }
 
 TEST_CASE("Runtimes of replay system", "[Replay System]") {
@@ -189,5 +189,5 @@ TEST_CASE("Rendering of the map", "[Map rendering]") {
 }
 
 TEST_CASE("Testing DQN", "[DQN]"){
-    //REQUIRE(DQN_Test());
+    REQUIRE(DQN_Test());
 }

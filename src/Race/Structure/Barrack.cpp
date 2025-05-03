@@ -4,8 +4,6 @@
 #include "Barrack.h"
 
 Barrack::Barrack(Vec2 coord) {
-    name = "Barrack";
-    description = "Can create units.";
     health = 1500;
     maxHealth = health;
     goldCost = 220;
@@ -17,8 +15,6 @@ Barrack::Barrack(Vec2 coord) {
 Barrack::Barrack(Vec2 coord, float hp) {
     coordinate = coord;
     health = hp;
-    name = "Barrack";
-    description = "Can create units.";
     maxHealth = 1500;
     goldCost = 220;
     is = BARRACK;

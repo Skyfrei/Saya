@@ -38,7 +38,7 @@ class DQN : public torch::nn::Module
     void SaveModel();
     void LoadModel();
 
-  private:
+  public:
     int episodeNumber = 50;
     int stepsDone = 0;
     int actionSize = 0;

@@ -1,8 +1,6 @@
 #include "Footman.h"
 
 Footman::Footman() {
-    name = "Footman";
-    description = "A normal foot soldier.";
     health = 420;
     maxHealth = health;
     attack = 12.5;
@@ -15,8 +13,6 @@ Footman::Footman() {
 }
 
 Footman::Footman(Vec2 coord, float hp, float man) {
-    name = "Footman";
-    description = "A normal foot soldier.";
     maxHealth = 420;
     attack = 12.5;
     goldCost = 135;

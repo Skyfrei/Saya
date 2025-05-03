@@ -38,32 +38,64 @@ void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
     {
         for (int j = 0; j < 1000; j++)
         {
-            // std::deque<Transition> samples;
-            // std::sample(memory.begin(), memory.end(), std::back_inserter(samples),
-            //             batch_size, std::mt19937{std::random_device{}()});
+            std::deque<Transition> samples;
+            std::sample(memory.begin(), memory.end(), std::back_inserter(samples),
+                        batch_size, std::mt19937{std::random_device{}()});
             std::uniform_int_distribution<std::mt19937::result_type> sampleIndex(
                 0, batch_size - 1);
 
-            int sample_index = sampleIndex(rng);
-            Transition &trans = memory[sample_index];
-            float reward = GetRewardFromAction(trans.action);
-            actionT next_action =
-                targetNet.SelectAction(pl, en, map, trans.nextState, epsilon);
-            float next_reward = (GetRewardFromAction(next_action) * gamma) + trans.reward;
+            std::vector<torch::Tensor> state_batch;
+            std::vector<torch::Tensor> state_action;
+            std::vector<torch::Tensor> next_state_batch;
+            std::vector<torch::Tensor> reward_batch;
 
-            torch::Tensor reward_tensor =
-                torch::tensor({reward}, torch::TensorOptions().requires_grad(true));
-            torch::Tensor next_reward_tensor =
-                torch::tensor({next_reward}, torch::TensorOptions().requires_grad(true));
+            for (auto &trans : samples)
+            {
+                TensorStruct z(trans.state, map);
+                state_batch.push_back(z.GetTensor());
+                state_action.push_back(torch::tensor({trans.actionIndex}, torch::kInt32));
+                reward_batch.push_back(torch::tensor({trans.reward}, torch::kFloat32));
+            }
+            torch::Tensor tensor_states = torch::stack(state_batch);
+            torch::Tensor tensor_actions = torch::stack(state_action);
+            torch::Tensor tensor_rewards = torch::stack(reward_batch);
+
+            torch::Tensor q_values = policyNet.Forward(tensor_states);
+            torch::Tensor actions_reshaped = tensor_actions.view({batch_size, 1});
+            torch::Tensor action_values = q_values.gather(1, actions_reshaped);
+
+            for (auto &trans : samples)
+            {
+                TensorStruct z(trans.nextState, map);
+                next_state_batch.push_back(z.GetTensor());
+            }
+            torch::Tensor tensor_next_states = torch::stack(next_state_batch);
+            torch::NoGradGuard no_grad;
+            torch::Tensor q_next_values =
+                std::get<0>(targetNet.Forward(tensor_next_states).max(1));
+            q_next_values = (q_next_values * gamma) + tensor_rewards;
 
             auto criterion = torch::nn::SmoothL1Loss();
-            auto loss =
-                criterion(reward_tensor.view({-1, 1}), next_reward_tensor.view({-1, 1}));
+            auto loss = criterion(action_values, q_next_values.unsqueeze(1));
             std::cout << "Loss: " << loss.item<float>() << std::endl;
             optimizer.zero_grad();
             loss.backward();
             torch::nn::utils::clip_grad_value_(policyNet.parameters(), 100);
             optimizer.step();
+
+            // int sample_index = sampleIndex(rng);
+            // Transition &trans = memory[sample_index];
+            // float reward = GetRewardFromAction(trans.action);
+            // actionT next_action =
+            //     targetNet.SelectAction(pl, en, map, trans.nextState, epsilon);
+            // float next_reward = (GetRewardFromAction(next_action) * gamma) +
+            // trans.reward;
+
+            // torch::Tensor reward_tensor =
+            //     torch::tensor({reward}, torch::TensorOptions().requires_grad(true));
+            // torch::Tensor next_reward_tensor =
+            //     torch::tensor({next_reward},
+            //     torch::TensorOptions().requires_grad(true));
 
             if (epsilon - epsilonDecay > 0)
                 epsilon -= epsilonDecay;

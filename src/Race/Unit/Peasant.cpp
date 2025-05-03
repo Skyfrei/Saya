@@ -10,8 +10,6 @@
 #include "../Structure/TownHall.h"
 
 Peasant::Peasant() {
-    name = "Peasant";
-    description = "God damn farm workers.";
     health = 240;
     maxHealth = health;
     attack = 5.5;
@@ -28,8 +26,6 @@ Peasant::Peasant(Vec2 coord, float hp, float man) {
     coordinate = coord;
     health = hp;
     mana = man;
-    name = "Peasant";
-    description = "God damn farm workers.";
     maxHealth = 240;
     attack = 5.5;
     manaRegen = 0.67f;

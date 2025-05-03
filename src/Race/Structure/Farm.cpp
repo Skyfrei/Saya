@@ -1,7 +1,5 @@
 #include "Farm.h"
 Farm::Farm(Vec2 coord) {
-    name = "Farm";
-    description = "Gives 6 food.";
     health = 500;
     maxHealth = health;
     goldCost = 100;
@@ -11,8 +9,6 @@ Farm::Farm(Vec2 coord) {
 }
 
 Farm::Farm(Vec2 coord, float hp) {
-    name = "Farm";
-    description = "Gives 6 food.";
     health = hp;
     maxHealth = 500;
     goldCost = 100;
@@ -22,7 +18,7 @@ Farm::Farm(Vec2 coord, float hp) {
 }
 
 std::string Farm::GetDescription() {
-    return description;
+    return "Get 6 food";
 }
 void Farm::FinishBuilding() {
 }

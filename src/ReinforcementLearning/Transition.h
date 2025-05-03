@@ -34,7 +34,7 @@ struct State
 
 struct Transition
 {
-    Transition(State s, actionT act, State n, float r = 0.0);
+    Transition(State s, actionT act, State n, int index, float r = 0.0);
     Transition();
     std::string Serialize();
     Transition Deserialize(std::string &trans);
@@ -47,6 +47,7 @@ struct Transition
     State state;
     State nextState;
     actionT action;
+    int actionIndex;
     bool done = false;
     float reward = 0.0f;
 };

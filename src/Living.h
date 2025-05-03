@@ -18,8 +18,6 @@ class Living
     bool IsDead();
 
   public:
-    std::string name;
-    std::string description;
     float health;
     int id;
     float maxHealth;
