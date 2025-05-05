@@ -19,9 +19,11 @@ int farmAction =
 int recruitAction =
     farmAction + 2 * NR_OF_UNITS * BARRACK_INDEX_IN_STRUCTS; // barrack size
 
-DQN::DQN() {
+DQN::DQN()
+{
 }
-void DQN::Initialize(Player &pl, Player &en, Map &map, State &s) {
+void DQN::Initialize(Player &pl, Player &en, Map &map, State &s)
+{
     TensorStruct tensor = TensorStruct(s, map);
     inputSize = tensor.GetTensor().size(1);
     actionSize = recruitAction;
@@ -30,14 +32,17 @@ void DQN::Initialize(Player &pl, Player &en, Map &map, State &s) {
     layer3 = register_module("layer3", torch::nn::Linear(128, actionSize));
 }
 
-torch::Tensor DQN::Forward(torch::Tensor x) {
+torch::Tensor DQN::Forward(torch::Tensor x)
+{
     x = torch::relu(layer1->forward(x));
     x = torch::relu(layer2->forward(x));
     x = layer3->forward(x);
     return x;
 }
 
-std::tuple<actionT, int> DQN::SelectAction(Player &pl, Player &en, Map &map, State &s, float epsilon) {
+std::tuple<actionT, int> DQN::SelectAction(Player &pl, Player &en, Map &map,
+                                           State &s, float epsilon)
+{
     std::random_device dev;
     std::mt19937 rng(dev());
     std::uniform_real_distribution<float> dist1(0.0, 1.0);
@@ -48,8 +53,7 @@ std::tuple<actionT, int> DQN::SelectAction(Player &pl, Player &en, Map &map, Sta
     if (random_number > epsilon)
     {
         TensorStruct dqn_input = TensorStruct(s, map);
-        at::Tensor actionIndex =
-            std::get<1>(Forward(dqn_input.GetTensor()).max(1));
+        at::Tensor actionIndex = std::get<1>(Forward(dqn_input.GetTensor()).max(1));
         actionT action = MapIndexToAction(pl, en, actionIndex.item<int>());
         return {action, actionIndex.item<int>()};
     }
@@ -58,7 +62,8 @@ std::tuple<actionT, int> DQN::SelectAction(Player &pl, Player &en, Map &map, Sta
         TensorStruct dqn_input = TensorStruct(s, map);
         at::Tensor output = Forward(dqn_input.GetTensor());
         int num_actions = output.size(1);
-        std::uniform_int_distribution<std::mt19937::result_type> dist(0, num_actions - 1);
+        std::uniform_int_distribution<std::mt19937::result_type> dist(
+            0, num_actions - 1);
         int random_action = dist(rng);
         at::Tensor action = torch::tensor({{random_action}}, torch::kLong);
         actionT result = MapIndexToAction(pl, en, action.item<int>());
@@ -66,7 +71,8 @@ std::tuple<actionT, int> DQN::SelectAction(Player &pl, Player &en, Map &map, Sta
     }
 }
 
-actionT DQN::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
+actionT DQN::MapIndexToAction(Player &pl, Player &en, int actionIndex)
+{
     if (actionIndex < moveAction)
     {
         int col = actionIndex % MAP_SIZE;
@@ -94,15 +100,16 @@ actionT DQN::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
         {
             if (targetIndex >= en.units.size())
                 return EmptyAction();
-            return AttackAction(pl.units[playerUnit].get(), en.units[targetIndex].get());
+            return AttackAction(pl.units[playerUnit].get(),
+                                en.units[targetIndex].get());
         }
     }
     else if (actionIndex < buildAction)
     {
         int offset = actionIndex - attackAction;
         int unit = offset / (NR_OF_STRUCTS * MAP_SIZE * MAP_SIZE);
-        StructureType struSelect =
-            static_cast<StructureType>((offset / MAP_SIZE * MAP_SIZE) % NR_OF_STRUCTS);
+        StructureType struSelect = static_cast<StructureType>(
+            (offset / MAP_SIZE * MAP_SIZE) % NR_OF_STRUCTS);
         int mapSelect = offset % (MAP_SIZE * MAP_SIZE);
         int col = mapSelect % MAP_SIZE;
         int row = mapSelect / MAP_SIZE;
@@ -130,8 +137,9 @@ actionT DQN::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
             return EmptyAction();
         if (pl.structures[hallIndex]->is != HALL)
             return EmptyAction();
-        return FarmGoldAction(pl.units[peasantIndex].get(), Vec2(row, col),
-                              static_cast<TownHall *>(pl.structures[hallIndex].get()));
+        return FarmGoldAction(
+            pl.units[peasantIndex].get(), Vec2(row, col),
+            static_cast<TownHall *>(pl.structures[hallIndex].get()));
     }
     else if (actionIndex < recruitAction)
     {
@@ -147,7 +155,8 @@ actionT DQN::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
     return EmptyAction();
 }
 
-actionT DQN::SelectAction(State &state, Map &map, float epsilon) {
+actionT DQN::SelectAction(State &state, Map &map, float epsilon)
+{
     std::random_device dev;
     std::mt19937 rng(dev());
     std::uniform_real_distribution<float> dist1(0.0, 1.0);
@@ -167,7 +176,8 @@ actionT DQN::SelectAction(State &state, Map &map, float epsilon) {
         TensorStruct dqn_input = TensorStruct(state, map);
         at::Tensor output = Forward(dqn_input.GetTensor()).view({1, 1});
         int num_actions = output.size(1);
-        std::uniform_int_distribution<std::mt19937::result_type> dist(0, num_actions - 1);
+        std::uniform_int_distribution<std::mt19937::result_type> dist(
+            0, num_actions - 1);
         int random_action = dist(rng);
         at::Tensor action = torch::tensor({{random_action}}, torch::kLong);
         actionT result = MapIndexToAction(state, action.item<int>());
@@ -175,7 +185,8 @@ actionT DQN::SelectAction(State &state, Map &map, float epsilon) {
     }
 }
 
-actionT DQN::MapIndexToAction(State &state, int actionIndex) {
+actionT DQN::MapIndexToAction(State &state, int actionIndex)
+{
     if (actionIndex < moveAction)
     {
         int col = actionIndex % MAP_SIZE;
@@ -211,8 +222,8 @@ actionT DQN::MapIndexToAction(State &state, int actionIndex) {
     {
         int offset = actionIndex - attackAction;
         int unit = offset / (NR_OF_STRUCTS * MAP_SIZE * MAP_SIZE);
-        StructureType struSelect =
-            static_cast<StructureType>((offset / MAP_SIZE * MAP_SIZE) % NR_OF_STRUCTS);
+        StructureType struSelect = static_cast<StructureType>(
+            (offset / MAP_SIZE * MAP_SIZE) % NR_OF_STRUCTS);
         int mapSelect = offset % (MAP_SIZE * MAP_SIZE);
         int col = mapSelect % MAP_SIZE;
         int row = mapSelect / MAP_SIZE;
@@ -240,8 +251,9 @@ actionT DQN::MapIndexToAction(State &state, int actionIndex) {
             return EmptyAction();
         if (state.playerStructs[hallIndex]->is != HALL)
             return EmptyAction();
-        return FarmGoldAction(state.playerUnits[peasantIndex], Vec2(row, col),
-                              static_cast<TownHall *>(state.playerStructs[hallIndex]));
+        return FarmGoldAction(
+            state.playerUnits[peasantIndex], Vec2(row, col),
+            static_cast<TownHall *>(state.playerStructs[hallIndex]));
     }
     else if (actionIndex < recruitAction)
     {
@@ -257,23 +269,27 @@ actionT DQN::MapIndexToAction(State &state, int actionIndex) {
     return EmptyAction();
 }
 
-void DQN::PrintWeight() {
+void DQN::PrintWeight()
+{
     std::cout << this->layer1->weight[0][0] << std::endl;
 }
 
-void DQN::SaveModel() {
+void DQN::SaveModel()
+{
     torch::serialize::OutputArchive archive;
     this->save(archive);
     archive.save_to(model_file);
 }
 
-void DQN::LoadModel() {
+void DQN::LoadModel()
+{
     torch::serialize::InputArchive archive;
     archive.load_from(model_file);
     this->load(archive);
 }
 
-TensorStruct::TensorStruct(State &state, Map &map) {
+TensorStruct::TensorStruct(State &state, Map &map)
+{
     currentMap = GetMapTensor(map);
     playerGold = torch::tensor(state.playerGold).view({-1, 1});
     playerFood = GetVec(state.playerFood);
@@ -286,7 +302,8 @@ TensorStruct::TensorStruct(State &state, Map &map) {
     enemyStructs = GetStructuresTensor(state.enemyStructs);
 }
 
-torch::Tensor TensorStruct::GetMapTensor(Map &map) {
+torch::Tensor TensorStruct::GetMapTensor(Map &map)
+{
     std::vector<int> data;
 
     for (const auto &row : map.terrain)
@@ -301,14 +318,16 @@ torch::Tensor TensorStruct::GetMapTensor(Map &map) {
     }
     return torch::tensor(data).view({1, -1});
 }
-torch::Tensor TensorStruct::GetVec(Vec2 food) {
+torch::Tensor TensorStruct::GetVec(Vec2 food)
+{
     std::vector<int> data;
     data.push_back(food.x);
     data.push_back(food.y);
     return torch::tensor(data).view({1, -1});
 }
 
-torch::Tensor TensorStruct::GetUnitsTensor(std::vector<Unit *> &units) {
+torch::Tensor TensorStruct::GetUnitsTensor(std::vector<Unit *> &units)
+{
     std::vector<int> data;
     for (const auto &unit : units)
     {
@@ -324,7 +343,8 @@ torch::Tensor TensorStruct::GetUnitsTensor(std::vector<Unit *> &units) {
     }
     return torch::tensor(data).view({1, -1});
 }
-torch::Tensor TensorStruct::GetStructuresTensor(std::vector<Structure *> &structures) {
+torch::Tensor TensorStruct::GetStructuresTensor(std::vector<Structure *> &structures)
+{
     std::vector<int> structureData;
     for (const auto &structure : structures)
     {
@@ -335,15 +355,16 @@ torch::Tensor TensorStruct::GetStructuresTensor(std::vector<Structure *> &struct
     }
     return torch::tensor(structureData).view({1, -1});
 }
-torch::Tensor TensorStruct::GetTensor() {
+torch::Tensor TensorStruct::GetTensor()
+{
     torch::Tensor paddedUnits =
         torch::zeros({1, (MAX_UNITS - (playerUnits.size(1) / unitVar)) * unitVar});
-    torch::Tensor paddedStructs =
-        torch::zeros({1, (MAX_STRUCTS - (playerStructs.size(1) / strucVar)) * strucVar});
+    torch::Tensor paddedStructs = torch::zeros(
+        {1, (MAX_STRUCTS - (playerStructs.size(1) / strucVar)) * strucVar});
     torch::Tensor paddedUnitsEnemy =
         torch::zeros({1, (MAX_UNITS - (enemyUnits.size(1) / unitVar)) * unitVar});
-    torch::Tensor paddedStructsEnemy =
-        torch::zeros({1, (MAX_STRUCTS - (enemyStructs.size(1) / strucVar)) * strucVar});
+    torch::Tensor paddedStructsEnemy = torch::zeros(
+        {1, (MAX_STRUCTS - (enemyStructs.size(1) / strucVar)) * strucVar});
 
     std::vector<torch::Tensor> tensors = {
         playerGold,    playerFood,       playerUnits,  paddedUnits,
@@ -355,7 +376,8 @@ torch::Tensor TensorStruct::GetTensor() {
     return concatenatedTensor;
 }
 
-int DQN::GetRandomOutputIndex() {
+int DQN::GetRandomOutputIndex()
+{
     std::random_device ran;
     std::default_random_engine e1(ran());
     std::uniform_int_distribution<int> uniform_dist(0, recruitAction - 1);
@@ -367,8 +389,9 @@ int DQN::GetRandomOutputIndex() {
 //     std::mt19937 rng(dev());
 //
 //     std::uniform_real_distribution<float> dist1(0.0, 1.0);
-//     std::uniform_int_distribution<std::mt19937::result_type> dist2(0, NR_OF_ACTIONS -
-//     1); std::uniform_int_distribution<std::mt19937::result_type> pun(
+//     std::uniform_int_distribution<std::mt19937::result_type> dist2(0,
+//     NR_OF_ACTIONS - 1); std::uniform_int_distribution<std::mt19937::result_type>
+//     pun(
 //         0, state.playerUnits.size() - 1);
 //     std::uniform_int_distribution<std::mt19937::result_type> pstru(
 //         0, state.playerStructs.size() - 1);
@@ -376,8 +399,9 @@ int DQN::GetRandomOutputIndex() {
 //         0, state.playerUnits.size() - 1);
 //     std::uniform_int_distribution<std::mt19937::result_type> estru(
 //         0, state.enemyStructs.size() - 1);
-//     std::uniform_int_distribution<std::mt19937::result_type> mapx(0, MAP_SIZE - 1);
-//     std::uniform_int_distribution<std::mt19937::result_type> mapy(0, MAP_SIZE - 1);
+//     std::uniform_int_distribution<std::mt19937::result_type> mapx(0, MAP_SIZE -
+//     1); std::uniform_int_distribution<std::mt19937::result_type> mapy(0, MAP_SIZE
+//     - 1);
 //
 //     float random_number = dist1(rng);
 //     int cx = mapx(rng);
@@ -401,23 +425,24 @@ int DQN::GetRandomOutputIndex() {
 //         switch (action_index)
 //         {
 //         case MOVE: {
-//             MoveAction action = MoveAction(state.playerUnits[pUnit], Vec2(cx, cy));
-//             return action;
+//             MoveAction action = MoveAction(state.playerUnits[pUnit], Vec2(cx,
+//             cy)); return action;
 //         }
 //
 //         case ATTACK: {
-//             std::uniform_int_distribution<std::mt19937::result_type> struOrEn(0, 1);
-//             int ran = struOrEn(rng);
-//             if (ran == 0)
+//             std::uniform_int_distribution<std::mt19937::result_type> struOrEn(0,
+//             1); int ran = struOrEn(rng); if (ran == 0)
 //             {
 //                 AttackAction action =
-//                     AttackAction(state.playerUnits[pUnit], state.enemyUnits[eUnit]);
+//                     AttackAction(state.playerUnits[pUnit],
+//                     state.enemyUnits[eUnit]);
 //                 return action;
 //             }
 //             else
 //             {
 //                 AttackAction action =
-//                     AttackAction(state.playerUnits[pUnit], state.enemyStructs[eStru]);
+//                     AttackAction(state.playerUnits[pUnit],
+//                     state.enemyStructs[eStru]);
 //                 return action;
 //             }
 //         }

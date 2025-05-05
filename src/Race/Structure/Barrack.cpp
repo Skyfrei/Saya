@@ -3,7 +3,8 @@
 //
 #include "Barrack.h"
 
-Barrack::Barrack(Vec2 coord) {
+Barrack::Barrack(Vec2 coord)
+{
     health = 1500;
     maxHealth = health;
     goldCost = 220;
@@ -12,7 +13,8 @@ Barrack::Barrack(Vec2 coord) {
     coordinate = coord;
 }
 
-Barrack::Barrack(Vec2 coord, float hp) {
+Barrack::Barrack(Vec2 coord, float hp)
+{
     coordinate = coord;
     health = hp;
     maxHealth = 1500;
@@ -22,7 +24,8 @@ Barrack::Barrack(Vec2 coord, float hp) {
 }
 
 void Barrack::CreateUnit(std::vector<std::unique_ptr<Unit>> &units, int &playerGold,
-                         UnitType type) {
+                         UnitType type)
+{
     std::unique_ptr<Unit> unit;
 
     switch (type)

@@ -13,24 +13,31 @@ struct Node
     std::vector<Node *> neighbors;
     Vec2 location;
 
-    Node(std::vector<Node *> e) {
+    Node(std::vector<Node *> e)
+    {
         neighbors = e;
     }
-    Node(Vec2 l) {
+    Node(Vec2 l)
+    {
         location = l;
     }
-    void AddNeighbors(std::vector<Node *> e) {
+    void AddNeighbors(std::vector<Node *> e)
+    {
         neighbors = e;
     }
-    Node() {
+    Node()
+    {
     }
-    constexpr bool operator<=>(const Node &n1) const {
+    constexpr bool operator<=>(const Node &n1) const
+    {
         return location == n1.location;
     }
-    constexpr bool operator!=(const Node &n1) const {
+    constexpr bool operator!=(const Node &n1) const
+    {
         return location != n1.location;
     }
-    constexpr bool operator==(const Node &n1) const {
+    constexpr bool operator==(const Node &n1) const
+    {
         return location == n1.location;
     }
 };

@@ -1,6 +1,7 @@
 #include "Graph.h"
 
-Graph::Graph(std::vector<std::vector<Terrain>> m) {
+Graph::Graph(std::vector<std::vector<Terrain>> m)
+{
     for (int i = 0; i < MAP_SIZE; i++)
     {
         for (int j = 0; j < MAP_SIZE; j++)
@@ -29,10 +30,12 @@ Graph::Graph(std::vector<std::vector<Terrain>> m) {
         }
     }
 }
-Graph::Graph() {
+Graph::Graph()
+{
 }
 
-std::vector<Node *> Graph::GetAllGraphNodes() {
+std::vector<Node *> Graph::GetAllGraphNodes()
+{
     std::vector<Node *> result;
     for (auto it = nodes.begin(); it != nodes.end(); it++)
     {
@@ -41,10 +44,12 @@ std::vector<Node *> Graph::GetAllGraphNodes() {
     return result;
 }
 
-std::vector<Node *> Graph::GetAllNeighbors(Node &n) {
+std::vector<Node *> Graph::GetAllNeighbors(Node &n)
+{
     return n.neighbors;
 }
 
-Node &Graph::GetNodeAtLocation(const Vec2 &loc) {
+Node &Graph::GetNodeAtLocation(const Vec2 &loc)
+{
     return nodes[loc];
 }

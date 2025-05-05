@@ -31,7 +31,7 @@ class RlManager
     State CreateCurrentState(Map &map, Player &player, Player &enemy);
     Transition CreateTransition(State s, actionT a, State rextS);
     State GetState(Player &pl, Player &en, Map &map);
-    void OptimizeDQN(Map& map);
+    void OptimizeDQN(Map &map);
 
   private:
     float gamma = 0.92f;

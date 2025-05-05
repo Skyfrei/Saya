@@ -11,7 +11,8 @@ class Unit;
 // rn
 struct RenderStruct
 {
-    RenderStruct() {
+    RenderStruct()
+    {
     }
     const char *text;
     Vec2 pos;
@@ -29,7 +30,8 @@ class Window
   private:
     SDL_AppResult InitSdl();
     void RenderUI();
-    void RenderMap(std::vector<Unit *> &game_objects, std::vector<Unit *> &game_objects2);
+    void RenderMap(std::vector<Unit *> &game_objects,
+                   std::vector<Unit *> &game_objects2);
     void RenderMoves(std::string &dqn_action, std::string &ppo_action);
 
   private:

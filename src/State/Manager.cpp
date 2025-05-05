@@ -5,13 +5,15 @@
 #include "../Race/Structure/TownHall.h"
 #include "../Race/Unit/Peasant.h"
 
-Manager::Manager() : player(map, PLAYER), enemy(map, ENEMY) {
+Manager::Manager() : player(map, PLAYER), enemy(map, ENEMY)
+{
     player.SetInitialCoordinates(Vec2(8, 2));
     enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 2));
     MainLoop();
 }
 
-void Manager::CheckForOwnership(Player &p, Living *l, actionT actionTaken) {
+void Manager::CheckForOwnership(Player &p, Living *l, actionT actionTaken)
+{
     if (std::holds_alternative<AttackAction>(actionTaken))
     {
         AttackAction &action = std::get<AttackAction>(actionTaken);
@@ -87,7 +89,8 @@ void Manager::CheckForOwnership(Player &p, Living *l, actionT actionTaken) {
     }
 }
 
-void Manager::MainLoop() {
+void Manager::MainLoop()
+{
     //    player.Attack(player.units[0].get(), (Living*)enemy.units[0].get());
     //  std::cout<<player.units[0]->actionQueue.size()<<std::endl;
 
@@ -121,14 +124,17 @@ void Manager::MainLoop() {
     }
 }
 
-void Manager::CheckForMovement() {
+void Manager::CheckForMovement()
+{
 }
 
-void Manager::PrintVector(Vec2 a) {
+void Manager::PrintVector(Vec2 a)
+{
     std::cout << "\n" << a.x << " " << a.y << "\n";
 }
 
-bool Manager::Is10thSecond() {
+bool Manager::Is10thSecond()
+{
     auto currentCd = std::chrono::duration_cast<std::chrono::milliseconds>(
         high_resolution_clock::now() - frameTimer);
 
@@ -140,12 +146,14 @@ bool Manager::Is10thSecond() {
     return false;
 }
 
-float Manager::GetTime() {
+float Manager::GetTime()
+{
     time = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float> diff = time - time1;
     return diff.count();
 }
 
-void Manager::ManageLiving(Player &pl) {
+void Manager::ManageLiving(Player &pl)
+{
     std::cout << "dead";
 }

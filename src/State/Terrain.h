@@ -16,7 +16,8 @@ class Structure;
 class Terrain
 {
   public:
-    Terrain(int x, int y) {
+    Terrain(int x, int y)
+    {
         coord.x = x;
         coord.y = y;
         resourceLeft = 0;
@@ -25,7 +26,8 @@ class Terrain
     bool operator==(const Terrain &other) const;
 
   public:
-    int GetResourceLeft() {
+    int GetResourceLeft()
+    {
         return 0;
     }
     // std::unique_ptr<i><Living> ObjectsAtTerrain(Vec2 terr);

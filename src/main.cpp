@@ -1,6 +1,7 @@
 #include "State/Manager.h"
 #include <iostream>
 
-int main() {
+int main()
+{
     Manager manager;
 }

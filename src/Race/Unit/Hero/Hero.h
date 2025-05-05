@@ -16,11 +16,13 @@ enum Attribute
 class Hero : public Unit
 {
   public:
-    Hero() {
+    Hero()
+    {
     }
 
   public:
-    void CastSpell(int s) {
+    void CastSpell(int s)
+    {
         switch (s)
         {
         case 0:
@@ -36,7 +38,8 @@ class Hero : public Unit
             break;
         }
     }
-    void Attack(Living &un) {
+    void Attack(Living &un)
+    {
         if (WithinDistance(un.coordinate))
         {
             if (CanAttack())
@@ -46,18 +49,21 @@ class Hero : public Unit
             Move(un.coordinate);
     }
 
-    void RegenMana() {
+    void RegenMana()
+    {
         if (mana + manaRegen >= maxMana)
             return;
         mana += manaRegen;
     }
 
-    void CheckExperience(float bonus) {
+    void CheckExperience(float bonus)
+    {
         if (experience + bonus >= maxExperience)
             LevelUp();
     }
 
-    void LevelUp() {
+    void LevelUp()
+    {
         if (level >= 10)
             return;
         strength += 2;

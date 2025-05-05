@@ -8,7 +8,8 @@
 class Living
 {
   public:
-    Living() {
+    Living()
+    {
     }
     virtual ~Living() = default;
     virtual std::string GetDescription() = 0;

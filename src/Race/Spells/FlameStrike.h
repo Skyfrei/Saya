@@ -13,7 +13,8 @@
 class FlameStrike : public Spell
 {
   public:
-    FlameStrike() {
+    FlameStrike()
+    {
         cooldown = 10.0f;
         manaCost = 135;
         range = 80;
@@ -24,9 +25,11 @@ class FlameStrike : public Spell
     }
 
   public:
-    virtual void GetDescription() override {
+    virtual void GetDescription() override
+    {
     }
-    void ProcEffect() override {
+    void ProcEffect() override
+    {
     }
 
   public:

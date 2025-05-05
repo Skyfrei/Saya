@@ -11,7 +11,8 @@
 class SiphonMana : public Spell
 {
   public:
-    SiphonMana() {
+    SiphonMana()
+    {
         cooldown = 6.0f;
         manaCost = 10;
         range = 60;
@@ -22,9 +23,11 @@ class SiphonMana : public Spell
     }
 
   public:
-    virtual void GetDescription() override {
+    virtual void GetDescription() override
+    {
     }
-    void ProcEffect() override {
+    void ProcEffect() override
+    {
     }
 
   public:

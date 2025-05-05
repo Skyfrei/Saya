@@ -9,7 +9,8 @@
 #include "../Structure/Structure.h"
 #include "../Structure/TownHall.h"
 
-Peasant::Peasant() {
+Peasant::Peasant()
+{
     health = 240;
     maxHealth = health;
     attack = 5.5;
@@ -22,7 +23,8 @@ Peasant::Peasant() {
     is = PEASANT;
 }
 
-Peasant::Peasant(Vec2 coord, float hp, float man) {
+Peasant::Peasant(Vec2 coord, float hp, float man)
+{
     coordinate = coord;
     health = hp;
     mana = man;
@@ -37,7 +39,8 @@ Peasant::Peasant(Vec2 coord, float hp, float man) {
     is = PEASANT;
 }
 
-void Peasant::Build(Structure *str) {
+void Peasant::Build(Structure *str)
+{
     if (WithinDistance(str->coordinate))
     {
         if (CanAttack())
@@ -52,7 +55,8 @@ void Peasant::Build(Structure *str) {
         Move(str->coordinate);
 }
 
-void Peasant::FarmGold(Terrain &terr, TownHall &hall, int &g) {
+void Peasant::FarmGold(Terrain &terr, TownHall &hall, int &g)
+{
     if (goldInventory > 0 && WithinDistance(hall.coordinate))
     {
         goldInventory = 0;

@@ -1,15 +1,17 @@
 #include "RlManager.h"
 
+#include "Reward.h"
 #include <chrono>
 #include <fstream>
 #include <random>
 #include <tuple>
-#include "Reward.h"
 
-RlManager::RlManager() {
+RlManager::RlManager()
+{
 }
 
-void RlManager::InitializeDQN(Player &pl, Player &en, Map &map) {
+void RlManager::InitializeDQN(Player &pl, Player &en, Map &map)
+{
     State s = GetState(pl, en, map);
     policyNet.Initialize(pl, en, map, s);
     targetNet.Initialize(pl, en, map, s);
@@ -25,10 +27,11 @@ void RlManager::InitializeDQN(Player &pl, Player &en, Map &map) {
     targetNet.to(device);
 }
 
-void RlManager::OptimizeDQN(Map& map){
+void RlManager::OptimizeDQN(Map &map)
+{
     int batch_size = 512;
-    torch::optim::AdamW optimizer(policyNet.parameters(),
-                                  torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
+    torch::optim::AdamW optimizer(
+        policyNet.parameters(), torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
     std::random_device dev;
     std::mt19937 rng(dev());
 
@@ -63,13 +66,14 @@ void RlManager::OptimizeDQN(Map& map){
     torch::Tensor q_next_values;
     {
         torch::NoGradGuard no_grad;
-        q_next_values = std::get<0>(targetNet.Forward(tensor_next_states).max(1)).unsqueeze(1);
+        q_next_values =
+            std::get<0>(targetNet.Forward(tensor_next_states).max(1)).unsqueeze(1);
     }
     q_next_values = (q_next_values * gamma) + tensor_rewards;
 
     auto criterion = torch::nn::SmoothL1Loss();
     auto loss = criterion(q_values, q_next_values);
-    
+
     std::ofstream file("experiment_loss.txt", std::ios::app);
     std::cout << "Loss: " << loss.item<float>() << std::endl;
     file << loss.item<float>() << "\n";
@@ -79,15 +83,18 @@ void RlManager::OptimizeDQN(Map& map){
     optimizer.step();
 }
 
-void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
+void RlManager::TrainDQN(Player &pl, Player &en, Map &map)
+{
     float updateRate = 0.005;
     State currState = GetState(pl, en, map);
     for (int i = 0; i < episodeNumber; i++)
-    {             
+    {
         for (int j = 0; j < 1000; j++)
         {
-            if(!((pl.HasUnit(PEASANT) && pl.HasStructure(HALL)) && (en.HasUnit(PEASANT) && en.HasStructure(HALL)))){
-                [&](){
+            if (!((pl.HasUnit(PEASANT) && pl.HasStructure(HALL)) &&
+                  (en.HasUnit(PEASANT) && en.HasStructure(HALL))))
+            {
+                [&]() {
                     pl.units.clear();
                     pl.structures.clear();
                     en.units.clear();
@@ -95,34 +102,39 @@ void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
                     pl.Initialize();
                     en.Initialize();
                 }();
-                std::cout<<"End state reached";
+                std::cout << "End state reached";
                 break;
             }
-            auto selectedAction = policyNet.SelectAction(pl, en, map, currState, epsilon);
+            auto selectedAction =
+                policyNet.SelectAction(pl, en, map, currState, epsilon);
             float reward = pl.TakeAction(std::get<0>(selectedAction));
             State nextState = GetState(pl, en, map);
-            Transition trans(currState, std::get<0>(selectedAction), nextState, reward, std::get<1>(selectedAction));
+            Transition trans(currState, std::get<0>(selectedAction), nextState,
+                             reward, std::get<1>(selectedAction));
             AddExperience(trans);
             selectedAction = policyNet.SelectAction(pl, en, map, nextState, epsilon);
             reward = en.TakeAction(std::get<0>(selectedAction));
             State nextNextState = GetState(pl, en, map);
-            Transition trans1(nextState, std::get<0>(selectedAction), nextNextState, reward, std::get<1>(selectedAction));
+            Transition trans1(nextState, std::get<0>(selectedAction), nextNextState,
+                              reward, std::get<1>(selectedAction));
             AddExperience(trans1);
             OptimizeDQN(map);
             if (epsilon - epsilonDecay > 0)
                 epsilon -= epsilonDecay;
         }
-        //auto target_net_dict = targetNet.state_dict();
-        //for (auto [key, val] : target_net_disct){
-        //    target_net_dict = policyNet.state_dict()[key] * updateRate + (val * (1 - updateRate));
-        //}
-        //targetNet.load_state_dict(target_net_dict);
+        // auto target_net_dict = targetNet.state_dict();
+        // for (auto [key, val] : target_net_disct){
+        //     target_net_dict = policyNet.state_dict()[key] * updateRate + (val * (1
+        //     - updateRate));
+        // }
+        // targetNet.load_state_dict(target_net_dict);
     }
     SaveMemoryAsBinary();
     policyNet.SaveModel();
 }
 
-State RlManager::GetState(Player &pl, Player &en, Map &map) {
+State RlManager::GetState(Player &pl, Player &en, Map &map)
+{
     State state;
     state.playerGold = pl.gold;
     state.playerFood.x = pl.food.x;
@@ -150,7 +162,8 @@ State RlManager::GetState(Player &pl, Player &en, Map &map) {
     return state;
 }
 
-void RlManager::AddExperience(Transition trans) {
+void RlManager::AddExperience(Transition trans)
+{
     if (memory.size() >= memory_size)
     {
         memory.pop_front();
@@ -158,7 +171,8 @@ void RlManager::AddExperience(Transition trans) {
     memory.push_back(trans);
 }
 
-void RlManager::SaveMemory() {
+void RlManager::SaveMemory()
+{
     std::string data_to_save = "";
     for (int i = 0; i < memory.size(); i++)
     {
@@ -170,7 +184,8 @@ void RlManager::SaveMemory() {
     file.close();
 }
 
-void RlManager::LoadMemory() {
+void RlManager::LoadMemory()
+{
     std::ifstream file(memory_file);
     std::vector<std::string> lines;
     std::string line;
@@ -190,7 +205,8 @@ void RlManager::LoadMemory() {
     file.close();
 }
 
-void RlManager::SaveMemoryAsBinary() {
+void RlManager::SaveMemoryAsBinary()
+{
     std::vector<binary> data_to_save;
     std::ofstream file;
     file.open(memory_file_binary, std::ios::binary);
@@ -198,13 +214,15 @@ void RlManager::SaveMemoryAsBinary() {
     for (int i = 0; i < memory.size(); i++)
     {
         std::vector<binary> data = memory[i].SerializeBinary();
-        file.write(reinterpret_cast<char *>(data.data()), data.size() * sizeof(binary));
+        file.write(reinterpret_cast<char *>(data.data()),
+                   data.size() * sizeof(binary));
     }
 
     file.close();
 }
 // 0-11 first bytes,
-void RlManager::LoadMemoryAsBinary() {
+void RlManager::LoadMemoryAsBinary()
+{
     std::ifstream file(memory_file_binary, std::ios::binary);
     std::vector<binary> binaryData;
     int expectedBytes = 0;

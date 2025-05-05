@@ -10,20 +10,23 @@
 // #include <chrono>
 
 Transition::Transition(State s, actionT act, State n, int index, float r)
-    : state(s, act), nextState(n), action(act), actionIndex(index), reward(r) {
+    : state(s, act), nextState(n), action(act), actionIndex(index), reward(r)
+{
 }
 
-Transition::Transition() {
+Transition::Transition()
+{
 }
 
-std::string Transition::Serialize() {
+std::string Transition::Serialize()
+{
     std::string result;
     result += std::to_string(state.playerGold) + ",";
     result += std::to_string(state.playerFood.x) + "," +
               std::to_string(state.playerFood.y) + ",";
     result += std::to_string(state.enemyGold) + ",";
-    result +=
-        std::to_string(state.enemyFood.x) + "," + std::to_string(state.enemyFood.y) + ",";
+    result += std::to_string(state.enemyFood.x) + "," +
+              std::to_string(state.enemyFood.y) + ",";
     result += std::to_string(nextState.playerGold) + ",";
     result += std::to_string(nextState.playerFood.x) + "," +
               std::to_string(nextState.playerFood.y) + ",";
@@ -70,7 +73,8 @@ std::string Transition::Serialize() {
     return result;
 }
 
-Transition Transition::Deserialize(std::string &trans) {
+Transition Transition::Deserialize(std::string &trans)
+{
     std::string current = "";
     int count = 0;
     Transition a;
@@ -170,7 +174,8 @@ Transition Transition::Deserialize(std::string &trans) {
     return a;
 }
 
-std::vector<binary> Transition::SerializeBinary() {
+std::vector<binary> Transition::SerializeBinary()
+{
     std::vector<binary> binary_data;
     int puSize = state.playerUnits.size();
     int psSize = state.playerStructs.size();
@@ -180,8 +185,9 @@ std::vector<binary> Transition::SerializeBinary() {
     int npsSize = nextState.playerStructs.size();
     int neuSize = nextState.enemyUnits.size();
     int nesSize = nextState.enemyStructs.size();
-    int byte_number = 22 + (puSize * 5) + (psSize * 4) + (euSize * 5) + (esSize * 4) +
-                      (npuSize * 5) + (npsSize * 4) + (neuSize * 5) + (nesSize * 4);
+    int byte_number = 22 + (puSize * 5) + (psSize * 4) + (euSize * 5) +
+                      (esSize * 4) + (npuSize * 5) + (npsSize * 4) + (neuSize * 5) +
+                      (nesSize * 4);
 
     binary_data.push_back(byte_number);
     binary_data.push_back(state.playerGold);
@@ -261,13 +267,15 @@ std::vector<binary> Transition::SerializeBinary() {
             std::deque<binary> actionData = act.SerializeBinary();
             binary_data[0] =
                 static_cast<int>(std::get<int>(binary_data[0]) + actionData.size());
-            binary_data.insert(binary_data.end(), actionData.begin(), actionData.end());
+            binary_data.insert(binary_data.end(), actionData.begin(),
+                               actionData.end());
         },
         action);
 
     return binary_data;
 }
-Transition Transition::DeserializeBinary(std::vector<binary> &bin) {
+Transition Transition::DeserializeBinary(std::vector<binary> &bin)
+{
     State state;
     State nextState;
 
@@ -358,7 +366,8 @@ Transition Transition::DeserializeBinary(std::vector<binary> &bin) {
     return trans;
 }
 
-actionT Transition::GetAction(std::span<binary> bin) {
+actionT Transition::GetAction(std::span<binary> bin)
+{
     int actionType = std::get<int>(bin[0]);
     auto start = bin.begin() + 1;
     switch (actionType)
@@ -421,7 +430,8 @@ actionT Transition::GetAction(std::span<binary> bin) {
     }
 }
 
-Unit *Transition::GetUnit(std::span<binary> bin) {
+Unit *Transition::GetUnit(std::span<binary> bin)
+{
     UnitType type = static_cast<UnitType>(std::get<int>(bin[0]));
     float health = std::get<float>(bin[1]);
     float mana = std::get<float>(bin[2]);
@@ -441,7 +451,8 @@ Unit *Transition::GetUnit(std::span<binary> bin) {
     return un;
 }
 
-Structure *Transition::GetStructure(std::span<binary> bin) {
+Structure *Transition::GetStructure(std::span<binary> bin)
+{
     StructureType type = static_cast<StructureType>(std::get<int>(bin[0]));
     float health = std::get<float>(bin[1]);
     int x = std::get<int>(bin[2]);
@@ -466,10 +477,12 @@ Structure *Transition::GetStructure(std::span<binary> bin) {
     return str;
 }
 
-State::State() {
+State::State()
+{
 }
 
-State::State(const State &s) {
+State::State(const State &s)
+{
     enemyFood = s.enemyFood;
     enemyGold = s.enemyGold;
     playerFood = s.playerFood;
@@ -482,14 +495,16 @@ State::State(const State &s) {
     playerStructs = s.playerStructs;
 }
 
-State::State(const State &s, actionT a) : State(s) {
+State::State(const State &s, actionT a) : State(s)
+{
     action = a;
 }
 
 // MEMORY LEAK HAPPENS WITHOUT THIS FROM THE TESTING FRAMEWORK
 // AND IF THIS IS INCLUDED SEG FAULT
 //
-State::~State() {
+State::~State()
+{
     //    for (int i = 0; i < playerUnits.size(); i++)
     //        delete playerUnits[i];
     //    for (int i = 0; i < enemyUnits.size(); i++)

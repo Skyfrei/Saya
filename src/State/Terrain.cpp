@@ -1,7 +1,8 @@
 #include "Terrain.h"
 #include "../Race/Unit/Unit.h"
 
-bool Terrain::ExistsInTerrain(Living &l) {
+bool Terrain::ExistsInTerrain(Living &l)
+{
     for (int i = 0; i < onTerrainLiving.size(); i++)
     {
         if (onTerrainLiving[i] == &l)
@@ -11,7 +12,8 @@ bool Terrain::ExistsInTerrain(Living &l) {
     }
     return false;
 }
-bool Terrain::operator==(const Terrain &other) const {
+bool Terrain::operator==(const Terrain &other) const
+{
     if (other.resourceLeft != resourceLeft ||
         structureOnTerrain != other.structureOnTerrain ||
         other.onTerrainLiving.size() != onTerrainLiving.size())

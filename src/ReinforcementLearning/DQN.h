@@ -7,7 +7,6 @@
 #include <torch/torch.h>
 #include <tuple>
 
-
 #include "../Race/Unit/Unit.h"
 #include "../State/Player.h"
 #include "../Tools/Vec2.h"
@@ -27,7 +26,7 @@ class DQN : public torch::nn::Module
     torch::Tensor Forward(torch::Tensor x);
     void Initialize(Player &pl, Player &en, Map &map, State &s);
     std::tuple<actionT, int> SelectAction(Player &pl, Player &en, Map &map, State &s,
-                         float epsilon); // gotta return an
+                                          float epsilon); // gotta return an
     actionT SelectAction(State &state, Map &map, float epsilon);
     actionT MapIndexToAction(State &state, int actionIndex);
     int GetRandomOutputIndex();
@@ -37,10 +36,9 @@ class DQN : public torch::nn::Module
     void SaveModel();
     void LoadModel();
 
-
   private:
     actionT MapIndexToAction(Player &pl, Player &en, int actionIndex);
-    
+
   public:
     int episodeNumber = 50;
     int stepsDone = 0;

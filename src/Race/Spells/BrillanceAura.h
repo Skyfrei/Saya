@@ -13,17 +13,21 @@
 class BrillanceAura : public Spell
 {
   public:
-    BrillanceAura() {
+    BrillanceAura()
+    {
         name = "BrillanceAura";
         type = PASSIVE;
     }
 
   public:
-    void GetDescription() override {
+    void GetDescription() override
+    {
     }
-    void ProcEffect() override {
+    void ProcEffect() override
+    {
     }
-    void ManaRegen(Unit &unit) {
+    void ManaRegen(Unit &unit)
+    {
         unit.mana += manaRegen;
     }
 
