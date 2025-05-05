@@ -4,7 +4,6 @@
 #include <fstream>
 #include <random>
 #include <tuple>
-
 #include "Reward.h"
 
 RlManager::RlManager() {
@@ -70,7 +69,10 @@ void RlManager::OptimizeDQN(Map& map){
 
     auto criterion = torch::nn::SmoothL1Loss();
     auto loss = criterion(q_values, q_next_values);
+    
+    std::ofstream file("experiment_loss.txt", std::ios::app);
     std::cout << "Loss: " << loss.item<float>() << std::endl;
+    file << loss.item<float>() << "\n";
     optimizer.zero_grad();
     loss.backward();
     torch::nn::utils::clip_grad_value_(policyNet.parameters(), 100);
@@ -90,10 +92,17 @@ void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
             State nextState = GetState(pl, en, map);
             Transition trans(currState, std::get<0>(selectedAction), nextState, reward, std::get<1>(selectedAction));
             AddExperience(trans);
+            selectedAction = policyNet.SelectAction(pl, en, map, nextState, epsilon);
+            reward = en.TakeAction(std::get<0>(selectedAction));
+            State nextNextState = GetState(pl, en, map);
+            Transition trans1(nextState, std::get<0>(selectedAction), nextNextState, reward, std::get<1>(selectedAction));
+            AddExperience(trans1);
             OptimizeDQN(map);
             if (epsilon - epsilonDecay > 0)
                 epsilon -= epsilonDecay;
         }
+
+        break;
         //auto target_net_dict = targetNet.state_dict();
         //for (auto [key, val] : target_net_disct){
         //    target_net_dict = policyNet.state_dict()[key] * updateRate + (val * (1 - updateRate));
