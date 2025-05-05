@@ -81,12 +81,23 @@ void RlManager::OptimizeDQN(Map& map){
 
 void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
     float updateRate = 0.005;
+    State currState = GetState(pl, en, map);
     for (int i = 0; i < episodeNumber; i++)
-    {
-        State currState = GetState(pl, en, map);
-        // We want some kind of reset here for the environment
+    {             
         for (int j = 0; j < 1000; j++)
         {
+            if(!((pl.HasUnit(PEASANT) && pl.HasStructure(HALL)) && (en.HasUnit(PEASANT) && en.HasStructure(HALL)))){
+                [&](){
+                    pl.units.clear();
+                    pl.structures.clear();
+                    en.units.clear();
+                    en.structures.clear();
+                    pl.Initialize();
+                    en.Initialize();
+                }();
+                std::cout<<"End state reached";
+                break;
+            }
             auto selectedAction = policyNet.SelectAction(pl, en, map, currState, epsilon);
             float reward = pl.TakeAction(std::get<0>(selectedAction));
             State nextState = GetState(pl, en, map);
@@ -101,8 +112,6 @@ void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
             if (epsilon - epsilonDecay > 0)
                 epsilon -= epsilonDecay;
         }
-
-        break;
         //auto target_net_dict = targetNet.state_dict();
         //for (auto [key, val] : target_net_disct){
         //    target_net_dict = policyNet.state_dict()[key] * updateRate + (val * (1 - updateRate));

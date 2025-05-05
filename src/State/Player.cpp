@@ -40,6 +40,8 @@ Player::Player(const Player &other) : map(other.map) {
     // side = other.side;
 }
 Player::~Player() {
+    units.clear();
+    structures.clear();
 }
 float Player::TakeAction(actionT &act) {
     float reward = GetRewardFromAction(act);
@@ -110,6 +112,7 @@ void Player::Recruit(RecruitAction &action) {
     }
 }
 void Player::Initialize() {
+    gold = 300;
     structures.push_back(std::make_unique<TownHall>(Vec2(0, 0)));
     for (int i = 0; i < 5; i++)
     {
