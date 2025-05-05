@@ -11,8 +11,7 @@ class Unit;
 // rn
 struct RenderStruct
 {
-    RenderStruct()
-    {
+    RenderStruct() {
     }
     const char *text;
     Vec2 pos;

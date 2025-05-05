@@ -6,12 +6,10 @@
 #include <random>
 #include <tuple>
 
-RlManager::RlManager()
-{
+RlManager::RlManager() {
 }
 
-void RlManager::InitializeDQN(Player &pl, Player &en, Map &map)
-{
+void RlManager::InitializeDQN(Player &pl, Player &en, Map &map) {
     State s = GetState(pl, en, map);
     policyNet.Initialize(pl, en, map, s);
     targetNet.Initialize(pl, en, map, s);
@@ -27,8 +25,7 @@ void RlManager::InitializeDQN(Player &pl, Player &en, Map &map)
     targetNet.to(device);
 }
 
-void RlManager::OptimizeDQN(Map &map)
-{
+void RlManager::OptimizeDQN(Map &map) {
     int batch_size = 512;
     torch::optim::AdamW optimizer(
         policyNet.parameters(), torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
@@ -83,38 +80,55 @@ void RlManager::OptimizeDQN(Map &map)
     optimizer.step();
 }
 
-void RlManager::TrainDQN(Player &pl, Player &en, Map &map)
-{
+bool RlManager::ResetEnvironment(Player &pl, Player &en, Map &map, float &reward) {
+    if (!(pl.HasUnit(PEASANT) && pl.HasStructure(HALL))){
+        pl.units.clear();
+        pl.structures.clear();
+        en.units.clear();
+        en.structures.clear();
+        pl.Initialize();
+        en.Initialize();
+        reward = reward - 1.0f;
+        std::cout << "End state reached";
+
+        return true;
+    }else if (!(en.HasUnit(PEASANT) && en.HasStructure(HALL))){
+        pl.units.clear();
+        pl.structures.clear();
+        en.units.clear();
+        en.structures.clear();
+        pl.Initialize();
+        en.Initialize();
+        reward = reward + 1.0f;
+        std::cout << "End state reached";
+
+        return true;
+    }
+    return false;
+}
+
+void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
     float updateRate = 0.005;
     State currState = GetState(pl, en, map);
     for (int i = 0; i < episodeNumber; i++)
     {
         for (int j = 0; j < 1000; j++)
         {
-            if (!((pl.HasUnit(PEASANT) && pl.HasStructure(HALL)) &&
-                  (en.HasUnit(PEASANT) && en.HasStructure(HALL))))
-            {
-                [&]() {
-                    pl.units.clear();
-                    pl.structures.clear();
-                    en.units.clear();
-                    en.structures.clear();
-                    pl.Initialize();
-                    en.Initialize();
-                }();
-                std::cout << "End state reached";
-                break;
-            }
+
             auto selectedAction =
                 policyNet.SelectAction(pl, en, map, currState, epsilon);
             float reward = pl.TakeAction(std::get<0>(selectedAction));
             State nextState = GetState(pl, en, map);
+            if (ResetEnvironment(pl, en, map, reward))
+                break;
             Transition trans(currState, std::get<0>(selectedAction), nextState,
                              reward, std::get<1>(selectedAction));
             AddExperience(trans);
             selectedAction = policyNet.SelectAction(pl, en, map, nextState, epsilon);
             reward = en.TakeAction(std::get<0>(selectedAction));
             State nextNextState = GetState(pl, en, map);
+            if (ResetEnvironment(pl, en, map, reward))
+                break;
             Transition trans1(nextState, std::get<0>(selectedAction), nextNextState,
                               reward, std::get<1>(selectedAction));
             AddExperience(trans1);
@@ -133,8 +147,7 @@ void RlManager::TrainDQN(Player &pl, Player &en, Map &map)
     policyNet.SaveModel();
 }
 
-State RlManager::GetState(Player &pl, Player &en, Map &map)
-{
+State RlManager::GetState(Player &pl, Player &en, Map &map) {
     State state;
     state.playerGold = pl.gold;
     state.playerFood.x = pl.food.x;
@@ -162,8 +175,7 @@ State RlManager::GetState(Player &pl, Player &en, Map &map)
     return state;
 }
 
-void RlManager::AddExperience(Transition trans)
-{
+void RlManager::AddExperience(Transition trans) {
     if (memory.size() >= memory_size)
     {
         memory.pop_front();
@@ -171,8 +183,7 @@ void RlManager::AddExperience(Transition trans)
     memory.push_back(trans);
 }
 
-void RlManager::SaveMemory()
-{
+void RlManager::SaveMemory() {
     std::string data_to_save = "";
     for (int i = 0; i < memory.size(); i++)
     {
@@ -184,8 +195,7 @@ void RlManager::SaveMemory()
     file.close();
 }
 
-void RlManager::LoadMemory()
-{
+void RlManager::LoadMemory() {
     std::ifstream file(memory_file);
     std::vector<std::string> lines;
     std::string line;
@@ -205,8 +215,7 @@ void RlManager::LoadMemory()
     file.close();
 }
 
-void RlManager::SaveMemoryAsBinary()
-{
+void RlManager::SaveMemoryAsBinary() {
     std::vector<binary> data_to_save;
     std::ofstream file;
     file.open(memory_file_binary, std::ios::binary);
@@ -221,8 +230,7 @@ void RlManager::SaveMemoryAsBinary()
     file.close();
 }
 // 0-11 first bytes,
-void RlManager::LoadMemoryAsBinary()
-{
+void RlManager::LoadMemoryAsBinary() {
     std::ifstream file(memory_file_binary, std::ios::binary);
     std::vector<binary> binaryData;
     int expectedBytes = 0;

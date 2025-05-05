@@ -15,12 +15,10 @@ class Peasant : public Unit
   public:
     void Build(Structure *);
     void FarmGold(Terrain &terr, TownHall &hall, int &g);
-    std::string GetDescription() override
-    {
+    std::string GetDescription() override {
         return "Slave.";
     }
-    Unit *Clone() const override
-    {
+    Unit *Clone() const override {
         return new Peasant(*this);
     }
 

@@ -1,7 +1,6 @@
 #include "Reward.h"
 
-float GetRewardFromAction(actionT &action)
-{
+float GetRewardFromAction(actionT &action) {
     float reward = 0.0f;
     if (std::holds_alternative<MoveAction>(action))
     {
@@ -37,7 +36,6 @@ float GetRewardFromAction(actionT &action)
 }
 
 float CalculateReward(const State &currentState, const actionT &action,
-                      const State &nextState)
-{
+                      const State &nextState) {
     return 0.0f;
 }

@@ -18,13 +18,11 @@
 #include "../ReinforcementLearning/Reward.h"
 #include "../State/Terrain.h"
 
-Player::Player(Map &m, Side en) : map(m), side(en)
-{
+Player::Player(Map &m, Side en) : map(m), side(en) {
     Initialize();
     food.y = 10;
 }
-Player::Player(const Player &other) : map(other.map)
-{
+Player::Player(const Player &other) : map(other.map) {
     gold = other.gold;
     food = other.food;
 
@@ -41,13 +39,11 @@ Player::Player(const Player &other) : map(other.map)
 
     // side = other.side;
 }
-Player::~Player()
-{
+Player::~Player() {
     units.clear();
     structures.clear();
 }
-float Player::TakeAction(actionT &act)
-{
+float Player::TakeAction(actionT &act) {
     float reward = GetRewardFromAction(act);
     if (std::holds_alternative<MoveAction>(act))
     {
@@ -76,16 +72,13 @@ float Player::TakeAction(actionT &act)
     }
     return reward;
 }
-void Player::Move(MoveAction &action)
-{
+void Player::Move(MoveAction &action) {
     action.unit->InsertAction(action);
 }
-void Player::Attack(AttackAction &action)
-{
+void Player::Attack(AttackAction &action) {
     action.unit->InsertAction(action);
 }
-void Player::Build(BuildAction &action)
-{
+void Player::Build(BuildAction &action) {
     Terrain &ter = map.GetTerrainAtCoordinate(action.coordinate);
     if (ter.structureOnTerrain == nullptr && ter.resourceLeft == 0)
     {
@@ -103,12 +96,10 @@ void Player::Build(BuildAction &action)
         }
     }
 }
-void Player::FarmGold(FarmGoldAction &action)
-{
+void Player::FarmGold(FarmGoldAction &action) {
     action.peasant->InsertAction(action);
 }
-void Player::Recruit(RecruitAction &action)
-{
+void Player::Recruit(RecruitAction &action) {
     if (action.stru != nullptr && action.stru->is == BARRACK)
     {
         std::unique_ptr<Unit> un = ChooseToRecruit(action.unitType);
@@ -121,8 +112,7 @@ void Player::Recruit(RecruitAction &action)
         }
     }
 }
-void Player::Initialize()
-{
+void Player::Initialize() {
     gold = 300;
     structures.push_back(std::make_unique<TownHall>(Vec2(0, 0)));
     for (int i = 0; i < 5; i++)
@@ -131,8 +121,7 @@ void Player::Initialize()
         units[i]->coordinate = structures[0]->coordinate;
     }
 }
-void Player::SetInitialCoordinates(Vec2 v)
-{
+void Player::SetInitialCoordinates(Vec2 v) {
     for (auto &structure : structures)
     {
         structure->coordinate = v;
@@ -144,14 +133,12 @@ void Player::SetInitialCoordinates(Vec2 v)
         map.AddOwnership(unit.get());
     }
 }
-std::vector<std::unique_ptr<Unit>> Player::SelectUnits()
-{
+std::vector<std::unique_ptr<Unit>> Player::SelectUnits() {
     std::vector<std::unique_ptr<Unit>> result;
     return result;
 }
 
-bool Player::HasStructure(StructureType structType)
-{
+bool Player::HasStructure(StructureType structType) {
     for (const auto &structure : structures)
     {
         if (structure->is == structType)
@@ -162,8 +149,7 @@ bool Player::HasStructure(StructureType structType)
     return false;
 }
 
-bool Player::HasUnit(UnitType unitType)
-{
+bool Player::HasUnit(UnitType unitType) {
     for (const auto &unit : units)
     {
         if (unit->is == unitType)
@@ -176,8 +162,7 @@ bool Player::HasUnit(UnitType unitType)
 
 // std::vect<Living> &Player::Select() {}
 
-Structure &Player::FindClosestStructure(Unit &unit, StructureType type)
-{
+Structure &Player::FindClosestStructure(Unit &unit, StructureType type) {
     double min = 100;
     int8_t index = 0;
 
@@ -198,8 +183,7 @@ Structure &Player::FindClosestStructure(Unit &unit, StructureType type)
     return *structures[index];
 }
 
-void Player::ValidateFood()
-{
+void Player::ValidateFood() {
     food.x = 0;
     food.y = 0;
 
@@ -214,14 +198,12 @@ void Player::ValidateFood()
     }
 }
 
-void Player::UpdateGold(int g)
-{
+void Player::UpdateGold(int g) {
     gold += g;
 }
 
 std::unique_ptr<Structure> Player::ChooseToBuild(StructureType structType,
-                                                 Vec2 &coord)
-{
+                                                 Vec2 &coord) {
     std::unique_ptr<Structure> str;
     switch (structType)
     {
@@ -243,8 +225,7 @@ std::unique_ptr<Structure> Player::ChooseToBuild(StructureType structType,
     return str;
 }
 
-std::unique_ptr<Unit> Player::ChooseToRecruit(UnitType unitType)
-{
+std::unique_ptr<Unit> Player::ChooseToRecruit(UnitType unitType) {
     std::unique_ptr<Unit> unt;
     switch (unitType)
     {

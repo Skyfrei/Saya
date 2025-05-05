@@ -4,18 +4,15 @@
 #include "Peasant.h"
 #include <iostream>
 
-Unit::Unit()
-{
+Unit::Unit() {
 }
-bool Unit::operator==(const Unit &other) const
-{
+bool Unit::operator==(const Unit &other) const {
     if (other.coordinate == coordinate && other.health == health && other.is == is)
         return false;
     return true;
 }
 
-std::string Unit::Serialize()
-{
+std::string Unit::Serialize() {
     std::string result;
     int type = static_cast<int>(is);
     int x = coordinate.x;
@@ -30,8 +27,7 @@ std::string Unit::Serialize()
 //
 // }
 
-std::vector<binary> Unit::SerializeBinary()
-{
+std::vector<binary> Unit::SerializeBinary() {
     std::vector<binary> result;
     result.resize(5);
 
@@ -49,24 +45,20 @@ std::vector<binary> Unit::SerializeBinary()
 //
 // }
 
-void Unit::InsertAction(actionT v)
-{
+void Unit::InsertAction(actionT v) {
     if (std::find(actionQueue.begin(), actionQueue.end(), v) == actionQueue.end())
     {
         actionQueue.push_back(v);
     }
 }
-void Unit::ResetActions()
-{
+void Unit::ResetActions() {
     actionQueue.erase(actionQueue.begin(), actionQueue.end());
 }
-bool Unit::HasCommand()
-{
+bool Unit::HasCommand() {
     return actionQueue.size() > 0;
 }
 
-actionT Unit::TakeAction()
-{
+actionT Unit::TakeAction() {
     if (!HasCommand())
         return {};
 
@@ -123,13 +115,11 @@ actionT Unit::TakeAction()
     }
     return {};
 }
-int Unit::GetActionQueueSize()
-{
+int Unit::GetActionQueueSize() {
     return actionQueue.size();
 }
 
-void Unit::Move(Vec2 terr)
-{
+void Unit::Move(Vec2 terr) {
     if (!IsMovable())
     {
         return;
@@ -156,8 +146,7 @@ void Unit::Move(Vec2 terr)
         ChangeCoordinate(S);
 }
 
-bool Unit::WithinDistance(Vec2 terr)
-{
+bool Unit::WithinDistance(Vec2 terr) {
     Vec2 difference = FindDifference(terr);
 
     if (std::abs(difference.x) <= 1 && std::abs(difference.y) <= 1)
@@ -166,8 +155,7 @@ bool Unit::WithinDistance(Vec2 terr)
     return false;
 }
 
-Vec2 Unit::FindDifference(Vec2 terr)
-{
+Vec2 Unit::FindDifference(Vec2 terr) {
     Vec2 difference;
     difference.x = coordinate.x - terr.x;
     difference.y = coordinate.y - terr.y;
@@ -175,8 +163,7 @@ Vec2 Unit::FindDifference(Vec2 terr)
     return difference;
 }
 
-void Unit::Attack(Living &un)
-{
+void Unit::Attack(Living &un) {
     if (WithinDistance(un.coordinate))
     {
         if (CanAttack())
@@ -191,8 +178,7 @@ void Unit::Attack(Living &un)
         Move(un.coordinate);
 }
 
-bool Unit::CanAttack()
-{
+bool Unit::CanAttack() {
     auto currentCd = std::chrono::duration_cast<std::chrono::milliseconds>(
         high_resolution_clock::now() - attackTime);
     if (currentCd >= attackCooldown)
@@ -204,8 +190,7 @@ bool Unit::CanAttack()
     return false;
 }
 
-bool Unit::IsMovable()
-{
+bool Unit::IsMovable() {
     auto currentCd = std::chrono::duration_cast<std::chrono::milliseconds>(
         high_resolution_clock::now() - moveTime);
 
@@ -217,8 +202,7 @@ bool Unit::IsMovable()
     return false;
 }
 
-void Unit::RegenHealth()
-{
+void Unit::RegenHealth() {
     auto currentCd = std::chrono::duration_cast<std::chrono::milliseconds>(
         high_resolution_clock::now() - hpTime);
 
@@ -231,8 +215,7 @@ void Unit::RegenHealth()
     }
 }
 
-void Unit::ChangeCoordinate(MoveType dir)
-{
+void Unit::ChangeCoordinate(MoveType dir) {
     switch (dir)
     {
     case W:

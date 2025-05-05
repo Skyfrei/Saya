@@ -1,7 +1,6 @@
 #include "Footman.h"
 
-Footman::Footman()
-{
+Footman::Footman() {
     health = 420;
     maxHealth = health;
     attack = 12.5;
@@ -13,8 +12,7 @@ Footman::Footman()
     is = FOOTMAN;
 }
 
-Footman::Footman(Vec2 coord, float hp, float man)
-{
+Footman::Footman(Vec2 coord, float hp, float man) {
     maxHealth = 420;
     attack = 12.5;
     goldCost = 135;
@@ -27,12 +25,10 @@ Footman::Footman(Vec2 coord, float hp, float man)
     is = FOOTMAN;
 }
 
-std::string Footman::GetDescription()
-{
+std::string Footman::GetDescription() {
     return "Footman.";
 }
 
-Unit *Footman::Clone() const
-{
+Unit *Footman::Clone() const {
     return new Footman(*this);
 }

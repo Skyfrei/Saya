@@ -3,8 +3,7 @@
 #include "Window.h"
 #include <iostream>
 
-int main()
-{
+int main() {
     //    std::vector<Living*> zoom;
     //    Window win(Vec2(1000, 1000));
     //    int a;

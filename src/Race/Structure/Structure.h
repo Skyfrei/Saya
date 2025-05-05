@@ -11,8 +11,7 @@
 class Structure : public Living
 {
   public:
-    Structure()
-    {
+    Structure() {
     }
     virtual Structure *Clone() const = 0;
     virtual void FinishBuilding() = 0;

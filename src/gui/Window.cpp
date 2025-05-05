@@ -3,8 +3,7 @@
 #include "../Tools/Macro.h"
 #include <iostream>
 
-Window::Window(Vec2 s) : window_size(s)
-{
+Window::Window(Vec2 s) : window_size(s) {
     canvas_start = Vec2(win_start_x * 4, win_start_y * 4);
     canvas_size_x = algo_start_x - win_start_x - canvas_start.x;
     canvas_size_y = window_size.y - canvas_start.y;
@@ -21,8 +20,7 @@ Window::Window(Vec2 s) : window_size(s)
     SDL_AppResult result = InitSdl();
 }
 
-SDL_AppResult Window::InitSdl()
-{
+SDL_AppResult Window::InitSdl() {
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
         SDL_Log("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
@@ -56,8 +54,7 @@ SDL_AppResult Window::InitSdl()
     }
     return SDL_APP_CONTINUE;
 }
-void Window::RenderUI()
-{
+void Window::RenderUI() {
 
     SDL_SetRenderScale(renderer, scale, scale);
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
@@ -76,8 +73,7 @@ void Window::RenderUI()
     SDL_RenderFillRect(renderer, &vertical_line);
 }
 
-void Window::RenderMoves(std::string &dqn_action, std::string &ppo_action)
-{
+void Window::RenderMoves(std::string &dqn_action, std::string &ppo_action) {
     SDL_FRect dst;
     SDL_Color color = {255, 255, 255, SDL_ALPHA_OPAQUE};
     text = TTF_RenderText_Blended_Wrapped(font, dqn_action.data(),
@@ -118,8 +114,7 @@ void Window::RenderMoves(std::string &dqn_action, std::string &ppo_action)
 }
 
 void Window::RenderMap(std::vector<Unit *> &game_objects,
-                       std::vector<Unit *> &game_objects2)
-{
+                       std::vector<Unit *> &game_objects2) {
     float ratiox = canvas_size_x / MAP_SIZE;
     float ratioy = canvas_size_y / MAP_SIZE;
     SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
@@ -146,8 +141,7 @@ void Window::RenderMap(std::vector<Unit *> &game_objects,
 
 SDL_AppResult Window::Render(std::vector<Unit *> &game_objects,
                              std::vector<Unit *> &game_objects2,
-                             std::string &dqn_action, std::string &ppo_action)
-{
+                             std::string &dqn_action, std::string &ppo_action) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     RenderUI();
@@ -157,8 +151,7 @@ SDL_AppResult Window::Render(std::vector<Unit *> &game_objects,
     return SDL_APP_CONTINUE;
 }
 
-void Window::SDL_AppQuit()
-{
+void Window::SDL_AppQuit() {
     if (font)
         TTF_CloseFont(font);
 }

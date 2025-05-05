@@ -11,8 +11,7 @@ enum SpellType
 class Spell
 {
   public:
-    Spell()
-    {
+    Spell() {
     }
 
   public:

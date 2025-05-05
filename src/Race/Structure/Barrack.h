@@ -19,15 +19,12 @@ class Barrack : public Structure
     Barrack(Vec2 coord, float hp);
 
   public:
-    void FinishBuilding() override
-    {
+    void FinishBuilding() override {
     }
-    Structure *Clone() const override
-    {
+    Structure *Clone() const override {
         return new Barrack(*this);
     }
-    std::string GetDescription() override
-    {
+    std::string GetDescription() override {
         return "Recruit soldiers.";
     }
     void CreateUnit(std::vector<std::unique_ptr<Unit>> &units, int &playerGold,

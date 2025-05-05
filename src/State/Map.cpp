@@ -4,8 +4,7 @@
 #include "Terrain.h"
 #include <iostream>
 
-Map::Map()
-{
+Map::Map() {
     std::vector<Terrain> tempTerr;
     for (int i = 0; i < MAP_SIZE; i++)
     {
@@ -27,8 +26,7 @@ Map::Map()
     // graph = Graph(terrain);
 }
 
-bool Map::operator==(const Map &other) const
-{
+bool Map::operator==(const Map &other) const {
     for (int i = 0; i < terrain.size(); i++)
     {
         for (int j = 0; j < terrain.size(); j++)
@@ -41,13 +39,11 @@ bool Map::operator==(const Map &other) const
     }
     return true;
 }
-void Map::RemoveOwnership(Living *l, Vec2 v)
-{
+void Map::RemoveOwnership(Living *l, Vec2 v) {
     Terrain &terr = GetTerrainAtCoordinate(v);
     std::erase(terr.onTerrainLiving, l);
 }
-void Map::AddOwnership(Living *l)
-{
+void Map::AddOwnership(Living *l) {
     Terrain &terr = GetTerrainAtCoordinate(l->coordinate);
 
     if (auto s = dynamic_cast<Structure *>(l))
@@ -57,13 +53,11 @@ void Map::AddOwnership(Living *l)
     else
         terr.onTerrainLiving.push_back(l);
 }
-std::vector<Living *> Map::GetObjectsAtTerrain(Vec2 v)
-{
+std::vector<Living *> Map::GetObjectsAtTerrain(Vec2 v) {
     Terrain &t = GetTerrainAtCoordinate(v);
     return t.onTerrainLiving;
 }
-Terrain &Map::GetTerrainAtCoordinate(Vec2 v)
-{
+Terrain &Map::GetTerrainAtCoordinate(Vec2 v) {
     for (int i = 0; i < terrain.size(); i++)
     {
         for (int j = 0; j < terrain.size(); j++)
@@ -77,13 +71,11 @@ Terrain &Map::GetTerrainAtCoordinate(Vec2 v)
     return terrain[0][0];
 }
 
-std::vector<Node *> Map::GetAllNodes()
-{
+std::vector<Node *> Map::GetAllNodes() {
     return graph.GetAllGraphNodes();
 }
 
-std::vector<Node *> Map::GetClosestDestNode(Vec2 &coord, Vec2 &dest)
-{
+std::vector<Node *> Map::GetClosestDestNode(Vec2 &coord, Vec2 &dest) {
     std::vector<Node *> result;
     std::vector<Node *> q;
     std::map<Node *, int> dist;

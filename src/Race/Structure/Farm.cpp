@@ -1,6 +1,5 @@
 #include "Farm.h"
-Farm::Farm(Vec2 coord)
-{
+Farm::Farm(Vec2 coord) {
     health = 500;
     maxHealth = health;
     goldCost = 100;
@@ -9,8 +8,7 @@ Farm::Farm(Vec2 coord)
     coordinate = coord;
 }
 
-Farm::Farm(Vec2 coord, float hp)
-{
+Farm::Farm(Vec2 coord, float hp) {
     health = hp;
     maxHealth = 500;
     goldCost = 100;
@@ -19,19 +17,15 @@ Farm::Farm(Vec2 coord, float hp)
     coordinate = coord;
 }
 
-std::string Farm::GetDescription()
-{
+std::string Farm::GetDescription() {
     return "Get 6 food";
 }
-void Farm::FinishBuilding()
-{
+void Farm::FinishBuilding() {
 }
 
-Structure *Farm::Clone() const
-{
+Structure *Farm::Clone() const {
     return new Farm(*this);
 }
-int Farm::GetFood()
-{
+int Farm::GetFood() {
     return 5;
 }

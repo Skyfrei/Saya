@@ -8,8 +8,7 @@
 #include "Peasant.h"
 #include "Unit.h"
 
-std::string Action::Serialize()
-{
+std::string Action::Serialize() {
     int actionType = static_cast<int>(type);
     std::string result = std::to_string(actionType) + ",";
 
@@ -70,8 +69,7 @@ std::string Action::Serialize()
 //     return MoveAction(Vec2(4,5));
 // }
 
-std::deque<binary> Action::SerializeBinary()
-{
+std::deque<binary> Action::SerializeBinary() {
     std::deque<binary> result;
     int actionType = static_cast<int>(type);
     result.push_back(actionType);
@@ -143,113 +141,89 @@ std::deque<binary> Action::SerializeBinary()
     return result;
 }
 
-MoveAction::MoveAction()
-{
+MoveAction::MoveAction() {
     type = MOVE;
 }
-MoveAction::MoveAction(Vec2 c) : destCoord(c)
-{
+MoveAction::MoveAction(Vec2 c) : destCoord(c) {
     type = MOVE;
 }
-MoveAction::MoveAction(Unit *un, Vec2 c) : destCoord(c), unit(un)
-{
+MoveAction::MoveAction(Unit *un, Vec2 c) : destCoord(c), unit(un) {
     type = MOVE;
     prevCoord = un->coordinate;
 }
-AttackAction::AttackAction(Living *o) : object(o)
-{
+AttackAction::AttackAction(Living *o) : object(o) {
     type = ATTACK;
 }
-AttackAction::AttackAction(Unit *un, Living *o) : object(o), unit(un)
-{
+AttackAction::AttackAction(Unit *un, Living *o) : object(o), unit(un) {
     type = ATTACK;
 }
-BuildAction::BuildAction(Structure *s) : stru(s)
-{
+BuildAction::BuildAction(Structure *s) : stru(s) {
     type = BUILD;
 }
 BuildAction::BuildAction(Unit *p, StructureType s, Vec2 c)
-    : peasant(p), struType(s), coordinate(c)
-{
+    : peasant(p), struType(s), coordinate(c) {
     type = BUILD;
 }
 FarmGoldAction::FarmGoldAction(Vec2 v, Terrain *te, TownHall *t)
-    : destCoord(v), terr(te), hall(t)
-{
+    : destCoord(v), terr(te), hall(t) {
     type = FARMGOLD;
 }
-FarmGoldAction::FarmGoldAction(Unit *p, Vec2 v) : destCoord(v), peasant(p)
-{
+FarmGoldAction::FarmGoldAction(Unit *p, Vec2 v) : destCoord(v), peasant(p) {
     type = FARMGOLD;
 }
 FarmGoldAction::FarmGoldAction(Unit *p, Vec2 v, TownHall *h)
-    : peasant(p), destCoord(v), hall(h)
-{
+    : peasant(p), destCoord(v), hall(h) {
     type = FARMGOLD;
 }
 RecruitAction::RecruitAction(UnitType typeOfUnit, Structure *s)
-    : unitType(typeOfUnit), stru(s)
-{
+    : unitType(typeOfUnit), stru(s) {
     type = RECRUIT;
 }
-EmptyAction::EmptyAction()
-{
+EmptyAction::EmptyAction() {
     type = EMPTY;
 }
-bool MoveAction::operator==(const MoveAction &b) const
-{
+bool MoveAction::operator==(const MoveAction &b) const {
     if (destCoord.x == b.destCoord.x && destCoord.y == b.destCoord.y)
         return true;
     return false;
 }
-bool AttackAction::operator==(const AttackAction &b) const
-{
+bool AttackAction::operator==(const AttackAction &b) const {
     return object == b.object;
 }
-bool BuildAction::operator==(const BuildAction &b) const
-{
+bool BuildAction::operator==(const BuildAction &b) const {
     if (stru->coordinate.x == b.stru->coordinate.x &&
         stru->coordinate.y == b.stru->coordinate.y && stru->is == b.stru->is)
         return true;
     return false;
 }
-bool FarmGoldAction::operator==(const FarmGoldAction &a) const
-{
+bool FarmGoldAction::operator==(const FarmGoldAction &a) const {
     if (a.destCoord.x == destCoord.x && a.destCoord.y == destCoord.y)
         return true;
     return false;
 }
-bool RecruitAction::operator==(const RecruitAction &a) const
-{
+bool RecruitAction::operator==(const RecruitAction &a) const {
     if (stru == a.stru && unitType == a.unitType)
         return true;
     return false;
 }
-bool EmptyAction::operator==(const EmptyAction &a) const
-{
+bool EmptyAction::operator==(const EmptyAction &a) const {
     return true;
 }
-ActionType MoveAction::GetType()
-{
+ActionType MoveAction::GetType() {
     return type;
 }
-ActionType AttackAction::GetType()
-{
+ActionType AttackAction::GetType() {
     return type;
 }
-ActionType BuildAction::GetType()
-{
+ActionType BuildAction::GetType() {
     return type;
 }
-ActionType FarmGoldAction::GetType()
-{
+ActionType FarmGoldAction::GetType() {
     return type;
 }
-ActionType RecruitAction::GetType()
-{
+ActionType RecruitAction::GetType() {
     return type;
 }
-ActionType EmptyAction::GetType()
-{
+ActionType EmptyAction::GetType() {
     return type;
 }

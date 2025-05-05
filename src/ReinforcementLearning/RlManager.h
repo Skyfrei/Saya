@@ -32,6 +32,7 @@ class RlManager
     Transition CreateTransition(State s, actionT a, State rextS);
     State GetState(Player &pl, Player &en, Map &map);
     void OptimizeDQN(Map &map);
+    bool ResetEnvironment(Player &pl, Player &en, Map &map, float &reward);
 
   private:
     float gamma = 0.92f;

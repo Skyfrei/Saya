@@ -31,8 +31,7 @@
 class Archmage : public Hero
 {
   public:
-    Archmage()
-    {
+    Archmage() {
         health = 550;
         hpRegen = 1.15f;
         mana = 285;
@@ -57,12 +56,10 @@ class Archmage : public Hero
         is = ARCHMAGE;
     }
 
-    std::string GetDescription() override
-    {
+    std::string GetDescription() override {
         return "Archmage hero";
     }
-    Unit *Clone() const override
-    {
+    Unit *Clone() const override {
         return new Archmage(*this);
     }
 };

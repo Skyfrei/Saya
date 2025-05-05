@@ -11,8 +11,7 @@
 class Blizzard : public Spell
 {
   public:
-    Blizzard()
-    {
+    Blizzard() {
         cooldown = 6.0f;
         manaCost = 75;
         range = 80;
@@ -23,10 +22,8 @@ class Blizzard : public Spell
     }
 
   public:
-    void GetDescription() override
-    {
+    void GetDescription() override {
     }
-    void ProcEffect() override
-    {
+    void ProcEffect() override {
     }
 };

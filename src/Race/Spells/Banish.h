@@ -9,8 +9,7 @@
 class Banish : public Spell
 {
   public:
-    Banish()
-    {
+    Banish() {
         cooldown = 6.0f;
         manaCost = 75;
         range = 60;
@@ -21,11 +20,9 @@ class Banish : public Spell
     }
 
   public:
-    void GetDescription() override
-    {
+    void GetDescription() override {
     }
-    void ProcEffect() override
-    {
+    void ProcEffect() override {
     }
 
   public:

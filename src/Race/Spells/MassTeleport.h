@@ -12,8 +12,7 @@
 class MassTeleport : public Spell
 {
   public:
-    MassTeleport()
-    {
+    MassTeleport() {
         cooldown = 30.0f;
         manaCost = 100;
         range = 80;
@@ -24,11 +23,9 @@ class MassTeleport : public Spell
     }
 
   public:
-    virtual void GetDescription() override
-    {
+    virtual void GetDescription() override {
     }
-    void ProcEffect() override
-    {
+    void ProcEffect() override {
     }
 
   public:

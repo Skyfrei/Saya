@@ -3,12 +3,10 @@
 //
 #include "Living.h"
 
-bool Living::HasEnoughGold(int playerGold, int cost)
-{
+bool Living::HasEnoughGold(int playerGold, int cost) {
     return playerGold >= cost;
 }
 
-bool Living::IsDead()
-{
+bool Living::IsDead() {
     return health <= 0;
 }
