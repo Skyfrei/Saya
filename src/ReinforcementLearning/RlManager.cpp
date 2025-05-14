@@ -109,9 +109,10 @@ bool RlManager::ResetEnvironment(Player &pl, Player &en, Map &map, float &reward
 
 void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
     float updateRate = 0.005;
-    State currState = GetState(pl, en, map);
+
     for (int i = 0; i < episodeNumber; i++)
     {
+        State currState = GetState(pl, en, map);
         for (int j = 0; j < 1000; j++)
         {
 
@@ -127,7 +128,7 @@ void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
             selectedAction = policyNet.SelectAction(pl, en, map, nextState, epsilon);
             reward = en.TakeAction(std::get<0>(selectedAction));
             State nextNextState = GetState(pl, en, map);
-            if (ResetEnvironment(pl, en, map, reward))
+            if (ResetEnvironment(en, pl, map, reward)) // change order of pl, en to en, pl becasue en takes action here
                 break;
             Transition trans1(nextState, std::get<0>(selectedAction), nextNextState,
                               reward, std::get<1>(selectedAction));
