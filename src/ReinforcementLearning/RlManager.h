@@ -26,6 +26,10 @@ class RlManager
     std::deque<Transition> memory;
     DQN policyNet;
     DQN targetNet;
+    
+    std::deque<Transition> ppoMemory;
+    PPO ppoPolicy;
+    PPO ppoValue;
 
   private:
     State CreateCurrentState(Map &map, Player &player, Player &enemy);
@@ -35,7 +39,7 @@ class RlManager
     bool ResetEnvironment(Player &pl, Player &en, Map &map, float &reward);
 
   private:
-    float gamma = 0.92f;
+    float gamma = 0.94f;
     bool calledMemOnce = false;
     const int batchSize = 32;
     const int maxSize = 10000;

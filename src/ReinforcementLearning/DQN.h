@@ -11,13 +11,8 @@
 #include "../State/Player.h"
 #include "../Tools/Vec2.h"
 #include "Transition.h"
+#include "../Tools/Macro.h"
 
-#define MAX_UNITS 50 // 40
-#define MAX_STRUCTS 30
-#define PEASANT_INDEX_IN_UNITS 10
-#define HALL_INDEX_IN_STRCTS 5
-#define BARRACK_INDEX_IN_STRUCTS 5
-#define MAX_UNITS_TYPE 3
 
 class DQN : public torch::nn::Module
 {

@@ -2,5 +2,12 @@
 #define MACRO_H
 
 #define MAP_SIZE 100
+#define MAX_UNITS 50 // 40
+#define MAX_STRUCTS 30
+#define PEASANT_INDEX_IN_UNITS 10
+#define HALL_INDEX_IN_STRCTS 5
+#define BARRACK_INDEX_IN_STRUCTS 5
+#define MAX_UNITS_TYPE 3
+
 
 #endif
