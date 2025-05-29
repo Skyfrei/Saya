@@ -6,6 +6,7 @@
 #include <torch/nn.h>
 #include <torch/optim.h>
 #include <torch/torch.h>
+#include <string>
 
 
 class PPO : public torch::nn::Module{
@@ -17,6 +18,9 @@ class PPO : public torch::nn::Module{
     private:
         void QValue();
         void ActionValue();
+
+    private:
+        const std::string model_name = "ppo_model.pt";
         
 };
 #endif
