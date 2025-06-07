@@ -5,14 +5,16 @@
 #include <fstream>
 #include <random>
 #include <tuple>
+#include "Tensor.h"
+#include <algorithm>
 
 RlManager::RlManager() {
 }
 
 void RlManager::InitializeDQN(Player &pl, Player &en, Map &map) {
     State s = GetState(pl, en, map);
-    policyNet.Initialize(pl, en, map, s);
-    targetNet.Initialize(pl, en, map, s);
+    policyNet.Initialize(map, s);
+    targetNet.Initialize(map, s);
     torch::Device device(torch::kCPU);
 
     if (torch::cuda::is_available())
@@ -23,6 +25,22 @@ void RlManager::InitializeDQN(Player &pl, Player &en, Map &map) {
 
     policyNet.to(device);
     targetNet.to(device);
+}
+
+void RlManager::InitializePPO(Player &pl, Player &en, Map &map){
+    State s = GetState(pl, en, map);
+    ppoPolicy.Initialize(map, s);
+    ppoValue.Initialize(map, s);
+    torch::Device device(torch::kCPU);
+
+    if (torch::cuda::is_available())
+    {
+        device = torch::Device(torch::DeviceType::CUDA);
+        episodeNumber = 200;
+    }
+
+    ppoPolicy.to(device);
+    ppoValue.to(device);
 }
 
 void RlManager::OptimizeDQN(Map &map) {
@@ -105,6 +123,39 @@ bool RlManager::ResetEnvironment(Player &pl, Player &en, Map &map, float &reward
         return true;
     }
     return false;
+}
+void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
+    torch::optim::AdamW optimizer(
+        ppoPolicy.parameters(), torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
+
+    for (int i = 0; i < episodeNumber; i++){
+        State s = GetState(pl, en, map);
+        float A = 0.0f;
+        for (int step = 0; step < forwardSteps; step++){
+            TensorStruct input = TensorStruct(s, map);
+            at::Tensor actionIndex = std::get<1>(ppoPolicy.Forward(input.GetTensor()).max(1));
+            actionT action = ppoPolicy.MapIndexToAction(pl, en, actionIndex.item<int>());
+
+            A += std::pow(gamma, step) * pl.TakeAction(action);
+            s = GetState(pl, en, map);
+        }
+        // I gotta look difference between vlaue function and discounted reward
+        float ratio = 0.0f;
+        // ratio = policy / old_policy
+        float loss = std::min(ratio, std::clamp(ratio, 1.0f - ppoEpsilon, 1.0f + ppoEpsilon)) * A;
+                                                     
+    }                                                    
+
+//    auto criterion = torch::nn::SmoothL1Loss();
+//    auto loss = criterion(q_values, q_next_values);
+//
+//    std::ofstream file("experiment_loss_ppo.txt", std::ios::app);
+//    std::cout << "Loss: " << loss.item<float>() << std::endl;
+//    file << loss.item<float>() << "\n";
+//    optimizer.zero_grad();
+//    loss.backward();
+//    torch::nn::utils::clip_grad_value_(ppoPolicy.parameters(), 100);
+//    optimizer.step();
 }
 
 void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
@@ -281,8 +332,7 @@ void RlManager::LoadMemoryAsBinary() {
 //     return reward;
 // }
 
-// void RlManager::InitializePPO() {
-// }
+
 //
 // State RlManager::CreateCurrentState(Map &map, Player &player, Player &enemy)
 // {

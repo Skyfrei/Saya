@@ -12,6 +12,8 @@
 #include "../Tools/Vec2.h"
 #include "Transition.h"
 #include "../Tools/Macro.h"
+#include "../Tools/Enums.h"
+#include "Tensor.h"
 
 
 class DQN : public torch::nn::Module
@@ -19,7 +21,7 @@ class DQN : public torch::nn::Module
   public:
     DQN();
     torch::Tensor Forward(torch::Tensor x);
-    void Initialize(Player &pl, Player &en, Map &map, State &s);
+    void Initialize(Map &map, State &s);
     std::tuple<actionT, int> SelectAction(Player &pl, Player &en, Map &map, State &s,
                                           float epsilon); // gotta return an
     actionT SelectAction(State &state, Map &map, float epsilon);
@@ -45,28 +47,17 @@ class DQN : public torch::nn::Module
     const std::string memory_file = "dqn_memory.say";
     const std::string memory_file_binary = "binary.bay";
     const std::string model_file = "model.pt";
-};
 
-struct TensorStruct
-{
-    TensorStruct(State &state, Map &map);
-    torch::Tensor GetMapTensor(Map &map);
-    torch::Tensor GetVec(Vec2 food);
-    torch::Tensor GetUnitsTensor(std::vector<Unit *> &units);
-    torch::Tensor GetStructuresTensor(std::vector<Structure *> &structures);
-    torch::Tensor GetTensor();
-    const int unitVar = 8;
-    const int strucVar = 4;
-
-    torch::Tensor currentMap;
-    torch::Tensor playerGold;
-    torch::Tensor playerFood;
-    torch::Tensor playerUnits;
-    torch::Tensor playerStructs;
-    torch::Tensor enemyGold;
-    torch::Tensor enemyFood;
-    torch::Tensor enemyUnits;
-    torch::Tensor enemyStructs;
+    int mapSize = MAP_SIZE * MAP_SIZE;
+    int moveAction = MAP_SIZE * MAP_SIZE * MAX_UNITS;
+    int attackAction = moveAction + MAX_UNITS * (MAX_STRUCTS + MAX_UNITS);
+    int buildAction =
+        attackAction + PEASANT_INDEX_IN_UNITS * NR_OF_STRUCTS * MAP_SIZE * MAP_SIZE;
+    int farmAction =
+        buildAction + PEASANT_INDEX_IN_UNITS * mapSize *
+                          HALL_INDEX_IN_STRCTS; // town hall size multipled here as well
+    int recruitAction =
+        farmAction + 2 * NR_OF_UNITS * BARRACK_INDEX_IN_STRUCTS; // barrack size
 };
 
 #endif

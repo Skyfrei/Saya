@@ -4,6 +4,7 @@
 #include "../State/Map.h"
 #include "../State/Player.h"
 #include "DQN.h"
+#include "PPO.h"
 #include "Transition.h"
 #include <deque>
 
@@ -15,6 +16,7 @@ class RlManager
     void InitializePPO(Player &pl, Player &en, Map &map);
     double CalculateStateReward(State state);
     void TrainDQN(Player &pl, Player &en, Map &map);
+    void TrainPPO(Player &pl, Player &en, Map &map);
 
     void AddExperience(Transition trans);
     void SaveMemory();
@@ -39,15 +41,18 @@ class RlManager
     bool ResetEnvironment(Player &pl, Player &en, Map &map, float &reward);
 
   private:
-    float gamma = 0.94f;
-    bool calledMemOnce = false;
     const int batchSize = 32;
+    float gamma = 0.94f;
+    float epsilon = 0.9f;
+    bool calledMemOnce = false;
     const int maxSize = 10000;
     int memory_size = 100000;
+
     const std::string memory_file = "dqn_memory.say";
     const std::string memory_file_binary = "binary.bay";
-    float epsilon = 0.9f;
+    float ppoEpsilon = 0.9f;
     float epsilonDecay = 1e-3;
     int episodeNumber = 100;
+    int forwardSteps = 10;
 };
 #endif
