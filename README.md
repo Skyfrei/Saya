@@ -16,7 +16,7 @@ possible decisions to win the game.
 
 ## What has currently been implemented
 ### A DAMN UNIT TESTING FRAMEWORK
-- Game is fully finished and playable although not very interesting without graphics as its a real time strategy game.
+- Game finally playable and decided to put some graphis with sdl3 currently
 - Algorithm for reinforcement learning has been implemented
 - PyTorch has been sucessfully started running.
 - Currently changing the input of the game so it fits in my tensor model.
