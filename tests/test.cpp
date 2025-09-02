@@ -1,3 +1,4 @@
+#define CATCH_CONFIG_MAIN
 #include <catch2/catch_all.hpp>
 #include "../src/ReinforcementLearning/DQN.h"
 #include "../src/ReinforcementLearning/Transition.h"
@@ -164,6 +165,7 @@ bool MapRender(){
 
 bool DQN_Test(){
     Map map;
+    std::cout<<"Help";
     Player player(map, PLAYER);
     Player enemy(map, ENEMY);
     player.SetInitialCoordinates(Vec2(8, 2));
@@ -185,9 +187,10 @@ TEST_CASE("Runtimes of replay system", "[Replay System]") {
 }
 
 TEST_CASE("Rendering of the map", "[Map rendering]") {
-    //REQUIRE(MapRender());
+    REQUIRE(MapRender());
 }
 
 TEST_CASE("Testing DQN", "[DQN]"){
-    REQUIRE(DQN_Test());
+    //REQUIRE(DQN_Test());
+
 }

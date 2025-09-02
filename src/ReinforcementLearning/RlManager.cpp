@@ -89,7 +89,7 @@ void RlManager::OptimizeDQN(Map &map) {
     auto criterion = torch::nn::SmoothL1Loss();
     auto loss = criterion(q_values, q_next_values);
 
-    std::ofstream file("experiment_loss.txt", std::ios::app);
+    std::ofstream file("experiment_loss_dqn.txt", std::ios::app);
     std::cout << "Loss: " << loss.item<float>() << std::endl;
     file << loss.item<float>() << "\n";
     optimizer.zero_grad();
