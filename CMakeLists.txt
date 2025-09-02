@@ -27,18 +27,27 @@ file (GLOB_RECURSE SDLSRC
     "src/gui/*.h"
 )
 set(SDLTTF_VENDORED ON)
-add_subdirectory(SDL EXCLUDE_FROM_ALL)
-add_subdirectory(SDL/SDL_ttf EXCLUDE_FROM_ALL)
+find_package(SDL3 REQUIRED)
+find_package(SDL3_ttf REQUIRED)
+#add_subdirectory(SDL EXCLUDE_FROM_ALL)
+#add_subdirectory(SDL/SDL_ttf EXCLUDE_FROM_ALL)
 add_executable(sdl-test src/gui/start.cpp ${SDLSRC})
 target_link_libraries(sdl-test PRIVATE SDL3::SDL3 SDL3_ttf::SDL3_ttf)
 
 
-find_package(Catch2 3 REQUIRED)
+#find_package(Catch2 3 REQUIRED)
+#include_directories($ENV{CATCH2_INCLUDE_DIR})
 # These tests can use the Catch2-provided main
+
 list(REMOVE_ITEM CPPSRC ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp)
 list(REMOVE_ITEM SDLSRC ${CMAKE_CURRENT_SOURCE_DIR}/src/gui/start.cpp)
-add_executable(tester tests/test.cpp ${CPPSRC} ${SDLSRC})
-target_link_libraries(tester PRIVATE Catch2::Catch2WithMain)
+add_executable(tester  tests/test.cpp  ${CPPSRC} ${SDLSRC})
+
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(CATCH2 QUIET catch2-with-main)
+target_link_libraries(tester PRIVATE ${CATCH2_LIBRARIES})
+target_include_directories(tester PRIVATE ${CATCH2_INCLUDE_DIRS})
+
 target_link_libraries(tester PRIVATE "${TORCH_LIBRARIES}")
 target_link_libraries(tester PRIVATE SDL3::SDL3 SDL3_ttf::SDL3_ttf)
 
