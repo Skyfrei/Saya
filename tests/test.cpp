@@ -179,7 +179,7 @@ bool DQN_Test(){
 
 
 TEST_CASE("Serializing and Deserialzing Replays...", "[ReplaySystem]") {
-    //REQUIRE(BinaryReplay() == ""); 
+    REQUIRE(BinaryReplay() == ""); 
 }
 
 TEST_CASE("Runtimes of replay system", "[Replay System]") {

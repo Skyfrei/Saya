@@ -1,5 +1,5 @@
 {
-  description = "SDL + Wayland minimal dev shell";
+  description = "Saya with sdl and wayland";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
@@ -15,9 +15,7 @@
           pkgs.sdl3
           pkgs.sdl3-ttf
           pkgs.catch2_3
-
         ];
-
         };
     };
 }
