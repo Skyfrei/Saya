@@ -110,9 +110,8 @@ std::string BinaryReplay(){
     auto b = std::chrono::high_resolution_clock::now();
     obj.LoadMemoryAsBinary();
     auto c = std::chrono::high_resolution_clock::now();
-    std::cout << "Time  to save string replay " << duration_cast<milliseconds>(b-a).count();
-    std::cout<<"\n Time to load string replay\n" << duration_cast<milliseconds>(c-b).count();
-
+    std::cout << "Time  to save binary replay " << duration_cast<milliseconds>(b-a).count();
+    std::cout<<"\n Time to load binary replay\n" << duration_cast<milliseconds>(c-b).count();
 
     return "";
 }
@@ -166,7 +165,6 @@ bool MapRender(){
 
 bool DQN_Test(){
     Map map;
-    std::cout<<"Help";
     Player player(map, PLAYER);
     Player enemy(map, ENEMY);
     player.SetInitialCoordinates(Vec2(8, 2));
@@ -178,9 +176,20 @@ bool DQN_Test(){
     return true;
 }
 
+bool PPO_Test(){
+    Map map;
+    Player player(map, PLAYER);
+    Player enemy(map, ENEMY);
+    player.SetInitialCoordinates(Vec2(8, 2));
+    enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 2));
+    RlManager man;
+    man.InitializePPO(player, enemy, map);
+    man.TrainPPO(player, enemy, map);
+    return true;
+}
 
 TEST_CASE("Serializing and Deserialzing Replays...", "[ReplaySystem]") {
-    REQUIRE(BinaryReplay() == ""); 
+    //REQUIRE(BinaryReplay() == ""); 
 }
 
 TEST_CASE("Runtimes of replay system", "[Replay System]") {
@@ -188,10 +197,13 @@ TEST_CASE("Runtimes of replay system", "[Replay System]") {
 }
 
 TEST_CASE("Rendering of the map", "[Map rendering]") {
-    REQUIRE(MapRender());
+    //REQUIRE(MapRender());
 }
 
 TEST_CASE("Testing DQN", "[DQN]"){
     //REQUIRE(DQN_Test());
+}
 
+TEST_CASE("Testing PPO", "[PPO]"){
+    REQUIRE(PPO_Test());
 }

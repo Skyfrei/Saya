@@ -131,37 +131,60 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
     for (int i = 0; i < episodeNumber; i++){
         State s = GetState(pl, en, map);
         TensorStruct old_input(s, map);
-        at::Tensor tensor_value = ppoValue.Forward(old_input.GetTensor());
-        float A = -1 * tensor_value.item<float>();
+        at::Tensor old_tensor_value = ppoValue.Forward(old_input.GetTensor());
+        at::Tensor A = -old_tensor_value;
 
         at::Tensor old_logits = ppoPolicy.Forward(old_input.GetTensor());
         at::Tensor probabs = torch::softmax(old_logits, -1);
 
         std::random_device rd;   // Seed
         std::mt19937 gen(rd());  // Mersenne Twister RNG
-        std::uniform_int_distribution<> distrib(0, ppoPolicy.layer3->options.out_features());
+        std::uniform_int_distribution<> distrib(0, ppoPolicy.layer3->options.out_features() - 1);
         int random_action = distrib(gen);
+        at::Tensor old_prob = probabs[0][random_action].detach(); // detach old policy
        
-        float old_prob = std::log(probabs[0][random_action].item<float>());
-        
+        // for experiments change forward steps to 5-10-or until end of episode
         for (int step = 0; step < forwardSteps; step++){
             TensorStruct input(s, map);
-            at::Tensor actionIndex = std::get<1>(ppoPolicy.Forward(input.GetTensor()).max(1));
+            at::Tensor logits = ppoPolicy.Forward(input.GetTensor());
+            at::Tensor probs = torch::softmax(logits, -1);
+            torch::Tensor actionIndex = torch::multinomial(probs, /*num_samples=*/1);
             actionT action = ppoPolicy.MapIndexToAction(pl, en, actionIndex.item<int>());
 
-            A += std::pow(gamma, step) * pl.TakeAction(action);
+            at::Tensor reward_tensor = torch::tensor(pl.TakeAction(action), torch::dtype(torch::kFloat32));
+            float reward = reward_tensor.item<float>();
+            std::cout<<reward<<"\n";
+            if (ResetEnvironment(pl, en, map, reward))  // 0-reward, think how to use reward here and dqn
+                break;
+            if (step == forwardSteps - 1) {
+                at::Tensor new_tensor_value = ppoValue.Forward(input.GetTensor());
+                A += std::pow(gamma, step) * new_tensor_value.detach();
+            }else{
+                A += std::pow(gamma, step) * 25 * reward_tensor;
+            } 
             s = GetState(pl, en, map);
         }
         TensorStruct new_input(s, map);
-        tensor_value = ppoValue.Forward(new_input.GetTensor());
-        A += std::pow(gamma, forwardSteps) * tensor_value.item<float>();
-    
         at::Tensor logits = ppoPolicy.Forward(new_input.GetTensor());
         at::Tensor probabs_new = torch::softmax(logits, -1);
-        float new_prob = std::log(probabs_new[0][random_action].item<float>());
-        float ratio = new_prob / old_prob;
+        at::Tensor new_prob = probabs_new[0][random_action];
+        
+        at::Tensor ratio = new_prob / old_prob;
+        at::Tensor loss = torch::min(ratio * A, torch::clamp(ratio, 1.0f - ppoEpsilon, 1.0f + ppoEpsilon) * A);
+        
+        at::Tensor new_tensor_value = ppoValue.Forward(new_input.GetTensor());       
+        at::Tensor target_value = A + old_tensor_value.detach(); 
+        at::Tensor value_loss = torch::mse_loss(new_tensor_value, target_value);
 
-        float loss = std::min(ratio * A, std::clamp(ratio, 1.0f - ppoEpsilon, 1.0f + ppoEpsilon) * A);
+        optimizer.zero_grad();
+        loss.backward();
+
+        auto params_before = ppoPolicy.layer3->weight.clone();
+        std::cout << "Layer3 weights before update: " << params_before[0][0].item<float>() << std::endl;
+        optimizer.step();
+
+        auto params_after = ppoPolicy.layer3->weight.clone();
+        std::cout << "Layer3 weights after update: " << params_after[0][0].item<float>() << std::endl;
     }
 }
 
