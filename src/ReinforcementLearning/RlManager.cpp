@@ -30,7 +30,7 @@ void RlManager::InitializeDQN(Player &pl, Player &en, Map &map) {
 void RlManager::InitializePPO(Player &pl, Player &en, Map &map){
     State s = GetState(pl, en, map);
     ppoPolicy.Initialize(map, s);
-    ppoValue.Initialize(map, s);
+    ppoValue.Initialize(ppoPolicy);
     torch::Device device(torch::kCPU);
 
     if (torch::cuda::is_available())
@@ -130,32 +130,39 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
 
     for (int i = 0; i < episodeNumber; i++){
         State s = GetState(pl, en, map);
-        float A = 0.0f;
+        TensorStruct old_input(s, map);
+        at::Tensor tensor_value = ppoValue.Forward(old_input.GetTensor());
+        float A = -1 * tensor_value.item<float>();
+
+        at::Tensor old_logits = ppoPolicy.Forward(old_input.GetTensor());
+        at::Tensor probabs = torch::softmax(old_logits, -1);
+
+        std::random_device rd;   // Seed
+        std::mt19937 gen(rd());  // Mersenne Twister RNG
+        std::uniform_int_distribution<> distrib(0, ppoPolicy.layer3->options.out_features());
+        int random_action = distrib(gen);
+       
+        float old_prob = std::log(probabs[0][random_action].item<float>());
+        
         for (int step = 0; step < forwardSteps; step++){
-            TensorStruct input = TensorStruct(s, map);
+            TensorStruct input(s, map);
             at::Tensor actionIndex = std::get<1>(ppoPolicy.Forward(input.GetTensor()).max(1));
             actionT action = ppoPolicy.MapIndexToAction(pl, en, actionIndex.item<int>());
 
             A += std::pow(gamma, step) * pl.TakeAction(action);
             s = GetState(pl, en, map);
         }
-        // I gotta look difference between vlaue function and discounted reward
-        float ratio = 0.0f;
-        // ratio = policy / old_policy
-        float loss = std::min(ratio, std::clamp(ratio, 1.0f - ppoEpsilon, 1.0f + ppoEpsilon)) * A;
-                                                     
-    }                                                    
+        TensorStruct new_input(s, map);
+        tensor_value = ppoValue.Forward(new_input.GetTensor());
+        A += std::pow(gamma, forwardSteps) * tensor_value.item<float>();
+    
+        at::Tensor logits = ppoPolicy.Forward(new_input.GetTensor());
+        at::Tensor probabs_new = torch::softmax(logits, -1);
+        float new_prob = std::log(probabs_new[0][random_action].item<float>());
+        float ratio = new_prob / old_prob;
 
-//    auto criterion = torch::nn::SmoothL1Loss();
-//    auto loss = criterion(q_values, q_next_values);
-//
-//    std::ofstream file("experiment_loss_ppo.txt", std::ios::app);
-//    std::cout << "Loss: " << loss.item<float>() << std::endl;
-//    file << loss.item<float>() << "\n";
-//    optimizer.zero_grad();
-//    loss.backward();
-//    torch::nn::utils::clip_grad_value_(ppoPolicy.parameters(), 100);
-//    optimizer.step();
+        float loss = std::min(ratio * A, std::clamp(ratio, 1.0f - ppoEpsilon, 1.0f + ppoEpsilon) * A);
+    }
 }
 
 void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {

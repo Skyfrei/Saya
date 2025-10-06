@@ -5,6 +5,7 @@
 #include "../State/Player.h"
 #include "DQN.h"
 #include "PPO.h"
+#include "ValueNetwork.h"
 #include "Transition.h"
 #include <deque>
 
@@ -31,7 +32,7 @@ class RlManager
     
     std::deque<Transition> ppoMemory;
     PPO ppoPolicy;
-    PPO ppoValue;
+    ValueNetwork ppoValue;
 
   private:
     State CreateCurrentState(Map &map, Player &player, Player &enemy);

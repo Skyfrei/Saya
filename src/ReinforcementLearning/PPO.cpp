@@ -30,7 +30,6 @@ void PPO::QValue(){
 
 void PPO::ActionValue(){
     //returns reward
-
 }
 
 float PPO::GetActionReward(){

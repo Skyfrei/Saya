@@ -9,6 +9,7 @@
 #include "../src/Race/Unit/Action.h"
 #include "../src/ReinforcementLearning/RlManager.h"
 #include "../src/ReinforcementLearning/Reward.h"
+#include "../src/ReinforcementLearning/ValueNetwork.h"
 #include <chrono>
 #include <fstream>
 #include <random>

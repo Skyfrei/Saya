@@ -20,12 +20,14 @@ class PPO : public torch::nn::Module{
         torch::Tensor Forward(torch::Tensor x);
         actionT MapIndexToAction(Player &pl, Player &en, int actionIndex);
 
-
     private:
         void QValue();
         void ActionValue();
-         
         float GetActionReward();
+    public:
+        torch::nn::Linear layer1{nullptr}, layer2{nullptr}, layer3{nullptr};
+        torch::nn::Tanh tanh;
+
 
     private:
         const std::string model_name = "ppo_model.pt";
@@ -34,8 +36,6 @@ class PPO : public torch::nn::Module{
         int actionSize = 0;
         int inputSize = 0;
 
-        torch::nn::Linear layer1{nullptr}, layer2{nullptr}, layer3{nullptr};
-        torch::nn::Tanh tanh;
 
         int mapSize = MAP_SIZE * MAP_SIZE;
         int moveAction = MAP_SIZE * MAP_SIZE * MAX_UNITS;
