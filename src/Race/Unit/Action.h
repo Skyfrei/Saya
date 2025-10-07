@@ -91,7 +91,6 @@ struct FarmGoldAction : public Action
 };
 struct RecruitAction : public Action
 {
-
     RecruitAction(UnitType typeOfUnit, Structure *s);
     ActionType GetType() override;
     bool operator==(const RecruitAction &a) const;

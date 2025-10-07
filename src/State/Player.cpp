@@ -48,32 +48,32 @@ float Player::TakeAction(actionT &act) {
     if (std::holds_alternative<MoveAction>(act))
     {
         MoveAction &action = std::get<MoveAction>(act);
+        reward = GetRewardFromAction(action);
         Move(action);
-        reward = GetRewardFromAction(act);
     }
     else if (std::holds_alternative<AttackAction>(act))
     {
         AttackAction &action = std::get<AttackAction>(act);
+        reward = GetRewardFromAction(action);
         Attack(action);
-        reward = GetRewardFromAction(act);
     }
     else if (std::holds_alternative<BuildAction>(act))
     {
         BuildAction &action = std::get<BuildAction>(act);
+        reward = GetRewardFromAction(action, gold);
         Build(action);
-        reward = GetRewardFromAction(act, gold);
     }
     else if (std::holds_alternative<FarmGoldAction>(act))
     {
         FarmGoldAction &action = std::get<FarmGoldAction>(act);
+        reward = GetRewardFromAction(action, gold);
         FarmGold(action);
-        reward = GetRewardFromAction(act, gold);
     }
     else if (std::holds_alternative<RecruitAction>(act))
     {
         RecruitAction &action = std::get<RecruitAction>(act);
+        reward = GetRewardFromAction(action, gold, food.y - food.x);
         Recruit(action);
-        reward = GetRewardFromAction(act, gold, food.y - food.x);
     }
     return reward;
 }

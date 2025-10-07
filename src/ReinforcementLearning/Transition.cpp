@@ -18,6 +18,19 @@ Transition::Transition() {
 
 std::string Transition::Serialize() {
     std::string result;
+    int puSize = state.playerUnits.size();
+    int psSize = state.playerStructs.size();
+    int euSize = state.enemyUnits.size();
+    int esSize = state.enemyStructs.size();
+    int npuSize = nextState.playerUnits.size();
+    int npsSize = nextState.playerStructs.size();
+    int neuSize = nextState.enemyUnits.size();
+    int nesSize = nextState.enemyStructs.size();
+
+    int byte_number = 22 + (puSize * 5) + (psSize * 4) + (euSize * 5) +
+                      (esSize * 4) + (npuSize * 5) + (npsSize * 4) + (neuSize * 5) +
+                      (nesSize * 4);
+    result += std::to_string(byte_number) + ",";
     result += std::to_string(state.playerGold) + ",";
     result += std::to_string(state.playerFood.x) + "," +
               std::to_string(state.playerFood.y) + ",";
@@ -39,6 +52,8 @@ std::string Transition::Serialize() {
     result += std::to_string(nextState.playerStructs.size()) + ",";
     result += std::to_string(nextState.enemyUnits.size()) + ",";
     result += std::to_string(nextState.enemyStructs.size()) + ",";
+    result += std::to_string(actionIndex) + ",";
+    result += std::to_string(reward) + ",";
 
     for (int i = 0; i < state.playerUnits.size(); i++)
         result += state.playerUnits[i]->Serialize() + ",";
@@ -66,108 +81,108 @@ std::string Transition::Serialize() {
 
     std::visit([&result](auto &act) { result += act.Serialize() + "\n"; }, action);
 
-    result += std::to_string(reward);
     return result;
 }
 
-Transition Transition::Deserialize(std::string &trans) {
+Transition Transition::Deserialize(std::string &bin) {
     std::string current = "";
-    int count = 0;
-    Transition a;
-    std::deque<std::string> objs;
-    for (int i = 0; i < trans.length(); i++)
-    {
-        if (trans[i] != ',')
-        {
-            current += trans[i];
-            if (i == trans.length() - 1)
-                objs.push_back(current);
-            continue;
-        }
-        objs.push_back(current);
-        current = "";
-    }
-    // 8-15
-    int sp_unitSize = std::stoi(objs[12]);
-    int sp_structureSize = std::stoi(objs[13]);
-    int se_unitSize = std::stoi(objs[14]);
-    int se_structureSize = std::stoi(objs[15]);
-    int np_unitSize = std::stoi(objs[16]);
-    int np_structureSize = std::stoi(objs[17]);
-    int ne_unitSize = std::stoi(objs[18]);
-    int ne_structureSize = std::stoi(objs[19]);
-    for (int i = 0; i < 20; i++)
-        objs.pop_front();
+    State state;
+    State nextState;
 
-    for (int i = 0; i < sp_unitSize; i++)
-    {
-        std::string un =
-            objs[0] + " " + objs[1] + " " + objs[2] + " " + objs[3] + " " + objs[4];
-        // deserialize unit on string
-        // Unit* u = Factory.Deserialize(un);
-        for (int j = 0; j < 5; j++)
-            objs.pop_front();
-        std::cout << un << "\n";
-    }
-    for (int i = 0; i < sp_structureSize; i++)
-    {
-        std::string stru = objs[0] + " " + objs[1] + " " + objs[2] + " " + objs[3];
-        for (int j = 0; j < 4; j++)
-            objs.pop_front();
-        std::cout << stru << "\n";
-    }
-    for (int i = 0; i < se_unitSize; i++)
-    {
-        std::string un =
-            objs[0] + " " + objs[1] + " " + objs[2] + " " + objs[3] + " " + objs[4];
-        for (int j = 0; j < 5; j++)
-            objs.pop_front();
-        std::cout << un << "\n";
-    }
-    for (int i = 0; i < se_structureSize; i++)
-    {
-        std::string stru = objs[0] + " " + objs[1] + " " + objs[2] + " " + objs[3];
-        for (int j = 0; j < 4; j++)
-            objs.pop_front();
-        std::cout << stru << "\n";
-    }
-    for (int i = 0; i < np_unitSize; i++)
-    {
-        std::string un =
-            objs[0] + " " + objs[1] + " " + objs[2] + " " + objs[3] + " " + objs[4];
-        // deserialize unit on string
-        // Unit* u = Factory.Deserialize(un);
-        for (int j = 0; j < 5; j++)
-            objs.pop_front();
-        std::cout << un << "\n";
-    }
-    for (int i = 0; i < np_structureSize; i++)
-    {
-        std::string stru = objs[0] + " " + objs[1] + " " + objs[2] + " " + objs[3];
-        for (int j = 0; j < 4; j++)
-            objs.pop_front();
-        std::cout << stru << "\n";
-    }
-    for (int i = 0; i < ne_unitSize; i++)
-    {
-        std::string un =
-            objs[0] + " " + objs[1] + " " + objs[2] + " " + objs[3] + " " + objs[4];
-        // deserialize unit on string
-        // Unit* u = Factory.Deserialize(un);
-        for (int j = 0; j < 5; j++)
-            objs.pop_front();
-        std::cout << un << "\n";
+    std::vector<std::string> tokens;
+    std::stringstream ss(bin);
+    std::string token;
+    while (std::getline(ss, token, ',')) {
+        tokens.push_back(token);
     }
 
-    for (int i = 0; i < ne_structureSize; i++)
-    {
-        std::string stru = objs[0] + " " + objs[1] + " " + objs[2] + " " + objs[3];
-        for (int j = 0; j < 4; j++)
-            objs.pop_front();
-        std::cout << stru << "\n";
+    state.playerGold = std::stoi(tokens[0]);
+    state.playerFood.x = std::stoi(tokens[1]);
+    state.playerFood.y = std::stoi(tokens[2]);
+    state.enemyGold = std::stoi(tokens[3]);
+    state.enemyFood.x = std::stoi(tokens[4]);
+    state.enemyFood.y = std::stoi(tokens[5]);
+    nextState.playerGold = std::stoi(tokens[6]);
+    nextState.playerFood.x= std::stoi(tokens[7]);
+    nextState.playerFood.y= std::stoi(tokens[8]);
+    nextState.enemyGold = std::stoi(tokens[9]);
+    nextState.enemyFood.x = std::stoi(tokens[10]);
+    nextState.enemyFood.y = std::stoi(tokens[11]);
+    int puSize = std::stoi(tokens[12]);
+    int psSize = std::stoi(tokens[13]);
+    int euSize = std::stoi(tokens[14]);
+    int esSize = std::stoi(tokens[15]);
+    int npuSize = std::stoi(tokens[16]);
+    int npsSize = std::stoi(tokens[17]);
+    int neuSize = std::stoi(tokens[18]);
+    int nesSize = std::stoi(tokens[19]);
+    int actionIndex = std::stoi(tokens[20]);
+    float reward = std::stof(tokens[21]);
+    
+    state.playerUnits.resize(puSize);
+    state.enemyUnits.resize(euSize);
+    nextState.playerUnits.resize(npuSize);
+    nextState.enemyUnits.resize(neuSize);
+    state.playerStructs.resize(psSize);
+    state.enemyStructs.resize(esSize);
+    nextState.playerStructs.resize(npsSize);
+    nextState.enemyStructs.resize(nesSize);
+
+
+    int index = 22;
+    // player units
+    for (int i = 0; i < puSize; i++) {
+        state.playerUnits[i] = GetUnitFromString(std::span(tokens.begin() + index, tokens.begin() + index + 5));
+        index += 5;
+    }
+    
+    // player structs
+    for (int i = 0; i < psSize; i++) {
+        state.playerStructs[i] = GetStructureFromString(std::span(tokens.begin() + index, tokens.begin() + index + 4));
+        index += 4;
+    }
+    
+    // enemy units
+    for (int i = 0; i < euSize; i++) {
+        state.enemyUnits[i] = GetUnitFromString(std::span(tokens.begin() + index, tokens.begin() + index + 5));
+        index += 5;
+    }
+    
+    // enemy structs
+    for (int i = 0; i < esSize; i++) {
+        state.enemyStructs[i] = GetStructureFromString(std::span(tokens.begin() + index, tokens.begin() + index + 4));
+        index += 4;
+    }
+    
+    // next player units
+    for (int i = 0; i < npuSize; i++) {
+        nextState.playerUnits[i] = GetUnitFromString(std::span(tokens.begin() + index, tokens.begin() + index + 5));
+        index += 5;
+    }
+    
+    // next player structs
+    for (int i = 0; i < npsSize; i++) {
+        nextState.playerStructs[i] = GetStructureFromString(std::span(tokens.begin() + index, tokens.begin() + index + 4));
+        index += 4;
+    }
+    
+    // next enemy units
+    for (int i = 0; i < neuSize; i++) {
+        nextState.enemyUnits[i] = GetUnitFromString(std::span(tokens.begin() + index, tokens.begin() + index + 5));
+        index += 5;
+    }
+    
+    // next enemy structs
+    for (int i = 0; i < nesSize; i++) {
+        nextState.enemyStructs[i] = GetStructureFromString(std::span(tokens.begin() + index, tokens.begin() + index + 4));
+        index += 4;
     }
 
-    return a;
+    actionT deserAction = GetActionAsString(std::span(tokens.begin() + index, tokens.end()));
+    
+    Transition trans(state, deserAction, nextState, actionIndex);
+    trans.reward = reward;
+    return trans;
 }
 
 std::vector<binary> Transition::SerializeBinary() {
@@ -363,64 +378,64 @@ Transition Transition::DeserializeBinary(std::vector<binary> &bin) {
 actionT Transition::GetAction(std::span<binary> bin) {
     int actionType = std::get<int>(bin[0]);
     auto start = bin.begin() + 1;
-    switch (actionType)
-    {
-    case 0: {
-        Unit *newUnit = GetUnit(std::span(start, start + 5));
-        Vec2 dest(std::get<int>(bin[6]), std::get<int>(bin[7]));
-        MoveAction move(newUnit, dest);
-        return move;
-    }
-
-    case 1: {
-        Unit *newUnit = GetUnit(std::span(start, start + 5));
-        int unitOrStruct = std::get<int>(bin[6]);
-        Unit *targetUnit;
-        Structure *targetStructure;
-
-        start += 6;
-        if (unitOrStruct == 0)
-        {
-            targetUnit = GetUnit(std::span(start, start + 5));
+    switch (actionType){
+        case 0: {
+            Unit *newUnit = GetUnit(std::span(start, start + 5));
+            Vec2 dest(std::get<int>(bin[6]), std::get<int>(bin[7]));
+            MoveAction move(newUnit, dest);
+            return move;
         }
-        else
-        {
-            targetStructure = GetStructure(std::span(start, start + 4));
+
+        case 1: {
+            Unit *newUnit = GetUnit(std::span(start, start + 5));
+            int unitOrStruct = std::get<int>(bin[6]);
+            Unit *targetUnit;
+            Structure *targetStructure;
+
+            start += 6;
+            if (unitOrStruct == 0)
+            {
+                targetUnit = GetUnit(std::span(start, start + 5));
+            }
+            else
+            {
+                targetStructure = GetStructure(std::span(start, start + 4));
+            }
+            AttackAction attackAction(targetUnit, targetStructure);
+            return attackAction;
         }
-        AttackAction attackAction(targetUnit, targetStructure);
-        return attackAction;
-    }
 
-    case 2: {
-        Unit *newUnit = GetUnit(std::span(start, start + 5));
-        StructureType structType = static_cast<StructureType>(std::get<int>(bin[6]));
-        Vec2 buildCoord(std::get<int>(bin[7]), std::get<int>(bin[8]));
+        case 2: {
+            Unit *newUnit = GetUnit(std::span(start, start + 5));
+            StructureType structType = static_cast<StructureType>(std::get<int>(bin[6]));
+            Vec2 buildCoord(std::get<int>(bin[7]), std::get<int>(bin[8]));
 
-        BuildAction buildAction(newUnit, structType, buildCoord);
-        return buildAction;
-    }
+            BuildAction buildAction(newUnit, structType, buildCoord);
+            return buildAction;
+        }
 
-    case 3: {
-        Unit *newUnit = GetUnit(std::span(start, start + 5));
-        int x = std::get<int>(bin[6]);
-        int y = std::get<int>(bin[7]);
-        Vec2 dest(x, y);
+        case 3: {
+            Unit *newUnit = GetUnit(std::span(start, start + 5));
+            int x = std::get<int>(bin[6]);
+            int y = std::get<int>(bin[7]);
+            Vec2 dest(x, y);
 
-        FarmGoldAction farmAction(newUnit, dest);
-        return farmAction;
-    }
+            FarmGoldAction farmAction(newUnit, dest);
+            return farmAction;
+        }
 
-    case 4: {
-        UnitType unitType = static_cast<UnitType>(std::get<int>(bin[1]));
-        start += 1;
-        Structure *binStru = GetStructure(std::span(start, start + 4));
-        RecruitAction recruitAction(unitType, binStru);
-        return recruitAction;
+        case 4: {
+            UnitType unitType = static_cast<UnitType>(std::get<int>(bin[1]));
+            start += 1;
+            Structure *binStru = GetStructure(std::span(start, start + 4));
+            RecruitAction recruitAction(unitType, binStru);
+            return recruitAction;
+        }
+        case 5: {
+            return EmptyAction();
+        }
     }
-    case 5: {
-        return EmptyAction();
-    }
-    }
+    return EmptyAction();
 }
 
 Unit *Transition::GetUnit(std::span<binary> bin) {
@@ -463,6 +478,118 @@ Structure *Transition::GetStructure(std::span<binary> bin) {
     case FARM:
         str = new Farm(Vec2(x, y), health);
         break;
+    }
+
+    return str;
+}
+
+actionT Transition::GetActionAsString(std::span<const std::string> bin) {
+    int actionType = std::stoi(bin[0]);
+    auto start = bin.begin() + 1;
+
+    switch (actionType) {
+        case 0: { // Move
+            Unit *newUnit = GetUnitFromString(std::span(start, start + 5));
+            Vec2 dest(std::stoi(bin[6]), std::stoi(bin[7]));
+            MoveAction move(newUnit, dest);
+            return move;
+        }
+
+        case 1: { // Attack
+            Unit *newUnit = GetUnitFromString(std::span(start, start + 5));
+            int unitOrStruct = std::stoi(bin[6]);
+            Unit *targetUnit = nullptr;
+            Structure *targetStructure = nullptr;
+
+            start += 6;
+            if (unitOrStruct == 0) {
+                targetUnit = GetUnitFromString(std::span(start, start + 5));
+            } else {
+                targetStructure = GetStructureFromString(std::span(start, start + 4));
+            }
+
+            AttackAction attackAction(targetUnit, targetStructure);
+            return attackAction;
+        }
+
+        case 2: { // Build
+            Unit *newUnit = GetUnitFromString(std::span(start, start + 5));
+            StructureType structType = static_cast<StructureType>(std::stoi(bin[6]));
+            Vec2 buildCoord(std::stoi(bin[7]), std::stoi(bin[8]));
+
+            BuildAction buildAction(newUnit, structType, buildCoord);
+            return buildAction;
+        }
+
+        case 3: { // Farm
+            Unit *newUnit = GetUnitFromString(std::span(start, start + 5));
+            int x = std::stoi(bin[6]);
+            int y = std::stoi(bin[7]);
+            Vec2 dest(x, y);
+
+            FarmGoldAction farmAction(newUnit, dest);
+            return farmAction;
+        }
+
+        case 4: { // Recruit
+            UnitType unitType = static_cast<UnitType>(std::stoi(bin[1]));
+            start += 1;
+            Structure *binStru = GetStructureFromString(std::span(start, start + 4));
+            RecruitAction recruitAction(unitType, binStru);
+            return recruitAction;
+        }
+
+        case 5: { // Empty
+            return EmptyAction();
+        }
+    }
+
+    return EmptyAction();
+}
+
+Unit *Transition::GetUnitFromString(std::span<const std::string> bin) {
+    UnitType type = static_cast<UnitType>(std::stoi(bin[0]));
+    float health = std::stof(bin[1]);
+    float mana = std::stof(bin[2]);
+    int x = std::stoi(bin[3]);
+    int y = std::stoi(bin[4]);
+
+    Unit *un;
+    switch (type)
+    {
+        case FOOTMAN:
+            un = new Footman(Vec2(x, y), health, mana);
+            break;
+
+        case PEASANT:
+            un = new Peasant(Vec2(x, y), health, mana);
+            break;
+    }
+
+    return un;
+}
+
+
+Structure *Transition::GetStructureFromString(std::span<const std::string> bin) {
+    StructureType type = static_cast<StructureType>(std::stoi(bin[0]));
+    float health = std::stof(bin[1]);
+    int x = std::stoi(bin[2]);
+    int y = std::stoi(bin[3]);
+
+    Structure *str;
+    switch (type)
+    {
+        case HALL:
+            str = new TownHall(Vec2(x, y), health);
+            break;
+
+        case BARRACK:
+            str = new Barrack(Vec2(x, y), health);
+            break;
+
+        case FARM:
+            str = new Farm(Vec2(x, y), health);
+            break;
     }
 
     return str;

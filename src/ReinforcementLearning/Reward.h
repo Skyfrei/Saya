@@ -1,21 +1,27 @@
 #ifndef REWARD_H
 #define REWARD_H
 
-#include "Transition.h"
 #include <tuple>
+#include <cmath>
+
+#include "Transition.h"
 #include "../Race/Unit/Unit.h"
 #include "../Race/Unit/Footman.h"
 #include "../Race/Unit/Peasant.h"
 #include "../Race/Unit/Hero/BloodMage.h"
 #include "../Race/Unit/Hero/ArchMage.h"
 #include "../Race/Structure/Structure.h"
-#include <cmath>
+#include <iostream>
 
 template<typename... Args>
-float GetRewardFromAction(Args... args) {
+float GetRewardFromAction(Args&&... args) {
     float reward = 0.0f;
-    auto arg_tuple = make_tuple(args...);
-    actionT action = std::get<0>(arg_tuple);
+    auto arg_tuple = std::forward_as_tuple(std::forward<Args>(args)...);
+    actionT&& action = std::get<0>(arg_tuple); 
+
+//    std::visit([](auto&& act) {
+//        std::cout << "Action type enum = " << static_cast<int>(act.type) << std::endl;
+//    }, action);
 
     if (std::holds_alternative<MoveAction>(action))
     {
@@ -82,6 +88,7 @@ float GetRewardFromAction(Args... args) {
                 }
                 if (!is_enough_resources)
                     return reward;
+                break;
 
             case PEASANT:
                 unit = std::make_unique<Peasant>();
@@ -95,6 +102,7 @@ float GetRewardFromAction(Args... args) {
                 }
                 if (!is_enough_resources)
                     return reward;
+                break;
 
             case ARCHMAGE:
                 unit = std::make_unique<ArchMage>();
@@ -109,6 +117,7 @@ float GetRewardFromAction(Args... args) {
                 if (!is_enough_resources)
                     return reward;
                 reward += 0.2f;
+                break;
 
             case BLOODMAGE:
                 unit = std::make_unique<BloodMage>();
@@ -123,6 +132,7 @@ float GetRewardFromAction(Args... args) {
                 if (!is_enough_resources)
                     return reward;
                 reward += 0.2f;
+                break;
 
             default:
                 break;

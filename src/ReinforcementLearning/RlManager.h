@@ -20,8 +20,8 @@ class RlManager
     void TrainPPO(Player &pl, Player &en, Map &map);
 
     void AddExperience(Transition trans);
-    void SaveMemory();
-    void LoadMemory();
+    void SaveMemoryAsString();
+    void LoadMemoryAsString();
     void SaveMemoryAsBinary();
     void LoadMemoryAsBinary();
 

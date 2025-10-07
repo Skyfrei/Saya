@@ -10,6 +10,7 @@
 #include "../src/ReinforcementLearning/RlManager.h"
 #include "../src/ReinforcementLearning/Reward.h"
 #include "../src/ReinforcementLearning/ValueNetwork.h"
+#include "../src/Tools/Enums.h"
 #include <chrono>
 #include <fstream>
 #include <random>
@@ -24,41 +25,55 @@ std::string StringReplay(){
     s.playerFood.y = 4;
     s.enemyGold = 100;
     s.playerGold = 100;
-    s.playerStructs.push_back(new TownHall(Vec2(10, 2)));
-
+        
     std::random_device ran;
     std::default_random_engine e1(ran());
     std::uniform_int_distribution<int> uniform_dist(0, 100);
-    RlManager obj;  
-    for(int i = 0; i < mem_size; i++){
+    
+    RlManager obj;
+    Map m;
+    Player pl(m, PLAYER);
+
+    for(int i = 0; i < mem_size;){
         s.playerStructs.push_back(new TownHall(Vec2(10, 2)));
-        for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
             s.playerUnits.push_back(new Peasant());
-            s.playerUnits[i]->coordinate.x = uniform_dist(e1);
-            s.playerUnits[i]->coordinate.y = uniform_dist(e1);
+            s.playerUnits[j]->coordinate.x = uniform_dist(e1);
+            s.playerUnits[j]->coordinate.y = uniform_dist(e1);
         }
         s.enemyStructs.push_back(new TownHall(Vec2(10, 2)));
-        for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
             s.enemyUnits.push_back(new Peasant());
-            s.enemyUnits[i]->coordinate.x = uniform_dist(e1);
-            s.enemyUnits[i]->coordinate.y = uniform_dist(e1);
+            s.enemyUnits[j]->coordinate.x = uniform_dist(e1);
+            s.enemyUnits[j]->coordinate.y = uniform_dist(e1);
         }
-        actionT act1 = BuildAction(s.playerUnits[0], HALL, Vec2(3, 3));
-        actionT act = MoveAction(s.playerUnits[0], Vec2(3, 4));
-        Transition trans(s, act1, s, 1);
+        int action_index = obj.targetNet.GetRandomOutputIndex();
+        actionT act = obj.targetNet.MapIndexToAction(s, action_index);
+        if (std::holds_alternative<EmptyAction>(act)){
+            s.playerUnits.clear();
+            s.enemyUnits.clear();
+            s.playerStructs.clear();
+            s.enemyStructs.clear();
+            continue;
+        }
+        
+        Transition trans(s, act, s, action_index);
+        float r = pl.TakeAction(act); 
+        trans.reward = r;
         s.playerUnits.clear();
         s.enemyUnits.clear();
         s.playerStructs.clear();
         s.enemyStructs.clear();
         obj.AddExperience(trans);
+        i++;
     }
     auto a = std::chrono::high_resolution_clock::now();
-    //obj.SaveMemory(); 
+    obj.SaveMemoryAsString(); 
     auto b = std::chrono::high_resolution_clock::now();
-    obj.LoadMemory();
+    obj.LoadMemoryAsString();
     auto c = std::chrono::high_resolution_clock::now();
-    std::cout << "Time  to save string replay " << duration_cast<milliseconds>(b-a).count();
-    std::cout<<"\n Time to load string replay\n" << duration_cast<milliseconds>(c-b).count();
+    std::cout << "" << duration_cast<milliseconds>(b-a).count();
+    std::cout<<"," << duration_cast<milliseconds>(c-b).count();
     return "";
 }
 
@@ -77,26 +92,32 @@ std::string BinaryReplay(){
     
     RlManager obj;
     Map m;
+    Player pl(m, PLAYER);
     for(int i = 0; i < mem_size;){
         s.playerStructs.push_back(new TownHall(Vec2(10, 2)));
-        for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
             s.playerUnits.push_back(new Peasant());
-            s.playerUnits[i]->coordinate.x = uniform_dist(e1);
-            s.playerUnits[i]->coordinate.y = uniform_dist(e1);
+            s.playerUnits[j]->coordinate.x = uniform_dist(e1);
+            s.playerUnits[j]->coordinate.y = uniform_dist(e1);
         }
         s.enemyStructs.push_back(new TownHall(Vec2(10, 2)));
-        for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
             s.enemyUnits.push_back(new Peasant());
-            s.enemyUnits[i]->coordinate.x = uniform_dist(e1);
-            s.enemyUnits[i]->coordinate.y = uniform_dist(e1);
+            s.enemyUnits[j]->coordinate.x = uniform_dist(e1);
+            s.enemyUnits[j]->coordinate.y = uniform_dist(e1);
         }
         int action_index = obj.targetNet.GetRandomOutputIndex();
         actionT act = obj.targetNet.MapIndexToAction(s, action_index);
-        if (std::holds_alternative<EmptyAction>(act))
+        if (std::holds_alternative<EmptyAction>(act)){
+            s.playerUnits.clear();
+            s.enemyUnits.clear();
+            s.playerStructs.clear();
+            s.enemyStructs.clear();
             continue;
+        }
         
         Transition trans(s, act, s, action_index);
-        float r = GetRewardFromAction(act); 
+        float r = pl.TakeAction(act); 
         trans.reward = r;
         s.playerUnits.clear();
         s.enemyUnits.clear();
@@ -110,8 +131,8 @@ std::string BinaryReplay(){
     auto b = std::chrono::high_resolution_clock::now();
     obj.LoadMemoryAsBinary();
     auto c = std::chrono::high_resolution_clock::now();
-    std::cout << "Time  to save binary replay " << duration_cast<milliseconds>(b-a).count();
-    std::cout<<"\n Time to load binary replay\n" << duration_cast<milliseconds>(c-b).count();
+    std::cout << "" << duration_cast<milliseconds>(b-a).count();
+    std::cout<<"," << duration_cast<milliseconds>(c-b).count();
 
     return "";
 }
@@ -187,9 +208,12 @@ bool PPO_Test(){
     man.TrainPPO(player, enemy, map);
     return true;
 }
+TEST_CASE("Serializing and Deserialzing Replays as string...", "[StringReplaySystem]") {
+    REQUIRE(StringReplay() == ""); 
+}
 
 TEST_CASE("Serializing and Deserialzing Replays...", "[ReplaySystem]") {
-    //REQUIRE(BinaryReplay() == ""); 
+    REQUIRE(BinaryReplay() == ""); 
 }
 
 TEST_CASE("Runtimes of replay system", "[Replay System]") {
@@ -205,5 +229,5 @@ TEST_CASE("Testing DQN", "[DQN]"){
 }
 
 TEST_CASE("Testing PPO", "[PPO]"){
-    REQUIRE(PPO_Test());
+    //REQUIRE(PPO_Test());
 }

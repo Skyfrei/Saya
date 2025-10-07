@@ -9,56 +9,75 @@
 #include "Unit.h"
 
 std::string Action::Serialize() {
+    std::string result;
     int actionType = static_cast<int>(type);
-    std::string result = std::to_string(actionType) + ",";
+    result += std::to_string(actionType) + ",";
 
-    switch (type)
-    {
-    case MOVE: {
-        MoveAction *action = dynamic_cast<MoveAction *>(this);
-        result += std::to_string(action->prevCoord.x) + "," +
-                  std::to_string(action->prevCoord.y) + "," +
-                  std::to_string(action->destCoord.x) + "," +
-                  std::to_string(action->destCoord.y);
-        break;
-    }
+    switch (type) {
+        case MOVE: {
+            MoveAction* moveAction = dynamic_cast<MoveAction*>(this);
+            // Serialize unit
+            result += moveAction->unit->Serialize() + ",";
+            // Serialize destination
+            result += std::to_string(moveAction->destCoord.x) + ",";
+            result += std::to_string(moveAction->destCoord.y);
+            break;
+        }
 
-    case ATTACK: {
-        AttackAction *action = dynamic_cast<AttackAction *>(this);
-        result += std::to_string(action->prevCoord.x) + "," +
-                  std::to_string(action->prevCoord.y) + "," +
-                  action->unit->Serialize() + ","; // not done
-        break;
-    }
+        case ATTACK: {
+            AttackAction* attackAction = dynamic_cast<AttackAction*>(this);
+            // Serialize unit performing the attack
+            result += attackAction->unit->Serialize() + ",";
+            
+            // Serialize target
+            if (auto targetUnit = dynamic_cast<Unit*>(attackAction->object)) {
+                result += "0,"; // indicates target is a unit
+                result += targetUnit->Serialize();
+            } 
+            else if (auto targetStruct = dynamic_cast<Structure*>(attackAction->object)) {
+                result += "1,"; // indicates target is a structure
+                result += targetStruct->Serialize();
+            }
+            break;
+        }
 
-    case BUILD: {
-        BuildAction *action = dynamic_cast<BuildAction *>(this);
-        result += std::to_string(action->prevCoord.x) + "," +
-                  std::to_string(action->prevCoord.y) + "," +
-                  action->stru->Serialize() + "," + action->peasant->Serialize();
-        break;
-    }
+        case BUILD: {
+            BuildAction* buildAction = dynamic_cast<BuildAction*>(this);
+            // Serialize peasant
+            result += buildAction->peasant->Serialize() + ",";
+            // Serialize structure type
+            result += std::to_string(static_cast<int>(buildAction->struType)) + ",";
+            // Serialize build coordinates
+            result += std::to_string(buildAction->coordinate.x) + ",";
+            result += std::to_string(buildAction->coordinate.y);
+            break;
+        }
 
-    case FARMGOLD: {
-        FarmGoldAction *action = dynamic_cast<FarmGoldAction *>(this);
-        result += std::to_string(action->prevCoord.x) + "," +
-                  std::to_string(action->prevCoord.y) + "," +
-                  std::to_string(action->destCoord.x) + "," +
-                  std::to_string(action->destCoord.y) + "," +
-                  action->peasant->Serialize() + "," + action->hall->Serialize() +
-                  ",";
-        // not done, gold and terrain missing
+        case FARMGOLD: {
+            FarmGoldAction* farmAction = dynamic_cast<FarmGoldAction*>(this);
+            // Serialize peasant
+            result += farmAction->peasant->Serialize() + ",";
+            // Serialize farm destination
+            result += std::to_string(farmAction->destCoord.x) + ",";
+            result += std::to_string(farmAction->destCoord.y) + ",";
+            // Serialize associated hall
+            result += farmAction->hall->Serialize();
+            break;
+        }
 
-        break;
-    }
+        case RECRUIT: {
+            RecruitAction* recruitAction = dynamic_cast<RecruitAction*>(this);
+            // Serialize unit type
+            result += std::to_string(static_cast<int>(recruitAction->unitType)) + ",";
+            // Serialize associated structure
+            result += recruitAction->stru->Serialize();
+            break;
+        }
 
-    case RECRUIT: {
-        RecruitAction *action = dynamic_cast<RecruitAction *>(this);
-
-        int uType = static_cast<int>(action->unitType);
-        result += std::to_string(uType) + "," + action->stru->Serialize() + ",";
-        break;
-    }
+        case EMPTY: {
+            // nothing to serialize
+            break;
+        }
     }
 
     return result;
@@ -163,6 +182,19 @@ BuildAction::BuildAction(Structure *s) : stru(s) {
 BuildAction::BuildAction(Unit *p, StructureType s, Vec2 c)
     : peasant(p), struType(s), coordinate(c) {
     type = BUILD;
+    switch (struType) {
+        case HALL:
+            stru = new TownHall(coordinate);
+            break;
+        case BARRACK:
+            stru = new Barrack(coordinate);
+            break;
+        case FARM:
+            stru = new Farm(coordinate);
+            break;
+        default:
+            break;
+    }
 }
 FarmGoldAction::FarmGoldAction(Vec2 v, Terrain *te, TownHall *t)
     : destCoord(v), terr(te), hall(t) {

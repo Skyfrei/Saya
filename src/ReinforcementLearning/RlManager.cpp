@@ -263,7 +263,7 @@ void RlManager::AddExperience(Transition trans) {
     memory.push_back(trans);
 }
 
-void RlManager::SaveMemory() {
+void RlManager::SaveMemoryAsString() {
     std::string data_to_save = "";
     for (int i = 0; i < memory.size(); i++)
     {
@@ -275,24 +275,23 @@ void RlManager::SaveMemory() {
     file.close();
 }
 
-void RlManager::LoadMemory() {
+void RlManager::LoadMemoryAsString() {
     std::ifstream file(memory_file);
-    std::vector<std::string> lines;
-    std::string line;
-
-    if (!file.is_open())
-    {
-        std::cout << "String replay file couldn't be opened.";
+    if (!file.is_open()) {
+        std::cout << "String replay file couldn't be opened.\n";
         return;
     }
-    while (std::getline(file, line))
-    {
-        Transition trans;
-        trans = trans.Deserialize(line);
-        // trans = trans.Deserialize(line);
-        // AddExperience(trans);
-    }
+
+    // Read the entire file into a single string
+    std::string fileContents((std::istreambuf_iterator<char>(file)),
+                             std::istreambuf_iterator<char>());
+
     file.close();
+
+    // Now pass the whole thing to your deserializer
+    Transition trans;
+    trans = trans.Deserialize(fileContents);
+    //AddExperience(trans);
 }
 
 void RlManager::SaveMemoryAsBinary() {

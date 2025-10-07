@@ -42,7 +42,10 @@ struct Transition
     Transition DeserializeBinary(std::vector<binary> &bin);
     Unit *GetUnit(std::span<binary> bin);
     Structure *GetStructure(std::span<binary> bin);
+    Unit *GetUnitFromString(std::span<const std::string> bin);
+    Structure *GetStructureFromString(std::span<const std::string> bin);
     actionT GetAction(std::span<binary> bin);
+    actionT GetActionAsString(std::span<const std::string> bin);
 
     State state;
     State nextState;

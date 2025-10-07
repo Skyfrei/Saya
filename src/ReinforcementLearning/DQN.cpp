@@ -215,6 +215,9 @@ actionT DQN::MapIndexToAction(State &state, int actionIndex) {
         }
         if (state.playerUnits[unit]->is != PEASANT)
             return EmptyAction();
+        //std::cout<<"Unit: "<<unit<<std::endl;
+        //std::cout<<"Unit size: "<<state.playerUnits.size()<<std::endl;
+
         return BuildAction(state.playerUnits[unit], struSelect, Vec2(row, col));
     }
     else if (actionIndex < farmAction)
