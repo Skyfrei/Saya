@@ -28,10 +28,10 @@
 // (5)	    1.12 sec.	46	            690	    2.31 Mana/sec.	48-54
 // (51 avg)
 
-class Archmage : public Hero
+class ArchMage : public Hero
 {
   public:
-    Archmage() {
+    ArchMage() {
         health = 550;
         hpRegen = 1.15f;
         mana = 285;
@@ -60,6 +60,6 @@ class Archmage : public Hero
         return "Archmage hero";
     }
     Unit *Clone() const override {
-        return new Archmage(*this);
+        return new ArchMage(*this);
     }
 };

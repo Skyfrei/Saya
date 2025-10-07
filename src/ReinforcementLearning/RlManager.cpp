@@ -106,7 +106,7 @@ bool RlManager::ResetEnvironment(Player &pl, Player &en, Map &map, float &reward
         en.structures.clear();
         pl.Initialize();
         en.Initialize();
-        reward = reward - 1.0f;
+        reward = reward - 10.0f;
         std::cout << "End state reached";
 
         return true;
@@ -117,7 +117,7 @@ bool RlManager::ResetEnvironment(Player &pl, Player &en, Map &map, float &reward
         en.structures.clear();
         pl.Initialize();
         en.Initialize();
-        reward = reward + 1.0f;
+        reward = reward + 10.0f;
         std::cout << "End state reached";
 
         return true;
@@ -150,8 +150,10 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
             at::Tensor probs = torch::softmax(logits, -1);
             torch::Tensor actionIndex = torch::multinomial(probs, /*num_samples=*/1);
             actionT action = ppoPolicy.MapIndexToAction(pl, en, actionIndex.item<int>());
+            actionT enemy_action = ppoPolicy.MapIndexToAction(en, pl, actionIndex.item<int>());
 
             at::Tensor reward_tensor = torch::tensor(pl.TakeAction(action), torch::dtype(torch::kFloat32));
+            en.TakeAction(enemy_action);
             float reward = reward_tensor.item<float>();
             std::cout<<reward<<"\n";
             if (ResetEnvironment(pl, en, map, reward))  // 0-reward, think how to use reward here and dqn
@@ -178,13 +180,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
 
         optimizer.zero_grad();
         loss.backward();
-
-        auto params_before = ppoPolicy.layer3->weight.clone();
-        std::cout << "Layer3 weights before update: " << params_before[0][0].item<float>() << std::endl;
         optimizer.step();
-
-        auto params_after = ppoPolicy.layer3->weight.clone();
-        std::cout << "Layer3 weights after update: " << params_after[0][0].item<float>() << std::endl;
     }
     ppoPolicy.SaveModel("ppo_policy");
     ppoValue.SaveModel("ppo_value_function");

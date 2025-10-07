@@ -32,7 +32,7 @@ void Barrack::CreateUnit(std::vector<std::unique_ptr<Unit>> &units, int &playerG
         break;
 
     case ARCHMAGE:
-        unit = std::make_unique<Archmage>();
+        unit = std::make_unique<ArchMage>();
         break;
 
     case PEASANT:

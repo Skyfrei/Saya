@@ -12,7 +12,7 @@
 #include "../Race/Structure/Structure.h"
 #include "../Race/Structure/TownHall.h"
 #include "../Race/Unit/Footman.h"
-#include "../Race/Unit/Hero/Archmage.h"
+#include "../Race/Unit/Hero/ArchMage.h"
 #include "../Race/Unit/Hero/BloodMage.h"
 #include "../Race/Unit/Peasant.h"
 #include "../ReinforcementLearning/Reward.h"
@@ -246,7 +246,7 @@ std::unique_ptr<Unit> Player::ChooseToRecruit(UnitType unitType) {
         break;
 
     case ARCHMAGE:
-        unt = std::make_unique<Archmage>();
+        unt = std::make_unique<ArchMage>();
         break;
 
     default:

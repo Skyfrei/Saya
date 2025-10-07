@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "../Unit/Footman.h"
-#include "../Unit/Hero/Archmage.h"
+#include "../Unit/Hero/ArchMage.h"
 #include "../Unit/Hero/BloodMage.h"
 #include "../Unit/Peasant.h"
 #include "../Unit/Unit.h"

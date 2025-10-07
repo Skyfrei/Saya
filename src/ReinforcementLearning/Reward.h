@@ -6,7 +6,10 @@
 #include "../Race/Unit/Unit.h"
 #include "../Race/Unit/Footman.h"
 #include "../Race/Unit/Peasant.h"
+#include "../Race/Unit/Hero/BloodMage.h"
+#include "../Race/Unit/Hero/ArchMage.h"
 #include "../Race/Structure/Structure.h"
+#include <cmath>
 
 template<typename... Args>
 float GetRewardFromAction(Args... args) {
@@ -16,7 +19,7 @@ float GetRewardFromAction(Args... args) {
 
     if (std::holds_alternative<MoveAction>(action))
     {
-        reward += 0.1f;
+        reward += 0.05f;
     }
     else if (std::holds_alternative<AttackAction>(action))
     {
@@ -26,7 +29,7 @@ float GetRewardFromAction(Args... args) {
         {
             reward += 0.5;
         }
-        reward += 0.01;
+        reward += 0.05;
     }
     else if (std::holds_alternative<BuildAction>(action))
     {

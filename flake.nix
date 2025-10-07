@@ -1,5 +1,5 @@
 {
-  description = "Saya with sdl and wayland";
+  description = "Saya sdl and wayland compatible";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
