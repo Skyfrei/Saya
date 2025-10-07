@@ -186,6 +186,8 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
         auto params_after = ppoPolicy.layer3->weight.clone();
         std::cout << "Layer3 weights after update: " << params_after[0][0].item<float>() << std::endl;
     }
+    ppoPolicy.SaveModel("ppo_policy");
+    ppoValue.SaveModel("ppo_value_function");
 }
 
 void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {

@@ -31,7 +31,8 @@ class ValueNetwork : public torch::nn::Module{
             layer3 = register_module("layer3", torch::nn::Linear(128, 1));
             tanh = register_module("tanh", torch::nn::Tanh());
         }
-
+        void SaveModel(std::string model_name);
+        void LoadModel(std::string model_name);
     
     private:
         torch::nn::Linear layer1{nullptr}, layer2{nullptr}, layer3{nullptr};

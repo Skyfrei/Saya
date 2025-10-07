@@ -19,6 +19,8 @@ class PPO : public torch::nn::Module{
         void Initialize(Map &map, State &s);
         torch::Tensor Forward(torch::Tensor x);
         actionT MapIndexToAction(Player &pl, Player &en, int actionIndex);
+        void SaveModel(std::string model_name);
+        void LoadModel(std::string model_name);
 
     private:
         void QValue();
@@ -30,7 +32,6 @@ class PPO : public torch::nn::Module{
 
 
     private:
-        const std::string model_name = "ppo_model.pt";
         const float epsilon = 0.2f;
         const float discount = 0.9f;
         int actionSize = 0;

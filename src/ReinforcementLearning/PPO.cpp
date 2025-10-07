@@ -36,6 +36,20 @@ float PPO::GetActionReward(){
     return 0.2f;
 }
 
+void PPO::SaveModel(std::string model_name){
+    model_name += ".pt";
+    torch::serialize::OutputArchive archive;
+    this->save(archive);
+    archive.save_to(model_name);
+
+}
+void PPO::LoadModel(std::string model_name){
+    model_name += ".pt";
+    torch::serialize::InputArchive archive;
+    archive.load_from(model_name);
+    this->load(archive);
+}
+
 
 actionT PPO::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
     if (actionIndex < moveAction)
