@@ -8,9 +8,6 @@
 #include "../Race/Unit/Peasant.h"
 #include "../Race/Structure/Structure.h"
 
-float CalculateReward(const State &currentState, const actionT &action,
-                      const State &nextState);
-
 template<typename... Args>
 float GetRewardFromAction(Args... args) {
     float reward = 0.0f;
@@ -23,6 +20,7 @@ float GetRewardFromAction(Args... args) {
     }
     else if (std::holds_alternative<AttackAction>(action))
     {
+        // use unit here to check if death or not
         const AttackAction &attackAction = std::get<AttackAction>(action);
         if (attackAction.object->health <= 0.0f)
         {
@@ -47,7 +45,15 @@ float GetRewardFromAction(Args... args) {
     }
     else if (std::holds_alternative<FarmGoldAction>(action))
     {
-        reward += 0.5f;
+        int gold = 0;
+        if constexpr (sizeof...(Args) >= 2) gold = std::get<1>(arg_tuple);
+        if (gold <= 500) {
+            reward += 0.5f;  
+        }
+        else if (gold > 500) { /*gradual drop*/
+            reward += 0.5f - std::log(gold / 500) / std::log(16); 
+        }
+
     }
     else if (std::holds_alternative<RecruitAction>(action))
     {
@@ -86,6 +92,35 @@ float GetRewardFromAction(Args... args) {
                 }
                 if (!is_enough_resources)
                     return reward;
+
+            case ARCHMAGE:
+                unit = std::make_unique<ArchMage>();
+                if (gold < unit->goldCost) {
+                    reward -= 0.3;
+                    is_enough_resources = false;
+                }
+                if (food < unit->foodCost) {
+                    reward -= 0.3;
+                    is_enough_resources = false;
+                }
+                if (!is_enough_resources)
+                    return reward;
+                reward += 0.2f;
+
+            case BLOODMAGE:
+                unit = std::make_unique<BloodMage>();
+                if (gold < unit->goldCost) {
+                    reward -= 0.3;
+                    is_enough_resources = false;
+                }
+                if (food < unit->foodCost) {
+                    reward -= 0.3;
+                    is_enough_resources = false;
+                }
+                if (!is_enough_resources)
+                    return reward;
+                reward += 0.2f;
+
             default:
                 break;
         }
@@ -93,4 +128,7 @@ float GetRewardFromAction(Args... args) {
     }
     return reward;
 }
+
+float CalculateReward(const State &currentState, const actionT &action,
+                      const State &nextState);
 #endif // REWARD_H
