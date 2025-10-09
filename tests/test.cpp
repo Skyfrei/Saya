@@ -17,7 +17,7 @@
 #include <random>
 
 
-int mem_size = 100000;
+int mem_size = 10000000;
 std::string StringReplay(){
     State s;
     s.enemyFood.x = 2;

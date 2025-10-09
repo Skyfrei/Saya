@@ -74,7 +74,6 @@ float Player::TakeAction(actionT &act) {
         RecruitAction &action = std::get<RecruitAction>(act);
         reward = GetRewardFromAction(action, gold, food.y - food.x);
         Recruit(action);
-        std::cout<<"Recruiting\n";
     }
     return reward;
 }
