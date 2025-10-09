@@ -4,6 +4,7 @@
 #include "../src/ReinforcementLearning/Transition.h"
 #include "../src/Race/Unit/Unit.h"
 #include "../src/Race/Structure/TownHall.h"
+#include "../src/Race/Structure/Barrack.h"
 #include "../src/Race/Unit/Peasant.h"
 #include "../src/gui/Window.h"
 #include "../src/Race/Unit/Action.h"
@@ -28,20 +29,22 @@ std::string StringReplay(){
         
     std::random_device ran;
     std::default_random_engine e1(ran());
-    std::uniform_int_distribution<int> uniform_dist(0, 100);
+    std::uniform_int_distribution<int> uniform_dist(0, 99);
     
     RlManager obj;
     Map m;
     Player pl(m, PLAYER);
 
     for(int i = 0; i < mem_size;){
-        s.playerStructs.push_back(new TownHall(Vec2(10, 2)));
+        s.playerStructs.push_back(new TownHall(Vec2(1, 2)));
+        s.playerStructs.push_back(new Barrack(Vec2(1, 3)));
         for (int j = 0; j < 5; j++) {
             s.playerUnits.push_back(new Peasant());
             s.playerUnits[j]->coordinate.x = uniform_dist(e1);
             s.playerUnits[j]->coordinate.y = uniform_dist(e1);
         }
         s.enemyStructs.push_back(new TownHall(Vec2(10, 2)));
+        s.enemyStructs.push_back(new Barrack(Vec2(10, 3)));
         for (int j = 0; j < 5; j++) {
             s.enemyUnits.push_back(new Peasant());
             s.enemyUnits[j]->coordinate.x = uniform_dist(e1);
@@ -74,6 +77,7 @@ std::string StringReplay(){
     auto c = std::chrono::high_resolution_clock::now();
     std::cout << "" << duration_cast<milliseconds>(b-a).count();
     std::cout<<"," << duration_cast<milliseconds>(c-b).count();
+    std::cout<<std::endl;
     return "";
 }
 
@@ -88,19 +92,21 @@ std::string BinaryReplay(){
         
     std::random_device ran;
     std::default_random_engine e1(ran());
-    std::uniform_int_distribution<int> uniform_dist(0, 100);
+    std::uniform_int_distribution<int> uniform_dist(0, 99);
     
     RlManager obj;
     Map m;
     Player pl(m, PLAYER);
     for(int i = 0; i < mem_size;){
-        s.playerStructs.push_back(new TownHall(Vec2(10, 2)));
+        s.playerStructs.push_back(new TownHall(Vec2(1, 2)));
+        s.playerStructs.push_back(new Barrack(Vec2(1, 3)));
         for (int j = 0; j < 5; j++) {
             s.playerUnits.push_back(new Peasant());
             s.playerUnits[j]->coordinate.x = uniform_dist(e1);
             s.playerUnits[j]->coordinate.y = uniform_dist(e1);
         }
         s.enemyStructs.push_back(new TownHall(Vec2(10, 2)));
+        s.enemyStructs.push_back(new Barrack(Vec2(10, 3)));
         for (int j = 0; j < 5; j++) {
             s.enemyUnits.push_back(new Peasant());
             s.enemyUnits[j]->coordinate.x = uniform_dist(e1);
