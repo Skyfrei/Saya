@@ -1,4 +1,6 @@
-#pragma once
+#ifndef BLOODMAGE_H
+#define BLOODMAGE_H
+
 #include "../../Spells/Banish.h"
 #include "../../Spells/FlameStrike.h"
 #include "../../Spells/SiphonMana.h"
@@ -42,7 +44,7 @@ class BloodMage : public Hero
         foodCost = 5;
         buildTime = 55;
         attack = 24;
-        attackCooldown = duration<float>(1.28f);
+//        attackCooldown = duration<float>(1.28f);
 
         strength = 18;
         agility = 14;
@@ -63,3 +65,5 @@ class BloodMage : public Hero
         return new BloodMage(*this);
     }
 };
+
+#endif

@@ -53,7 +53,7 @@ class RlManager
     const std::string memory_file_binary = "binary.bay";
     float ppoEpsilon = 0.9f;
     float epsilonDecay = 1e-3;
-    int episodeNumber = 100;
-    int forwardSteps = 30;
+    int episodeNumber = 1;
+    int forwardSteps = 5;
 };
 #endif

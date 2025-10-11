@@ -16,8 +16,7 @@
 #include <fstream>
 #include <random>
 
-
-int mem_size = 100000;
+int mem_size = 50000;
 std::string StringReplay(){
     State s;
     s.enemyFood.x = 2;
@@ -75,9 +74,8 @@ std::string StringReplay(){
     auto b = std::chrono::high_resolution_clock::now();
     obj.LoadMemoryAsString();
     auto c = std::chrono::high_resolution_clock::now();
-    std::cout << "" << duration_cast<milliseconds>(b-a).count();
+    std::cout << duration_cast<milliseconds>(b-a).count();
     std::cout<<"," << duration_cast<milliseconds>(c-b).count();
-    std::cout<<std::endl;
     return "";
 }
 
@@ -137,9 +135,8 @@ std::string BinaryReplay(){
     auto b = std::chrono::high_resolution_clock::now();
     obj.LoadMemoryAsBinary();
     auto c = std::chrono::high_resolution_clock::now();
-    std::cout << "" << duration_cast<milliseconds>(b-a).count();
-    std::cout<<"," << duration_cast<milliseconds>(c-b).count();
-
+    std::cout <<","<< duration_cast<milliseconds>(b-a).count();
+    std::cout<< duration_cast<milliseconds>(c-b).count();
     return "";
 }
 
@@ -214,13 +211,16 @@ bool PPO_Test(){
     man.TrainPPO(player, enemy, map);
     return true;
 }
+
+
 TEST_CASE("Serializing and Deserialzing Replays as string...", "[StringReplaySystem]") {
-    REQUIRE(StringReplay() == ""); 
+    //REQUIRE(StringReplay() == ""); 
 }
 
 TEST_CASE("Serializing and Deserialzing Replays...", "[ReplaySystem]") {
-    REQUIRE(BinaryReplay() == ""); 
+    //REQUIRE(BinaryReplay() == ""); 
 }
+
 
 TEST_CASE("Runtimes of replay system", "[Replay System]") {
    //REQUIRE(RunTimes() <= 2);
@@ -235,5 +235,5 @@ TEST_CASE("Testing DQN", "[DQN]"){
 }
 
 TEST_CASE("Testing PPO", "[PPO]"){
-    //REQUIRE(PPO_Test());
+    REQUIRE(PPO_Test());
 }

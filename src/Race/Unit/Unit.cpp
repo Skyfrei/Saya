@@ -3,6 +3,8 @@
 #include "Unit.h"
 #include "Peasant.h"
 #include <iostream>
+#include "../../Tools/Macro.h"
+
 
 Unit::Unit() {
 }

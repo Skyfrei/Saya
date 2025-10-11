@@ -12,6 +12,7 @@
 #include "../../Tools/Binary.h"
 #include "../Spells/Spell.h"
 #include "../Structure/Structure.h"
+
 #include "Action.h"
 
 using namespace std::chrono;
@@ -27,6 +28,7 @@ class Unit;
 //   int distance;
 //   Vec2 comesFrom;
 // };
+
 
 class Unit : public Living
 {
@@ -64,9 +66,6 @@ class Unit : public Living
     float maxMana;
     float attackRange{};
     int movementSpeed = 1;
-    duration<float, std::milli> attackCooldown = std::chrono::milliseconds(200);
-    duration<float, std::milli> hpCooldown = std::chrono::milliseconds(1000);
-    duration<float, std::milli> moveCooldown = std::chrono::milliseconds(100);
     float manaRegen = 0.25f;
     float hpRegen = 0.25f;
     UnitType is;

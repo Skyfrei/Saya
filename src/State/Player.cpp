@@ -21,6 +21,7 @@
 Player::Player(Map &m, Side en) : map(m), side(en) {
     Initialize();
     food.y = 10;
+    gold = 300;
 }
 Player::Player(const Player &other) : map(other.map) {
     gold = other.gold;
@@ -87,8 +88,7 @@ void Player::Build(BuildAction &action) {
     Terrain &ter = map.GetTerrainAtCoordinate(action.coordinate);
     if (ter.structureOnTerrain == nullptr && ter.resourceLeft == 0)
     {
-        std::unique_ptr<Structure> s =
-            ChooseToBuild(action.struType, action.coordinate);
+        std::unique_ptr<Structure> s = ChooseToBuild(action.struType, action.coordinate);
         if (gold - s->goldCost >= 0)
         {
             gold -= s->goldCost;
@@ -108,9 +108,10 @@ void Player::Recruit(RecruitAction &action) {
     if (action.stru != nullptr && action.stru->is == BARRACK)
     {
         std::unique_ptr<Unit> un = ChooseToRecruit(action.unitType);
-        if (gold - un->goldCost >= 0)
+        if (gold - un->goldCost >= 0 && (food.y - food.x) - un->foodCost >= 0)
         {
             gold -= un->goldCost;
+            food.x += un->foodCost;
             un->coordinate = action.stru->coordinate;
             map.AddOwnership(un.get());
             units.emplace_back(std::move(un));
@@ -118,12 +119,13 @@ void Player::Recruit(RecruitAction &action) {
     }
 }
 void Player::Initialize() {
-    gold = 300;
     structures.push_back(std::make_unique<TownHall>(Vec2(0, 0)));
     for (int i = 0; i < 5; i++)
     {
-        units.push_back(std::make_unique<Peasant>());
-        units[i]->coordinate = structures[0]->coordinate;
+        std::unique_ptr<Unit> un = std::make_unique<Peasant>();
+        un->coordinate = structures[0]->coordinate;
+        map.AddOwnership(un.get());
+        units.emplace_back(std::move(un));
     }
 }
 void Player::SetInitialCoordinates(Vec2 v) {

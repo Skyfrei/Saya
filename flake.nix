@@ -15,6 +15,8 @@
           pkgs.sdl3
           pkgs.sdl3-ttf
           pkgs.catch2_3
+          pkgs.perl
+          pkgs.binutils
         ];
         };
     };

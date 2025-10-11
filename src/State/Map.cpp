@@ -41,7 +41,14 @@ bool Map::operator==(const Map &other) const {
 }
 void Map::RemoveOwnership(Living *l, Vec2 v) {
     Terrain &terr = GetTerrainAtCoordinate(v);
-    std::erase(terr.onTerrainLiving, l);
+
+    if (auto s = dynamic_cast<Structure *>(l))
+    {
+        terr.structureOnTerrain = nullptr;
+    }
+    else{
+        std::erase(terr.onTerrainLiving, l);
+    }
 }
 void Map::AddOwnership(Living *l) {
     Terrain &terr = GetTerrainAtCoordinate(l->coordinate);

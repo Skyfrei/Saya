@@ -125,44 +125,42 @@ bool RlManager::ResetEnvironment(Player &pl, Player &en, Map &map, float &reward
     return false;
 }
 void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
-    torch::optim::AdamW optimizer(
+    torch::optim::AdamW policy_optimizer(
         ppoPolicy.parameters(), torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
+    torch::optim::AdamW value_optimizer(
+        ppoValue.parameters(), torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
+    std::random_device rd;   
+    std::mt19937 gen(rd());  
+    std::uniform_int_distribution<> distrib(0, ppoPolicy.layer3->options.out_features() - 1);
 
     for (int i = 0; i < episodeNumber; i++){
         State s = GetState(pl, en, map);
         TensorStruct old_input(s, map);
         at::Tensor old_tensor_value = ppoValue.Forward(old_input.GetTensor());
-        at::Tensor A = -old_tensor_value;
+        at::Tensor A = -old_tensor_value.detach();
 
         at::Tensor old_logits = ppoPolicy.Forward(old_input.GetTensor());
         at::Tensor probabs = torch::softmax(old_logits, -1);
 
-        std::random_device rd;   // Seed
-        std::mt19937 gen(rd());  // Mersenne Twister RNG
-        std::uniform_int_distribution<> distrib(0, ppoPolicy.layer3->options.out_features() - 1);
         int random_action = distrib(gen);
-        at::Tensor old_prob = probabs[0][random_action].detach(); // detach old policy
-       
-        // for experiments change forward steps to 5-10-or until end of episode
+        at::Tensor old_prob = probabs[0][random_action].detach(); 
+
         for (int step = 0; step < forwardSteps; step++){
             TensorStruct input(s, map);
-            at::Tensor logits = ppoPolicy.Forward(input.GetTensor());
-            at::Tensor probs = torch::softmax(logits, -1);
-            torch::Tensor actionIndex = torch::multinomial(probs, /*num_samples=*/1);
-            actionT action = ppoPolicy.MapIndexToAction(pl, en, actionIndex.item<int>());
-            actionT enemy_action = ppoPolicy.MapIndexToAction(en, pl, actionIndex.item<int>());
+            actionT action = ppoPolicy.MapIndexToAction(pl, en, random_action);
+            actionT enemy_action = ppoPolicy.MapIndexToAction(en, pl, random_action);
 
             at::Tensor reward_tensor = torch::tensor(pl.TakeAction(action), torch::dtype(torch::kFloat32));
             en.TakeAction(enemy_action);
             float reward = reward_tensor.item<float>();
-            std::cout<<reward<<"\n";
+            std::cout<<"Reward: "<<reward<<"\n";
             if (ResetEnvironment(pl, en, map, reward))  // 0-reward, think how to use reward here and dqn
                 break;
             if (step == forwardSteps - 1) {
                 at::Tensor new_tensor_value = ppoValue.Forward(input.GetTensor());
                 A += std::pow(gamma, step) * new_tensor_value.detach();
             }else{
-                A += std::pow(gamma, step) * 25 * reward_tensor;
+                A += std::pow(gamma, step) * 3 * reward_tensor;
             } 
             s = GetState(pl, en, map);
         }
@@ -172,18 +170,23 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
         at::Tensor new_prob = probabs_new[0][random_action];
         
         at::Tensor ratio = new_prob / old_prob;
-        at::Tensor loss = torch::min(ratio * A, torch::clamp(ratio, 1.0f - ppoEpsilon, 1.0f + ppoEpsilon) * A);
+        at::Tensor advantage = A.detach();
+        at::Tensor loss = torch::min(ratio * advantage, torch::clamp(ratio, 1.0f - ppoEpsilon, 1.0f + ppoEpsilon) * advantage);
         
         at::Tensor new_tensor_value = ppoValue.Forward(new_input.GetTensor());       
-        at::Tensor target_value = A + old_tensor_value.detach(); 
+        at::Tensor target_value = advantage; //+ old_tensor_value.detach(); 
         at::Tensor value_loss = torch::mse_loss(new_tensor_value, target_value);
+        std::cout<<loss<<std::endl;
 
-        optimizer.zero_grad();
+        policy_ptimizer.zero_grad();
+        value_ptimizer.zero_grad();
         loss.backward();
+        value_loss.backward();
         optimizer.step();
+        value_ptimizer.zero_grad();
     }
-    ppoPolicy.SaveModel("ppo_policy");
-    ppoValue.SaveModel("ppo_value_function");
+    //ppoPolicy.SaveModel("ppo_policy");
+    //ppoValue.SaveModel("ppo_value_function");
 }
 
 void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
@@ -282,29 +285,27 @@ void RlManager::LoadMemoryAsString() {
         return;
     }
 
-    // Read the entire file into a single string
     std::string fileContents((std::istreambuf_iterator<char>(file)),
                              std::istreambuf_iterator<char>());
 
     file.close();
-
-    // Now pass the whole thing to your deserializer
     Transition trans;
     trans = trans.Deserialize(fileContents);
-    //AddExperience(trans);
+    AddExperience(trans);
 }
 
 void RlManager::SaveMemoryAsBinary() {
     std::vector<binary> data_to_save;
     std::ofstream file;
     file.open(memory_file_binary, std::ios::binary);
+    data_to_save.reserve(memory.size() * 1024);
 
-    for (int i = 0; i < memory.size(); i++)
-    {
+    // Accumulate all serialized vectors
+    for (int i = 0; i < memory.size(); i++) {
         std::vector<binary> data = memory[i].SerializeBinary();
-        file.write(reinterpret_cast<char *>(data.data()),
-                   data.size() * sizeof(binary));
+        data_to_save.insert(data_to_save.end(), data.begin(), data.end());
     }
+    file.write(reinterpret_cast<char*>(data_to_save.data()), data_to_save.size() * sizeof(binary));
 
     file.close();
 }

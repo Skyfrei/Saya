@@ -26,7 +26,6 @@ class Peasant : public Unit
     int goldInventory = 0;
     int maxGoldInventory = 10;
 
-  private:
 };
 
 #endif
