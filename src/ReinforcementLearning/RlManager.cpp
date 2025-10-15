@@ -178,12 +178,13 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
         at::Tensor value_loss = torch::mse_loss(new_tensor_value, target_value);
         std::cout<<loss<<std::endl;
 
-        policy_ptimizer.zero_grad();
-        value_ptimizer.zero_grad();
+        policy_optimizer.zero_grad();
+        value_optimizer.zero_grad();
         loss.backward();
-        value_loss.backward();
-        optimizer.step();
-        value_ptimizer.zero_grad();
+        //value_loss.backward();
+        policy_optimizer.step();
+        value_optimizer.step();
+
     }
     //ppoPolicy.SaveModel("ppo_policy");
     //ppoValue.SaveModel("ppo_value_function");

@@ -5,10 +5,9 @@
 #include <algorithm>
 #include <cmath>
 #include <map>
-#include <random>
 
 
-DQN::DQN() {
+DQN::DQN() :gen(std::random_device{}()), uniform_dist(0, recruitAction - 1)  {
 }
 void DQN::Initialize(Map &map, State &s) {
     TensorStruct tensor = TensorStruct(s, map);
@@ -273,10 +272,7 @@ void DQN::LoadModel() {
 
 
 int DQN::GetRandomOutputIndex() {
-    std::random_device ran;
-    std::default_random_engine e1(ran());
-    std::uniform_int_distribution<int> uniform_dist(0, recruitAction - 1);
-    return uniform_dist(e1);
+    return uniform_dist(gen);
 }
 
 // actionT DQN::SelectAction(State &state, Map &map, float epsilon) {

@@ -6,6 +6,7 @@
 #include <torch/optim.h>
 #include <torch/torch.h>
 #include <tuple>
+#include <random>
 
 #include "../Race/Unit/Unit.h"
 #include "../State/Player.h"
@@ -43,6 +44,7 @@ class DQN : public torch::nn::Module
     int inputSize = 0;
     torch::nn::Linear layer1{nullptr}, layer2{nullptr}, layer3{nullptr};
 
+
     int memory_size = 1000;
     const std::string memory_file = "dqn_memory.say";
     const std::string memory_file_binary = "binary.bay";
@@ -58,6 +60,10 @@ class DQN : public torch::nn::Module
                           HALL_INDEX_IN_STRCTS; // town hall size multipled here as well
     int recruitAction =
         farmAction + /*2 idk why 2 here wtf*/ NR_OF_UNITS * BARRACK_INDEX_IN_STRUCTS; // barrack size
+    //
+    
+    std::mt19937 gen;
+    std::uniform_int_distribution<int> uniform_dist;
 };
 
 #endif

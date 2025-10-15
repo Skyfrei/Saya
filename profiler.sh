@@ -1,9 +1,8 @@
-sudo perf record -F 99 -a -g ./build/tester
-sudo perf script > out.perf
+perf record --call-graph dwarf -F 99 ./result/tester
+perf script > out.perf
 
-perl ./build/FlameGraph/stackcollapse-perf.pl out.perf > out.folded
-perl ./build/FlameGraph/flamegraph.pl out.folded > kernel.svg
-
+perl FlameGraph/stackcollapse-perf.pl out.perf > out.folded
+perl FlameGraph/flamegraph.pl out.folded > kernel.svg
 
 rm out.perf
 rm out.folded
