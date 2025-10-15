@@ -18,3 +18,5 @@ Catch2/
 *.lock
 Saya
 *.say
+result/*
+experiments/*
