@@ -69,6 +69,8 @@
                 pkgs.cmake
                 pkgs.libtorch-bin
                 pkgs.ninja
+                pkgs.latexmk
+                pkgs.texlive-env
             ];
 
         };
