@@ -1,7 +1,9 @@
 #include "Window.h"
 #include "../Race/Unit/Unit.h"
+#include "../Race/Structure/Structure.h"
 #include "../Tools/Macro.h"
-#include <iostream>
+
+
 
 Window::Window(Vec2 s) : window_size(s) {
     canvas_start = Vec2(win_start_x * 4, win_start_y * 4);
@@ -113,13 +115,72 @@ void Window::RenderMoves(std::string &dqn_action, std::string &ppo_action) {
     SDL_RenderTexture(renderer, texture, NULL, &dst);
 }
 
+void Window::PickColor(objectType& t, int p){
+    if (std::holds_alternative<UnitType>(t)) {
+        auto type = std::get<UnitType>(t);
+        switch(type){
+            case UnitType::PEASANT:
+                if (p == 0)
+                    SDL_SetRenderDrawColor(renderer, 255, 99, 71, 255);
+                else
+                    SDL_SetRenderDrawColor(renderer, 60, 179, 113, 255);
+                break;
+            case UnitType::FOOTMAN:
+                if (p == 0)
+                    SDL_SetRenderDrawColor(renderer, 70, 130, 180, 255);
+                else
+                    SDL_SetRenderDrawColor(renderer, 238, 130, 238, 255);
+                break;
+        }
+    } else if (std::holds_alternative<StructureType>(t)) {
+        auto type = std::get<StructureType>(t);
+        switch(type){
+            case StructureType::HALL:
+                if (p == 0)
+                    SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255);
+                else
+                    SDL_SetRenderDrawColor(renderer, 123, 104, 238, 255);
+                break;
+            case StructureType::BARRACK:
+                if (p == 0)
+                    SDL_SetRenderDrawColor(renderer, 244, 164, 96, 255);
+                else
+                    SDL_SetRenderDrawColor(renderer, 0, 191, 255, 255);
+                break;
+            case StructureType::FARM:
+                if (p == 0)
+                    SDL_SetRenderDrawColor(renderer, 199, 21, 133, 255);
+                else
+                    SDL_SetRenderDrawColor(renderer, 50, 205, 50, 255);
+                break;
+        }
+    }
+}
+
 void Window::RenderMap(std::vector<Unit *> &game_objects,
-                       std::vector<Unit *> &game_objects2) {
+                       std::vector<Unit *> &game_objects2,
+                       std::vector<Structure *> &game_objects3,
+                       std::vector<Structure *> &game_objects4) {
     float ratiox = canvas_size_x / MAP_SIZE;
     float ratioy = canvas_size_y / MAP_SIZE;
-    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+    //SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
     for (auto &obj : game_objects)
     {
+        objectType ttype;
+        ttype = obj->is;
+        PickColor(ttype, 0);
+        float gui_x = canvas_start.x + obj->coordinate.x * ratiox;
+        float gui_y = canvas_start.y + obj->coordinate.y * ratioy;
+        // std::cout<<obj->coordinate.x << " " << obj->coordinate.y<<std::endl;
+        SDL_FRect point = {gui_x, gui_y, 3.0f, 3.0f};
+        SDL_RenderFillRect(renderer, &point);
+    }
+    //SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    for (auto &obj : game_objects2)
+    {
+        objectType ttype;
+        ttype = obj->is;
+        PickColor(ttype, 1);
         float gui_x = canvas_start.x + obj->coordinate.x * ratiox;
         float gui_y = canvas_start.y + obj->coordinate.y * ratioy;
         // std::cout<<obj->coordinate.x << " " << obj->coordinate.y<<std::endl;
@@ -127,9 +188,24 @@ void Window::RenderMap(std::vector<Unit *> &game_objects,
         SDL_FRect point = {gui_x, gui_y, 3.0f, 3.0f};
         SDL_RenderFillRect(renderer, &point);
     }
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    for (auto &obj : game_objects2)
+    for (auto &obj : game_objects3)
     {
+        objectType ttype;
+        ttype = obj->is;
+        PickColor(ttype, 1);
+        float gui_x = canvas_start.x + obj->coordinate.x * ratiox;
+        float gui_y = canvas_start.y + obj->coordinate.y * ratioy;
+        // std::cout<<obj->coordinate.x << " " << obj->coordinate.y<<std::endl;
+
+        SDL_FRect point = {gui_x, gui_y, 3.0f, 3.0f};
+        SDL_RenderFillRect(renderer, &point);
+    }
+
+    for (auto &obj : game_objects4)
+    {
+        objectType ttype;
+        ttype = obj->is;
+        PickColor(ttype, 1);
         float gui_x = canvas_start.x + obj->coordinate.x * ratiox;
         float gui_y = canvas_start.y + obj->coordinate.y * ratioy;
         // std::cout<<obj->coordinate.x << " " << obj->coordinate.y<<std::endl;
@@ -141,12 +217,14 @@ void Window::RenderMap(std::vector<Unit *> &game_objects,
 
 SDL_AppResult Window::Render(std::vector<Unit *> &game_objects,
                              std::vector<Unit *> &game_objects2,
+                             std::vector<Structure *> &game_objects3,
+                             std::vector<Structure *> &game_objects4,
                              std::string &dqn_action, std::string &ppo_action) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     RenderUI();
     RenderMoves(dqn_action, ppo_action);
-    RenderMap(game_objects, game_objects2);
+    RenderMap(game_objects, game_objects2, game_objects3, game_objects4);
     SDL_RenderPresent(renderer);
     return SDL_APP_CONTINUE;
 }

@@ -5,8 +5,11 @@
 #include <SDL3_ttf/SDL_ttf.h>
 #include <string>
 #include <vector>
+#include "../Tools/Enums.h"
+#include <variant>
 
 class Unit;
+class Structure;
 // Just decouple this into sending only strings, but keep for testingv purposes
 // rn
 struct RenderStruct
@@ -17,12 +20,17 @@ struct RenderStruct
     Vec2 pos;
 };
 
+using objectType = std::variant<UnitType, StructureType>;
+
 class Window
 {
   public:
     Window(Vec2 s);
     SDL_AppResult Render(std::vector<Unit *> &game_objects,
-                         std::vector<Unit *> &game_objects2, std::string &dqn_Action,
+                         std::vector<Unit *> &game_objects2,
+                         std::vector<Structure *> &game_objects3,
+                         std::vector<Structure *> &game_objects4,
+                         std::string &dqn_Action,
                          std::string &ppo_action);
     void SDL_AppQuit();
 
@@ -30,8 +38,12 @@ class Window
     SDL_AppResult InitSdl();
     void RenderUI();
     void RenderMap(std::vector<Unit *> &game_objects,
-                   std::vector<Unit *> &game_objects2);
+                   std::vector<Unit *> &game_objects2,
+                   std::vector<Structure *> &game_objects3,
+                   std::vector<Structure *> &game_objects4
+                   );
     void RenderMoves(std::string &dqn_action, std::string &ppo_action);
+    void PickColor(objectType&, int);
 
   private:
     RenderStruct map;

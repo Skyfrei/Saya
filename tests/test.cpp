@@ -16,7 +16,7 @@
 #include <fstream>
 #include <random>
 
-int mem_size = 200000;
+int mem_size = 2000;
 std::string StringReplay(){
     State s;
     s.enemyFood.x = 2;
@@ -103,8 +103,8 @@ std::string BinaryReplay(){
             s.playerUnits[j]->coordinate.x = uniform_dist(e1);
             s.playerUnits[j]->coordinate.y = uniform_dist(e1);
         }
-        s.enemyStructs.push_back(new TownHall(Vec2(10, 2)));
-        s.enemyStructs.push_back(new Barrack(Vec2(10, 3)));
+        s.enemyStructs.push_back(new TownHall(Vec2(90, 2)));
+        s.enemyStructs.push_back(new Barrack(Vec2(90, 3)));
         for (int j = 0; j < 5; j++) {
             s.enemyUnits.push_back(new Peasant());
             s.enemyUnits[j]->coordinate.x = uniform_dist(e1);
@@ -178,7 +178,8 @@ bool MapRender(){
         Transition t = obj.memory[b];
         std::string dqn_string = GetRenderStrings(t.action);
         std::string ppo_string = GetRenderStrings(t.action);
-        win.Render(t.state.playerUnits, t.state.enemyUnits, dqn_string, ppo_string);
+        win.Render(t.state.playerUnits, t.state.enemyUnits, t.state.playerStructs,
+                   t.state.enemyStructs, dqn_string, ppo_string);
         //std::cin>>a;
         //if (a == 0)
         //    exit(0);
@@ -227,7 +228,7 @@ TEST_CASE("Runtimes of replay system", "[Replay System]") {
 }
 
 TEST_CASE("Rendering of the map", "[Map rendering]") {
-    //REQUIRE(MapRender());
+    REQUIRE(MapRender());
 }
 
 TEST_CASE("Testing DQN", "[DQN]"){
