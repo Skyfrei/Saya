@@ -136,33 +136,17 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
     for (int i = 0; i < episodeNumber; i++){
         State s = GetState(pl, en, map);
         TensorStruct old_input(s, map);
-        //{
-        //    torch::NoGradGuard no_grad;
-        //    at::Tensor old_tensor_value = ppoValue.Forward(first_input.GetTensor());
-        //    A_scalar = -old_tensor_value.item<float>();
-
-        //    at::Tensor old_logits = ppoPolicy.Forward(first_input.GetTensor());
-        //    at::Tensor probabs = torch::softmax(old_logits, -1);
-
-        //    at::Tensor action_tensor = torch::multinomial(probabs, 1);
-        //    int chosen_action = action_tensor.item<int>();
-        //    at::Tensor old_prob_t = probabs[0][chosen_action]; // still with no grad
-        //    float old_prob_f = old_prob_t.item<float>();
-
-        //    actions.push_back(chosen_action);
-        //    old_probs.push_back(old_prob_f)
-
-        //}
-        at::Tensor old_tensor_value = ppoValue.Forward(old_input.GetTensor());
-        at::Tensor A = -old_tensor_value.detach();
-
-        at::Tensor old_logits = ppoPolicy.Forward(old_input.GetTensor());
-        at::Tensor probabs = torch::softmax(old_logits, -1);
         int random_action = 0;
-
+        at::Tensor old_prob;
+        at::Tensor A;
 
         for (int step = 0; step < forwardSteps; step++){
             TensorStruct input(s, map);
+            at::Tensor old_tensor_value = ppoValue.Forward(old_input.GetTensor());
+            A = -old_tensor_value.detach();
+    
+            at::Tensor old_logits = ppoPolicy.Forward(old_input.GetTensor());
+            at::Tensor probabs = torch::softmax(old_logits, -1);
 
             if (first_200 > 200){
                 random_action = distrib(gen);
@@ -172,7 +156,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 random_action = action_tensor.item<int>();
             }
 
-            at::Tensor old_prob = probabs[0][random_action].detach(); 
+            old_prob = probabs[0][random_action].detach(); 
             actionT action = ppoPolicy.MapIndexToAction(pl, en, random_action);
             actionT enemy_action = ppoPolicy.MapIndexToAction(en, pl, random_action);
 
