@@ -129,9 +129,6 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
         ppoPolicy.parameters(), torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
     torch::optim::AdamW value_optimizer(
         ppoValue.parameters(), torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
-    std::random_device rd;   
-    std::mt19937 gen(rd());  
-    std::uniform_int_distribution<> distrib(0, ppoPolicy.layer3->options.out_features() - 1);
 
     for (int i = 0; i < episodeNumber; i++){
         State s = GetState(pl, en, map);
@@ -142,7 +139,9 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
         at::Tensor old_logits = ppoPolicy.Forward(old_input.GetTensor());
         at::Tensor probabs = torch::softmax(old_logits, -1);
 
-        int random_action = distrib(gen);
+        at::Tensor action_tensor = torch::multinomial(probabs, 1);
+        int random_action = action_tensor.item<int>();
+
         at::Tensor old_prob = probabs[0][random_action].detach(); 
 
         for (int step = 0; step < forwardSteps; step++){
@@ -160,7 +159,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 at::Tensor new_tensor_value = ppoValue.Forward(input.GetTensor());
                 A += std::pow(gamma, step) * new_tensor_value.detach();
             }else{
-                A += std::pow(gamma, step) * 3 * reward_tensor;
+                A += std::pow(gamma, step) * 3 * reward_tensor.detach();
             } 
             s = GetState(pl, en, map);
         }
@@ -169,19 +168,19 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
         at::Tensor probabs_new = torch::softmax(logits, -1);
         at::Tensor new_prob = probabs_new[0][random_action];
         
-        at::Tensor ratio = new_prob / old_prob;
+        at::Tensor ratio = (new_prob / old_prob);
         at::Tensor advantage = A.detach();
         at::Tensor loss = torch::min(ratio * advantage, torch::clamp(ratio, 1.0f - ppoEpsilon, 1.0f + ppoEpsilon) * advantage);
         
         at::Tensor new_tensor_value = ppoValue.Forward(new_input.GetTensor());       
         at::Tensor target_value = advantage; //+ old_tensor_value.detach(); 
         at::Tensor value_loss = torch::mse_loss(new_tensor_value, target_value);
-        std::cout<<loss<<std::endl;
+        std::cout<<loss.item<float>()<<std::endl;
 
         policy_optimizer.zero_grad();
         value_optimizer.zero_grad();
         loss.backward();
-        //value_loss.backward();
+        value_loss.backward();
         policy_optimizer.step();
         value_optimizer.step();
 

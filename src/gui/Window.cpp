@@ -3,8 +3,6 @@
 #include "../Race/Structure/Structure.h"
 #include "../Tools/Macro.h"
 
-
-
 Window::Window(Vec2 s) : window_size(s) {
     canvas_start = Vec2(win_start_x * 4, win_start_y * 4);
     canvas_size_x = algo_start_x - win_start_x - canvas_start.x;

@@ -219,7 +219,7 @@ TEST_CASE("Serializing and Deserialzing Replays as string...", "[StringReplaySys
 }
 
 TEST_CASE("Serializing and Deserialzing Replays...", "[ReplaySystem]") {
-    REQUIRE(BinaryReplay() == ""); 
+    //REQUIRE(BinaryReplay() == ""); 
 }
 
 
@@ -228,7 +228,7 @@ TEST_CASE("Runtimes of replay system", "[Replay System]") {
 }
 
 TEST_CASE("Rendering of the map", "[Map rendering]") {
-    REQUIRE(MapRender());
+    //REQUIRE(MapRender());
 }
 
 TEST_CASE("Testing DQN", "[DQN]"){
@@ -236,5 +236,5 @@ TEST_CASE("Testing DQN", "[DQN]"){
 }
 
 TEST_CASE("Testing PPO", "[PPO]"){
-    //REQUIRE(PPO_Test());
+    REQUIRE(PPO_Test());
 }

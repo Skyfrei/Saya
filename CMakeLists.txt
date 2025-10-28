@@ -1,20 +1,26 @@
 cmake_minimum_required(VERSION 3.16)
-add_compile_options("-g")
+#add_compile_options("-g")
+
+find_package(Torch REQUIRED PATHS ${TORCH_DIR})
+set(CMAKE_CXX_FLAGS ${TORCH_CXX_FLAGS})
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(Saya)
 set(TORCH_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libtorch)
 
-
-find_package(Torch REQUIRED PATHS ${TORCH_DIR})
-set(CMAKE_CXX_FLAGS ${TORCH_CXX_FLAGS})
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-
 #add_subdirectory(SDL EXCLUDE_FROM_ALL)
 file(GLOB_RECURSE CPPSRC
     "src/*.cpp"
-    "src/*.h"
 )
 list(FILTER CPPSRC EXCLUDE REGEX ".*/src/gui/.*")
 add_executable(Saya WIN32 ${CPPSRC})
@@ -24,7 +30,6 @@ target_include_directories(Saya PRIVATE src/ReinforcementLearning/)
 
 file (GLOB_RECURSE SDLSRC
     "src/gui/*.cpp"
-    "src/gui/*.h"
 )
 find_package(PkgConfig REQUIRED)
 

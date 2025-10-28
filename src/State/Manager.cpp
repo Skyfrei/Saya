@@ -1,6 +1,3 @@
-//
-// Created by Klavio Tarka on 13.12.23.
-//
 #include "Manager.h"
 #include "../Race/Structure/TownHall.h"
 #include "../Race/Unit/Peasant.h"
