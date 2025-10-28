@@ -129,7 +129,10 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
         ppoPolicy.parameters(), torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
     torch::optim::AdamW value_optimizer(
         ppoValue.parameters(), torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
-
+    int first_200 = 0;
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distrib(0, ppoPolicy.layer3->options.out_features());
     for (int i = 0; i < episodeNumber; i++){
         State s = GetState(pl, en, map);
         TensorStruct old_input(s, map);
@@ -155,14 +158,21 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
 
         at::Tensor old_logits = ppoPolicy.Forward(old_input.GetTensor());
         at::Tensor probabs = torch::softmax(old_logits, -1);
+        int random_action = 0;
 
-        at::Tensor action_tensor = torch::multinomial(probabs, 1);
-        int random_action = action_tensor.item<int>();
-
-        at::Tensor old_prob = probabs[0][random_action].detach(); 
 
         for (int step = 0; step < forwardSteps; step++){
             TensorStruct input(s, map);
+
+            if (first_200 > 200){
+                random_action = distrib(gen);
+                first_200++;
+            }else{
+                at::Tensor action_tensor = torch::multinomial(probabs, 1);
+                random_action = action_tensor.item<int>();
+            }
+
+            at::Tensor old_prob = probabs[0][random_action].detach(); 
             actionT action = ppoPolicy.MapIndexToAction(pl, en, random_action);
             actionT enemy_action = ppoPolicy.MapIndexToAction(en, pl, random_action);
 
