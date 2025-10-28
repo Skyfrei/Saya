@@ -21,10 +21,10 @@ void RlManager::InitializeDQN(Player &pl, Player &en, Map &map) {
     {
         device = torch::Device(torch::DeviceType::CUDA);
         episodeNumber = 200;
+        policyNet.to(device);
+        targetNet.to(device);
     }
 
-    policyNet.to(device);
-    targetNet.to(device);
 }
 
 void RlManager::InitializePPO(Player &pl, Player &en, Map &map){
@@ -37,10 +37,10 @@ void RlManager::InitializePPO(Player &pl, Player &en, Map &map){
     {
         device = torch::Device(torch::DeviceType::CUDA);
         episodeNumber = 200;
+        ppoPolicy.to(device);
+        ppoValue.to(device);
     }
 
-    ppoPolicy.to(device);
-    ppoValue.to(device);
 }
 
 void RlManager::OptimizeDQN(Map &map) {
@@ -133,6 +133,23 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
     for (int i = 0; i < episodeNumber; i++){
         State s = GetState(pl, en, map);
         TensorStruct old_input(s, map);
+        //{
+        //    torch::NoGradGuard no_grad;
+        //    at::Tensor old_tensor_value = ppoValue.Forward(first_input.GetTensor());
+        //    A_scalar = -old_tensor_value.item<float>();
+
+        //    at::Tensor old_logits = ppoPolicy.Forward(first_input.GetTensor());
+        //    at::Tensor probabs = torch::softmax(old_logits, -1);
+
+        //    at::Tensor action_tensor = torch::multinomial(probabs, 1);
+        //    int chosen_action = action_tensor.item<int>();
+        //    at::Tensor old_prob_t = probabs[0][chosen_action]; // still with no grad
+        //    float old_prob_f = old_prob_t.item<float>();
+
+        //    actions.push_back(chosen_action);
+        //    old_probs.push_back(old_prob_f)
+
+        //}
         at::Tensor old_tensor_value = ppoValue.Forward(old_input.GetTensor());
         at::Tensor A = -old_tensor_value.detach();
 
@@ -169,7 +186,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
         at::Tensor new_prob = probabs_new[0][random_action];
         
         at::Tensor ratio = (new_prob / old_prob);
-        at::Tensor advantage = A.detach();
+        at::Tensor advantage = A.clone().detach();
         at::Tensor loss = torch::min(ratio * advantage, torch::clamp(ratio, 1.0f - ppoEpsilon, 1.0f + ppoEpsilon) * advantage);
         
         at::Tensor new_tensor_value = ppoValue.Forward(new_input.GetTensor());       
@@ -183,9 +200,8 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
         value_loss.backward();
         policy_optimizer.step();
         value_optimizer.step();
-
     }
-    //ppoPolicy.SaveModel("ppo_policy");
+    ppoPolicy.SaveModel("ppo_policy");
     //ppoValue.SaveModel("ppo_value_function");
 }
 

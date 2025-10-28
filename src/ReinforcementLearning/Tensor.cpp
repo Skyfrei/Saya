@@ -13,6 +13,7 @@ TensorStruct::TensorStruct(State &state, Map &map) {
     enemyStructs = GetStructuresTensor(state.enemyStructs);
 }
 
+
 torch::Tensor TensorStruct::GetMapTensor(Map &map) {
     std::vector<int> data;
 

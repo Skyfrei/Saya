@@ -3,10 +3,10 @@
 
 #include <chrono>
 
-#define MAP_SIZE 100
-#define MAX_UNITS 300 // 40
+#define MAP_SIZE 10
+#define MAX_UNITS 100 // 40
 #define MAX_STRUCTS 30
-#define PEASANT_INDEX_IN_UNITS 100
+#define PEASANT_INDEX_IN_UNITS 50
 #define HALL_INDEX_IN_STRCTS 5
 #define BARRACK_INDEX_IN_STRUCTS 5
 #define MAX_UNITS_TYPE 3

@@ -42,7 +42,7 @@ std::string StringReplay(){
             s.playerUnits[j]->coordinate.x = uniform_dist(e1);
             s.playerUnits[j]->coordinate.y = uniform_dist(e1);
         }
-        s.enemyStructs.push_back(new TownHall(Vec2(10, 2)));
+        s.enemyStructs.push_back(new TownHall(Vec2(8, 2)));
         s.enemyStructs.push_back(new Barrack(Vec2(10, 3)));
         for (int j = 0; j < 5; j++) {
             s.enemyUnits.push_back(new Peasant());
@@ -90,7 +90,7 @@ std::string BinaryReplay(){
         
     std::random_device ran;
     std::default_random_engine e1(ran());
-    std::uniform_int_distribution<int> uniform_dist(0, 99);
+    std::uniform_int_distribution<int> uniform_dist(0, MAP_SIZE);
     
     RlManager obj;
     Map m;
@@ -103,8 +103,8 @@ std::string BinaryReplay(){
             s.playerUnits[j]->coordinate.x = uniform_dist(e1);
             s.playerUnits[j]->coordinate.y = uniform_dist(e1);
         }
-        s.enemyStructs.push_back(new TownHall(Vec2(90, 2)));
-        s.enemyStructs.push_back(new Barrack(Vec2(90, 3)));
+        s.enemyStructs.push_back(new TownHall(Vec2(9, 2)));
+        s.enemyStructs.push_back(new Barrack(Vec2(9, 3)));
         for (int j = 0; j < 5; j++) {
             s.enemyUnits.push_back(new Peasant());
             s.enemyUnits[j]->coordinate.x = uniform_dist(e1);
@@ -219,7 +219,7 @@ TEST_CASE("Serializing and Deserialzing Replays as string...", "[StringReplaySys
 }
 
 TEST_CASE("Serializing and Deserialzing Replays...", "[ReplaySystem]") {
-    //REQUIRE(BinaryReplay() == ""); 
+    REQUIRE(BinaryReplay() == ""); 
 }
 
 

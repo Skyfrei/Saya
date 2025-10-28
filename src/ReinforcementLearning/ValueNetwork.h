@@ -17,7 +17,6 @@ class ValueNetwork : public torch::nn::Module{
         ValueNetwork();
         torch::Tensor Forward(torch::Tensor x);
 
-
         template<typename Policy>
         void Initialize(Policy& policy) {
             auto l1_in = policy.layer1->options.in_features();

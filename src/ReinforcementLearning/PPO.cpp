@@ -14,7 +14,7 @@ void PPO::Initialize(Map &map, State &s){
     layer2 = register_module("layer2", torch::nn::Linear(128, 128));
     layer3 = register_module("layer3", torch::nn::Linear(128, actionSize));
     tanh = register_module("tanh", torch::nn::Tanh());
-
+    std::cout<<std::endl<<inputSize<< " "<<actionSize<<std::endl;
 }
 
 torch::Tensor PPO::Forward(torch::Tensor x){

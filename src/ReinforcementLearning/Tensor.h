@@ -16,6 +16,7 @@
 struct TensorStruct
 {
     TensorStruct(State &state, Map &map);
+
     torch::Tensor GetMapTensor(Map &map);
     torch::Tensor GetVec(Vec2 food);
     torch::Tensor GetUnitsTensor(std::vector<Unit *> &units);
