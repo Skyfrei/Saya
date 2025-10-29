@@ -20,3 +20,4 @@ Saya
 *.say
 result/*
 experiments/*
+*.pt

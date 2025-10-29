@@ -54,6 +54,6 @@ class RlManager
     float ppoEpsilon = 0.9f;
     float epsilonDecay = 1e-3;
     int episodeNumber = 3000;
-    int forwardSteps = 20;
+    int forwardSteps = 2000;
 };
 #endif

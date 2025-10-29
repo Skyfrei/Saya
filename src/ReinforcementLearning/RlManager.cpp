@@ -133,6 +133,10 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> distrib(0, ppoPolicy.layer3->options.out_features());
+    std::ofstream file;
+    file.open("ppo_loss.txt", std::ios_base::app);
+
+    
     for (int i = 0; i < episodeNumber; i++){
         State s = GetState(pl, en, map);
         TensorStruct old_input(s, map);
@@ -148,7 +152,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
             at::Tensor old_logits = ppoPolicy.Forward(old_input.GetTensor());
             at::Tensor probabs = torch::softmax(old_logits, -1);
 
-            if (first_200 > 200){
+            if (first_200 < 200){
                 random_action = distrib(gen);
                 first_200++;
             }else{
@@ -163,7 +167,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
             at::Tensor reward_tensor = torch::tensor(pl.TakeAction(action), torch::dtype(torch::kFloat32));
             en.TakeAction(enemy_action);
             float reward = reward_tensor.item<float>();
-            std::cout<<"Reward: "<<reward<<"\n";
+//            std::cout<<"Reward: "<<reward<<"\n";
             if (ResetEnvironment(pl, en, map, reward))  // 0-reward, think how to use reward here and dqn
                 break;
             if (step == forwardSteps - 1) {
@@ -186,7 +190,9 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
         at::Tensor new_tensor_value = ppoValue.Forward(new_input.GetTensor());       
         at::Tensor target_value = advantage; //+ old_tensor_value.detach(); 
         at::Tensor value_loss = torch::mse_loss(new_tensor_value, target_value);
-        std::cout<<loss.item<float>()<<std::endl;
+ //       std::cout<<loss.item<float>()<<std::endl;
+        file << loss.item<float>()<<"\n";
+        
 
         policy_optimizer.zero_grad();
         value_optimizer.zero_grad();
@@ -195,6 +201,8 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
         policy_optimizer.step();
         value_optimizer.step();
     }
+    file.close();
+
     ppoPolicy.SaveModel("ppo_policy");
     //ppoValue.SaveModel("ppo_value_function");
 }
