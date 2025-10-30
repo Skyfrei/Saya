@@ -39,7 +39,7 @@ class RlManager
     Transition CreateTransition(State s, actionT a, State rextS);
     State GetState(Player &pl, Player &en, Map &map);
     void OptimizeDQN(Map &map);
-    bool ResetEnvironment(Player &pl, Player &en, Map &map, float &reward);
+    bool ShouldResetEnvironment(Player &pl, Player &en, Map &map, float &reward);
 
   private:
     const int batchSize = 32;
@@ -53,7 +53,7 @@ class RlManager
     const std::string memory_file_binary = "binary.bay";
     float ppoEpsilon = 0.9f;
     float epsilonDecay = 1e-3;
-    int episodeNumber = 3000;
+    int episodeNumber = 15;
     int forwardSteps = 2000;
 };
 #endif

@@ -98,7 +98,7 @@ void RlManager::OptimizeDQN(Map &map) {
     optimizer.step();
 }
 
-bool RlManager::ResetEnvironment(Player &pl, Player &en, Map &map, float &reward) {
+bool RlManager::ShouldResetEnvironment(Player &pl, Player &en, Map &map, float &reward) {
     if (!(pl.HasUnit(PEASANT) && pl.HasStructure(HALL))){
         pl.units.clear();
         pl.structures.clear();
@@ -129,82 +129,91 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
         ppoPolicy.parameters(), torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
     torch::optim::AdamW value_optimizer(
         ppoValue.parameters(), torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
-    int first_200 = 0;
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::uniform_int_distribution<> distrib(0, ppoPolicy.layer3->options.out_features());
+    std::uniform_int_distribution<> distrib(0, ppoPolicy.layer3->options.out_features() - 1);
     std::ofstream file;
     file.open("ppo_loss.txt", std::ios_base::app);
-
+    bool done = false;
     
     for (int i = 0; i < episodeNumber; i++){
-        State s = GetState(pl, en, map);
-        TensorStruct old_input(s, map);
-        int random_action = 0;
-        at::Tensor old_prob;
-        at::Tensor A;
+        done = false;
+        while (!done){
+            State s = GetState(pl, en, map);
+            Player playerClone = Player(pl);
+            Player enemyClone = Player(en);
+            
+            TensorStruct old_input(s, map);
 
-        for (int step = 0; step < forwardSteps; step++){
-            TensorStruct input(s, map);
-            at::Tensor old_tensor_value = ppoValue.Forward(old_input.GetTensor());
-            A = -old_tensor_value.detach();
+            at::Tensor old_tensor_value_0 = ppoPolicy.Forward(old_input.GetTensor());
+            at::Tensor old_probabs_0 = torch::softmax(old_tensor_value_0, -1);
+
+            at::Tensor action_tensor = torch::multinomial(old_probabs_0, 1);
+            int initial_action = action_tensor.item<int>();
+            at::Tensor old_prob = old_probabs_0[0][initial_action].detach();
+
+            int random_action = 0;
+            at::Tensor old_state_value = ppoValue.Forward(old_input.GetTensor());
+            at::Tensor A = -old_state_value.detach();
+
+            for (int step = 0; step < forwardSteps; step++){
+                s = GetState(playerClone, enemyClone, map);
+                TensorStruct input(s, map);
     
-            at::Tensor old_logits = ppoPolicy.Forward(old_input.GetTensor());
-            at::Tensor probabs = torch::softmax(old_logits, -1);
+                at::Tensor current_tensor = ppoPolicy.Forward(input.GetTensor());
+                at::Tensor current_probabs = torch::softmax(current_tensor, -1);
+                if (step != 0){
+                    at::Tensor action_tensor = torch::multinomial(current_probabs, 1);
+                    random_action = action_tensor.item<int>();
+                }else{
+                    random_action = initial_action;
+                }
+                actionT action = ppoPolicy.MapIndexToAction(playerClone, enemyClone, random_action);
+                actionT enemy_action = ppoPolicy.MapIndexToAction(enemyClone, playerClone, random_action);
 
-            if (first_200 < 200){
-                random_action = distrib(gen);
-                first_200++;
-            }else{
-                at::Tensor action_tensor = torch::multinomial(probabs, 1);
-                random_action = action_tensor.item<int>();
+                at::Tensor reward_tensor = torch::tensor(playerClone.TakeAction(action), torch::dtype(torch::kFloat32));
+                enemyClone.TakeAction(enemy_action);
+                float reward = reward_tensor.item<float>();
+                A += std::pow(gamma, step) * reward_tensor.detach();
+
+                if (ShouldResetEnvironment(pl, en, map, reward)){
+                    done = true;
+                    break;
+                }
             }
+            std::cout<<"A"<<std::endl;
+            at::Tensor new_tensor = ppoPolicy.Forward(old_input.GetTensor());
+            at::Tensor probabs_new = torch::softmax(new_tensor, -1);
+            at::Tensor new_prob = probabs_new[0][initial_action];
+            at::Tensor ratio = (new_prob / old_prob);
 
-            old_prob = probabs[0][random_action].detach(); 
-            actionT action = ppoPolicy.MapIndexToAction(pl, en, random_action);
-            actionT enemy_action = ppoPolicy.MapIndexToAction(en, pl, random_action);
+            TensorStruct new_input(s, map);
+            at::Tensor new_tensor_value = ppoValue.Forward(new_input.GetTensor());
+            at::Tensor advantage = A.clone().detach() + std::pow(gamma, forwardSteps) * new_tensor_value.detach();
+            at::Tensor loss = -torch::mean(torch::min(ratio * advantage, torch::clamp(ratio, 1.0f - ppoEpsilon, 1.0f + ppoEpsilon) * advantage));
+            
+            at::Tensor value_loss = torch::mse_loss(old_state_value, advantage);
+            file << loss.item<float>()<<"\n";
+            policy_optimizer.zero_grad();
+            value_optimizer.zero_grad();
+            loss.backward();
+            value_loss.backward();
+            policy_optimizer.step();
+            value_optimizer.step();
 
-            at::Tensor reward_tensor = torch::tensor(pl.TakeAction(action), torch::dtype(torch::kFloat32));
+
+            at::Tensor logits = ppoPolicy.Forward(old_input.GetTensor());
+            at::Tensor probs_ac = torch::softmax(logits, -1); // shape: [1, num_actions]
+            int best_action = probs_ac.argmax(-1).item<int>(); // picks the action with highest probability
+            actionT action = ppoPolicy.MapIndexToAction(pl, en, best_action);
+            actionT enemy_action = ppoPolicy.MapIndexToAction(en, pl, best_action);
+            pl.TakeAction(action);
             en.TakeAction(enemy_action);
-            float reward = reward_tensor.item<float>();
-//            std::cout<<"Reward: "<<reward<<"\n";
-            if (ResetEnvironment(pl, en, map, reward))  // 0-reward, think how to use reward here and dqn
-                break;
-            if (step == forwardSteps - 1) {
-                at::Tensor new_tensor_value = ppoValue.Forward(input.GetTensor());
-                A += std::pow(gamma, step) * new_tensor_value.detach();
-            }else{
-                A += std::pow(gamma, step) * 3 * reward_tensor.detach();
-            } 
-            s = GetState(pl, en, map);
         }
-        TensorStruct new_input(s, map);
-        at::Tensor logits = ppoPolicy.Forward(new_input.GetTensor());
-        at::Tensor probabs_new = torch::softmax(logits, -1);
-        at::Tensor new_prob = probabs_new[0][random_action];
-        
-        at::Tensor ratio = (new_prob / old_prob);
-        at::Tensor advantage = A.clone().detach();
-        at::Tensor loss = torch::min(ratio * advantage, torch::clamp(ratio, 1.0f - ppoEpsilon, 1.0f + ppoEpsilon) * advantage);
-        
-        at::Tensor new_tensor_value = ppoValue.Forward(new_input.GetTensor());       
-        at::Tensor target_value = advantage; //+ old_tensor_value.detach(); 
-        at::Tensor value_loss = torch::mse_loss(new_tensor_value, target_value);
- //       std::cout<<loss.item<float>()<<std::endl;
-        file << loss.item<float>()<<"\n";
-        
 
-        policy_optimizer.zero_grad();
-        value_optimizer.zero_grad();
-        loss.backward();
-        value_loss.backward();
-        policy_optimizer.step();
-        value_optimizer.step();
     }
     file.close();
-
     ppoPolicy.SaveModel("ppo_policy");
-    //ppoValue.SaveModel("ppo_value_function");
 }
 
 void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
@@ -220,7 +229,7 @@ void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
                 policyNet.SelectAction(pl, en, map, currState, epsilon);
             float reward = pl.TakeAction(std::get<0>(selectedAction));
             State nextState = GetState(pl, en, map);
-            if (ResetEnvironment(pl, en, map, reward))
+            if (ShouldResetEnvironment(pl, en, map, reward))
                 break;
             Transition trans(currState, std::get<0>(selectedAction), nextState,
                              reward, std::get<1>(selectedAction));
@@ -228,7 +237,7 @@ void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
             selectedAction = policyNet.SelectAction(pl, en, map, nextState, epsilon);
             reward = en.TakeAction(std::get<0>(selectedAction));
             State nextNextState = GetState(pl, en, map);
-            if (ResetEnvironment(en, pl, map, reward)) // change order of pl, en to en, pl becasue en takes action here
+            if (ShouldResetEnvironment(en, pl, map, reward)) // change order of pl, en to en, pl becasue en takes action here
                 break;
             Transition trans1(nextState, std::get<0>(selectedAction), nextNextState,
                               reward, std::get<1>(selectedAction));
