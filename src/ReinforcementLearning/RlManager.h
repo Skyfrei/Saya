@@ -5,6 +5,7 @@
 #include "../State/Player.h"
 #include "DQN.h"
 #include "PPO.h"
+#include "../gui/Window.h"
 #include "ValueNetwork.h"
 #include "Transition.h"
 #include <deque>
@@ -40,6 +41,8 @@ class RlManager
     State GetState(Player &pl, Player &en, Map &map);
     void OptimizeDQN(Map &map);
     bool ShouldResetEnvironment(Player &pl, Player &en, Map &map, float &reward);
+    void ShowInMap(State& state);
+
 
   private:
     const int batchSize = 32;
@@ -54,6 +57,7 @@ class RlManager
     float ppoEpsilon = 0.9f;
     float epsilonDecay = 1e-3;
     int episodeNumber = 15;
-    int forwardSteps = 2000;
+    int forwardSteps = 200;
+    Window win;
 };
 #endif

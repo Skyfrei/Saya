@@ -8,7 +8,7 @@
 #include "Tensor.h"
 #include <algorithm>
 
-RlManager::RlManager() {
+RlManager::RlManager() : win(Vec2(1000, 1000)) {
 }
 
 void RlManager::InitializeDQN(Player &pl, Player &en, Map &map) {
@@ -126,15 +126,16 @@ bool RlManager::ShouldResetEnvironment(Player &pl, Player &en, Map &map, float &
 }
 void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
     torch::optim::AdamW policy_optimizer(
-        ppoPolicy.parameters(), torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
+        ppoPolicy.parameters(), torch::optim::AdamWOptions(3e-4).weight_decay(1e-4));
     torch::optim::AdamW value_optimizer(
-        ppoValue.parameters(), torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
+        ppoValue.parameters(), torch::optim::AdamWOptions(3e-4).weight_decay(1e-4));
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> distrib(0, ppoPolicy.layer3->options.out_features() - 1);
     std::ofstream file;
     file.open("ppo_loss.txt", std::ios_base::app);
     bool done = false;
+
     
     for (int i = 0; i < episodeNumber; i++){
         done = false;
@@ -142,6 +143,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
             State s = GetState(pl, en, map);
             Player playerClone = Player(pl);
             Player enemyClone = Player(en);
+            std::vector<std::tuple<State, int, at::Tensor, at::Tensor>> index_old_probabilities;
             
             TensorStruct old_input(s, map);
 
@@ -153,7 +155,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
             at::Tensor old_prob = old_probabs_0[0][initial_action].detach();
 
             int random_action = 0;
-            at::Tensor old_state_value = ppoValue.Forward(old_input.GetTensor());
+            at::Tensor old_state_value = ppoValue.Forward(old_input.GetTensor()).detach();
             at::Tensor A = -old_state_value.detach();
 
             for (int step = 0; step < forwardSteps; step++){
@@ -168,6 +170,8 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 }else{
                     random_action = initial_action;
                 }
+                index_old_probabilities.push_back({s, random_action, current_probabs[0][random_action].detach(), A.detach()});
+
                 actionT action = ppoPolicy.MapIndexToAction(playerClone, enemyClone, random_action);
                 actionT enemy_action = ppoPolicy.MapIndexToAction(enemyClone, playerClone, random_action);
 
@@ -180,28 +184,65 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                     done = true;
                     break;
                 }
+
             }
-            std::cout<<"A"<<std::endl;
-            at::Tensor new_tensor = ppoPolicy.Forward(old_input.GetTensor());
-            at::Tensor probabs_new = torch::softmax(new_tensor, -1);
-            at::Tensor new_prob = probabs_new[0][initial_action];
-            at::Tensor ratio = (new_prob / old_prob);
+            int ppo_epochs = 7;
+            for (int k = 0; k < ppo_epochs; k++){
+                float policy_loss_sum = 0.0f;
+                float value_loss_sum = 0.0f;
+                
+                policy_optimizer.zero_grad();
+                value_optimizer.zero_grad();
+                
+                for (auto &entry : index_old_probabilities) {
+                    State &s = std::get<0>(entry);
+                    std::cout<<s.playerUnits.size();
+                    ShowInMap(s);
 
-            TensorStruct new_input(s, map);
-            at::Tensor new_tensor_value = ppoValue.Forward(new_input.GetTensor());
-            at::Tensor advantage = A.clone().detach() + std::pow(gamma, forwardSteps) * new_tensor_value.detach();
-            at::Tensor loss = -torch::mean(torch::min(ratio * advantage, torch::clamp(ratio, 1.0f - ppoEpsilon, 1.0f + ppoEpsilon) * advantage));
-            
-            at::Tensor value_loss = torch::mse_loss(old_state_value, advantage);
-            file << loss.item<float>()<<"\n";
-            policy_optimizer.zero_grad();
-            value_optimizer.zero_grad();
-            loss.backward();
-            value_loss.backward();
-            policy_optimizer.step();
-            value_optimizer.step();
+                    int action = std::get<1>(entry);
+                    at::Tensor old_prob = std::get<2>(entry);
+                    at::Tensor advantage = std::get<3>(entry);  // Add advantage to your tuple!
+                    
+                    TensorStruct input(s, map);
+                    
+                    // Get new probability from updated policy
+                    at::Tensor new_tensor = ppoPolicy.Forward(input.GetTensor());
+                    at::Tensor probabs_new = torch::softmax(new_tensor, -1);
+                    at::Tensor new_prob = probabs_new[0][action];
+                    at::Tensor ratio = new_prob / old_prob;
+                    
+                    // PPO clipped loss
+                    at::Tensor surr1 = ratio * advantage;
+                    at::Tensor surr2 = torch::clamp(ratio, 1.0f - ppoEpsilon, 1.0f + ppoEpsilon) * advantage;
+                    at::Tensor policy_loss = -torch::min(surr1, surr2);
+                    
+                    // Value loss - compute current value estimate
+                    at::Tensor current_value = ppoValue.Forward(input.GetTensor());
+                    at::Tensor value_target = advantage;  // Or use returns if you computed them
+                    at::Tensor value_loss = torch::mse_loss(current_value, value_target.detach());
 
+                    
+                    // Backward on individual losses (they accumulate gradients)
+                    policy_loss.backward(torch::ones_like(policy_loss), true);  // retain_graph=true
+                    value_loss.backward(torch::ones_like(value_loss), true);
 
+                    torch::nn::utils::clip_grad_norm_(ppoPolicy.parameters(), 0.5);
+                    torch::nn::utils::clip_grad_norm_(ppoValue.parameters(), 0.5);
+                
+                    
+                    // Track for logging
+                    policy_loss_sum += policy_loss.item<float>();
+                    value_loss_sum += value_loss.item<float>();
+                }
+                
+                // Step optimizers once after all gradients accumulated
+                policy_optimizer.step();
+                value_optimizer.step();
+                
+                std::cout << "Epoch " << k << " | Policy Loss: " << policy_loss_sum 
+                          << " | Value Loss: " << value_loss_sum << std::endl;
+                file << policy_loss_sum << "\n";
+            }            
             at::Tensor logits = ppoPolicy.Forward(old_input.GetTensor());
             at::Tensor probs_ac = torch::softmax(logits, -1); // shape: [1, num_actions]
             int best_action = probs_ac.argmax(-1).item<int>(); // picks the action with highest probability
@@ -209,11 +250,20 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
             actionT enemy_action = ppoPolicy.MapIndexToAction(en, pl, best_action);
             pl.TakeAction(action);
             en.TakeAction(enemy_action);
+            State s1 = GetState(pl, en, map);
+            //ShowInMap(s1);
         }
-
     }
     file.close();
     ppoPolicy.SaveModel("ppo_policy");
+}
+
+void RlManager::ShowInMap(State& state){
+    int a;
+    std::string dqn_string = "yes";
+    std::string ppo_string = "no";
+    win.Render(state.playerUnits, state.enemyUnits, state.playerStructs,
+    state.enemyStructs, dqn_string, ppo_string);
 }
 
 void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {

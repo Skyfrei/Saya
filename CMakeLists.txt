@@ -22,7 +22,7 @@ set(TORCH_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libtorch)
 file(GLOB_RECURSE CPPSRC
     "src/*.cpp"
 )
-list(FILTER CPPSRC EXCLUDE REGEX ".*/src/gui/.*")
+#list(FILTER CPPSRC EXCLUDE REGEX ".*/src/gui/.*")
 add_executable(Saya WIN32 ${CPPSRC})
 #target_link_libraries(Saya PRIVATE SDL3::SDL3)
 target_link_libraries(Saya PRIVATE "${TORCH_LIBRARIES}")
@@ -36,11 +36,10 @@ find_package(PkgConfig REQUIRED)
 set(SDLTTF_VENDORED ON)
 pkg_check_modules(SDL3 REQUIRED sdl3)
 pkg_check_modules(SDL3_TTF REQUIRED sdl3-ttf)
-add_executable(sdl-test src/gui/start.cpp ${SDLSRC})
 #target_link_libraries(sdl-test PRIVATE SDL3::SDL3 SDL3_ttf::SDL3_ttf)
 
-target_link_libraries(sdl-test PRIVATE ${SDL3_LIBRARIES} ${SDL3_TTF_LIBRARIES})
-target_include_directories(sdl-test PRIVATE ${SDL3_INCLUDE_DIRS} ${SDL3_TTF_INCLUDE_DIRS})
+target_link_libraries(Saya PRIVATE ${SDL3_LIBRARIES} ${SDL3_TTF_LIBRARIES})
+target_include_directories(Saya PRIVATE ${SDL3_INCLUDE_DIRS} ${SDL3_TTF_INCLUDE_DIRS})
 
 
 
