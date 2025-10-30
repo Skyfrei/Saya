@@ -27,18 +27,18 @@ Player::Player(const Player &other) : map(other.map) {
     gold = other.gold;
     food = other.food;
 
-    // // Deep copy structures
-    // for (const auto &structure : other.structures)
-    // {
-    //     structures.push_back(structure->Clone());
-    // }
-    // // Deep copy units
-    // for (const auto &unit : other.units)
-    // {
-    //     units.push_back(unit->Clone());
-    // }
+     // Deep copy structures
+     for (const auto &structure : other.structures)
+     {
+         structures.emplace_back(structure->Clone());
+     }
+     // Deep copy units
+     for (const auto &unit : other.units)
+     {
+         units.emplace_back(unit->Clone());
+     }
 
-    // side = other.side;
+     side = other.side;
 }
 Player::~Player() {
     units.clear();

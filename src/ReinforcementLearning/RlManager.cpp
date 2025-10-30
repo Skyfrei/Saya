@@ -141,6 +141,8 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
         done = false;
         while (!done){
             State s = GetState(pl, en, map);
+
+
             Player playerClone = Player(pl);
             Player enemyClone = Player(en);
             std::vector<std::tuple<State, int, at::Tensor, at::Tensor>> index_old_probabilities;
@@ -186,7 +188,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 }
 
             }
-            int ppo_epochs = 7;
+            int ppo_epochs = 1;
             for (int k = 0; k < ppo_epochs; k++){
                 float policy_loss_sum = 0.0f;
                 float value_loss_sum = 0.0f;
@@ -196,8 +198,6 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 
                 for (auto &entry : index_old_probabilities) {
                     State &s = std::get<0>(entry);
-                    std::cout<<s.playerUnits.size();
-                    ShowInMap(s);
 
                     int action = std::get<1>(entry);
                     at::Tensor old_prob = std::get<2>(entry);
@@ -251,6 +251,9 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
             pl.TakeAction(action);
             en.TakeAction(enemy_action);
             State s1 = GetState(pl, en, map);
+            for (auto& g : pl.units){
+                std::cout<<g->coordinate.x << " "<<g->coordinate.y<<std::endl;
+            }
             //ShowInMap(s1);
         }
     }

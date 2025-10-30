@@ -192,7 +192,7 @@ bool DQN_Test(){
     Map map;
     Player player(map, PLAYER);
     Player enemy(map, ENEMY);
-    player.SetInitialCoordinates(Vec2(8, 2));
+    player.SetInitialCoordinates(Vec2(2, 2));
     enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 2));
     RlManager man;
     man.LoadMemoryAsBinary();
@@ -205,7 +205,7 @@ bool PPO_Test(){
     Map map;
     Player player(map, PLAYER);
     Player enemy(map, ENEMY);
-    player.SetInitialCoordinates(Vec2(8, 2));
+    player.SetInitialCoordinates(Vec2(2, 2));
     enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 2));
     RlManager man;
     man.InitializePPO(player, enemy, map);
