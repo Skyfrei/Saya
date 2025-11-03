@@ -206,7 +206,7 @@ bool PPO_Test(){
     Player player(map, PLAYER);
     Player enemy(map, ENEMY);
     player.SetInitialCoordinates(Vec2(2, 2));
-    enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 2));
+    enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 4, MAP_SIZE - 4));
     RlManager man;
     man.InitializePPO(player, enemy, map);
     man.TrainPPO(player, enemy, map);

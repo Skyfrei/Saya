@@ -200,6 +200,11 @@ FarmGoldAction::FarmGoldAction(Vec2 v, Terrain *te, TownHall *t)
     : destCoord(v), terr(te), hall(t) {
     type = FARMGOLD;
 }
+FarmGoldAction::FarmGoldAction(Unit* p, Terrain *te, TownHall *t) : terr(te), hall(t)
+{
+    destCoord = Vec2(p->coordinate.x, p->coordinate.y);
+    type = FARMGOLD;
+}
 FarmGoldAction::FarmGoldAction(Unit *p, Vec2 v) : destCoord(v), peasant(p) {
     type = FARMGOLD;
 }

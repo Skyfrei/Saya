@@ -4,6 +4,7 @@
 #include "Peasant.h"
 #include <iostream>
 #include "../../Tools/Macro.h"
+#include "../../State/Map.h"
 
 
 Unit::Unit() {
@@ -60,7 +61,7 @@ bool Unit::HasCommand() {
     return actionQueue.size() > 0;
 }
 
-actionT Unit::TakeAction() {
+actionT Unit::TakeAction(Map& m) {
     if (!HasCommand())
         return {};
 
@@ -69,8 +70,8 @@ actionT Unit::TakeAction() {
         AttackAction &action = std::get<AttackAction>(actionQueue[0]);
         if (action.object->health <= 0)
         {
-            actionQueue.erase(actionQueue.begin());
-            return {};
+            action.finished = true;
+            return action;
         }
         action.prevCoord = coordinate;
         Attack(*action.object);
@@ -82,8 +83,8 @@ actionT Unit::TakeAction() {
         MoveAction &action = std::get<MoveAction>(actionQueue[0]);
         if (coordinate.x == action.destCoord.x && coordinate.y == action.destCoord.y)
         {
-            actionQueue.erase(actionQueue.begin());
-            return {};
+            action.finished = true;
+            return action;
         }
         action.prevCoord = coordinate;
         Move(action.destCoord);
@@ -94,8 +95,8 @@ actionT Unit::TakeAction() {
         BuildAction &action = std::get<BuildAction>(actionQueue[0]);
         if (action.stru->health >= action.stru->maxHealth)
         {
-            actionQueue.erase(actionQueue.begin());
-            return {};
+            action.finished = true;
+            return action;
         }
         action.prevCoord = coordinate;
         Peasant &p = static_cast<Peasant &>(*this);
@@ -106,10 +107,11 @@ actionT Unit::TakeAction() {
     {
         Peasant &p = static_cast<Peasant &>(*this);
         FarmGoldAction &action = std::get<FarmGoldAction>(actionQueue[0]);
+        action.terr = &m.GetTerrainAtCoordinate(action.destCoord);
         if (action.terr->resourceLeft <= 0)
         {
-            actionQueue.erase(actionQueue.begin());
-            return {};
+            action.finished = true;
+            return action;
         }
         action.prevCoord = coordinate;
         p.FarmGold(*action.terr, *action.hall, action.gold);

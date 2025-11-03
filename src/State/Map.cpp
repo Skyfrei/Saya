@@ -78,6 +78,7 @@ Terrain &Map::GetTerrainAtCoordinate(Vec2 v) {
     return terrain[0][0];
 }
 
+
 std::vector<Node *> Map::GetAllNodes() {
     return graph.GetAllGraphNodes();
 }

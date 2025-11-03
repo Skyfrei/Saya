@@ -15,6 +15,7 @@ class Map
     void TurnMatrixToGraph();
     std::vector<Node *> GetClosestDestNode(Vec2 &coord, Vec2 &dest);
     Terrain &GetTerrainAtCoordinate(Vec2);
+
     std::vector<Living *> GetObjectsAtTerrain(Vec2);
     void RemoveOwnership(Living *, Vec2);
     void AddOwnership(Living *);

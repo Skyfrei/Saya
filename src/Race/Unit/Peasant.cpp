@@ -56,10 +56,15 @@ void Peasant::FarmGold(Terrain &terr, TownHall &hall, int &g) {
     if (goldInventory > 0 && WithinDistance(hall.coordinate))
     {
         goldInventory = 0;
+        if (std::holds_alternative<FarmGoldAction>(actionQueue[0])) {
+            auto& farm = std::get<FarmGoldAction>(actionQueue[0]);
+            farm.finished = true;
+        }
     }
     if (goldInventory >= maxGoldInventory)
     {
-        Move(hall.coordinate);
+        MoveAction mov(this, Vec2(hall.coordinate.x, hall.coordinate.y));
+        InsertAction(mov);
         return;
     }
     if (WithinDistance(terr.coord))

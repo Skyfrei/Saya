@@ -4,8 +4,25 @@
 #include "../Tools/Macro.h"
 
 Window::Window(Vec2 s) : window_size(s) {
+//    canvas_start = Vec2(win_start_x * 4, win_start_y * 4);
+//    canvas_size_x = algo_start_x - win_start_x - canvas_start.x;
+//    canvas_size_y = window_size.y - canvas_start.y;
+//
+//    map.text = "Map";
+//    map.pos = Vec2(win_start_x, win_start_y);
+//    dqn.text = "DQN";
+//    dqn.pos = Vec2(algo_start_x, win_start_y);
+//    ppo.text = "PPO";
+//    ppo.pos = Vec2(algo_start_x, 200);
+//    moves.text = "Moves";
+//    moves.pos = Vec2(algo_start_x, 400);
+//
+//    SDL_AppResult result = InitSdl();
+
+
     canvas_start = Vec2(win_start_x * 4, win_start_y * 4);
-    canvas_size_x = algo_start_x - win_start_x - canvas_start.x;
+    // Corrected: Removed the extra '- win_start_x' to use the full canvas width
+    canvas_size_x = algo_start_x - canvas_start.x; 
     canvas_size_y = window_size.y - canvas_start.y;
 
     map.text = "Map";
@@ -113,6 +130,58 @@ void Window::RenderMoves(std::string &dqn_action, std::string &ppo_action) {
     SDL_RenderTexture(renderer, texture, NULL, &dst);
 }
 
+/**
+ * @brief Gets the abbreviation for an object and renders it above the object's position.
+ */
+
+void Window::RenderObjectLabel(objectType& t, float gui_x, float gui_y) {
+    std::string label;
+    if (std::holds_alternative<UnitType>(t)) {
+        switch(std::get<UnitType>(t)){
+            case UnitType::PEASANT: label = "P"; break;
+            case UnitType::FOOTMAN: label = "F"; break;
+            default: label = "?"; break;
+        }
+    } else if (std::holds_alternative<StructureType>(t)) {
+        switch(std::get<StructureType>(t)){
+            case StructureType::HALL: label = "H"; break;
+            case StructureType::BARRACK: label = "B"; break;
+            case StructureType::FARM: label = "Fm"; break;
+            default: label = "?"; break;
+        }
+    } else {
+        label = "?";
+    }
+
+    SDL_Color color = {255, 255, 255, SDL_ALPHA_OPAQUE}; 
+    SDL_Surface* textSurface = TTF_RenderText_Blended(font, label.c_str(), label.size(), color);
+
+    if (!textSurface) {
+        SDL_Log("Failed to create text surface: %s", SDL_GetError());
+        return;
+    }
+
+    SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+    SDL_DestroySurface(textSurface);
+
+    if (!textTexture) {
+        SDL_Log("Failed to create text texture: %s", SDL_GetError());
+        return;
+    }
+
+    SDL_FRect textDst;
+    SDL_GetTextureSize(textTexture, &textDst.w, &textDst.h);
+
+    textDst.w /= 2.0f;
+    textDst.h /= 2.0f;
+    textDst.x = gui_x + (3.0f / 2.0f) - (textDst.w / 2.0f);
+    textDst.y = gui_y - textDst.h - 2.0f; 
+
+    SDL_RenderTexture(renderer, textTexture, NULL, &textDst);
+    SDL_DestroyTexture(textTexture);
+}
+
+
 void Window::PickColor(objectType& t, int p){
     if (std::holds_alternative<UnitType>(t)) {
         auto type = std::get<UnitType>(t);
@@ -159,57 +228,69 @@ void Window::RenderMap(std::vector<Unit *> &game_objects,
                        std::vector<Unit *> &game_objects2,
                        std::vector<Structure *> &game_objects3,
                        std::vector<Structure *> &game_objects4) {
-    float ratiox = canvas_size_x / MAP_SIZE;
-    float ratioy = canvas_size_y / MAP_SIZE;
-    //SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+    // Using the previous fix for ratio calculation
+    float ratiox = (canvas_size_x - 3.0f) / MAP_SIZE;
+    float ratioy = (canvas_size_y - 3.0f) / MAP_SIZE;
+    
+    // --- Team 1 Units (game_objects) ---
+    //
+    SDL_SetRenderDrawColor(renderer, 50, 205, 50, 255);
+
     for (auto &obj : game_objects)
     {
         objectType ttype;
         ttype = obj->is;
-        PickColor(ttype, 0);
         float gui_x = canvas_start.x + obj->coordinate.x * ratiox;
         float gui_y = canvas_start.y + obj->coordinate.y * ratioy;
-        // std::cout<<obj->coordinate.x << " " << obj->coordinate.y<<std::endl;
+        
         SDL_FRect point = {gui_x, gui_y, 3.0f, 3.0f};
         SDL_RenderFillRect(renderer, &point);
+        RenderObjectLabel(ttype, gui_x, gui_y); // Call new function
     }
-    //SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    
+    // --- Team 2 Units (game_objects2) ---
+    SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255);
+
     for (auto &obj : game_objects2)
     {
         objectType ttype;
         ttype = obj->is;
-        PickColor(ttype, 1);
         float gui_x = canvas_start.x + obj->coordinate.x * ratiox;
         float gui_y = canvas_start.y + obj->coordinate.y * ratioy;
-        // std::cout<<obj->coordinate.x << " " << obj->coordinate.y<<std::endl;
 
         SDL_FRect point = {gui_x, gui_y, 3.0f, 3.0f};
         SDL_RenderFillRect(renderer, &point);
+        RenderObjectLabel(ttype, gui_x, gui_y); // Call new function
     }
+
+    // --- Team 1 Structures (game_objects3) ---
+    SDL_SetRenderDrawColor(renderer, 50, 205, 50, 255);
+
     for (auto &obj : game_objects3)
     {
         objectType ttype;
         ttype = obj->is;
-        PickColor(ttype, 1);
         float gui_x = canvas_start.x + obj->coordinate.x * ratiox;
         float gui_y = canvas_start.y + obj->coordinate.y * ratioy;
-        // std::cout<<obj->coordinate.x << " " << obj->coordinate.y<<std::endl;
 
         SDL_FRect point = {gui_x, gui_y, 3.0f, 3.0f};
         SDL_RenderFillRect(renderer, &point);
+        RenderObjectLabel(ttype, gui_x, gui_y); // Call new function
     }
+    // --- Team 2 Structures (game_objects4) ---
+    //
 
+    SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255);
     for (auto &obj : game_objects4)
     {
         objectType ttype;
         ttype = obj->is;
-        PickColor(ttype, 1);
         float gui_x = canvas_start.x + obj->coordinate.x * ratiox;
         float gui_y = canvas_start.y + obj->coordinate.y * ratioy;
-        // std::cout<<obj->coordinate.x << " " << obj->coordinate.y<<std::endl;
 
         SDL_FRect point = {gui_x, gui_y, 3.0f, 3.0f};
         SDL_RenderFillRect(renderer, &point);
+        RenderObjectLabel(ttype, gui_x, gui_y); // Call new function
     }
 }
 

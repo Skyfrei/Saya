@@ -95,14 +95,14 @@ void Manager::MainLoop() {
         {
             if (player.units[i]->GetActionQueueSize() > 0)
             {
-                actionT actionDone = player.units[i]->TakeAction();
+                actionT actionDone = player.units[i]->TakeAction(map);
                 CheckForOwnership(player, player.units[i].get(), actionDone);
             }
             for (int i = 0; i < enemy.units.size(); i++)
             {
                 if (enemy.units[i]->GetActionQueueSize() > 0)
                 {
-                    actionT actionDone = enemy.units[i]->TakeAction();
+                    actionT actionDone = enemy.units[i]->TakeAction(map);
                     CheckForOwnership(enemy, enemy.units[i].get(), actionDone);
                 }
             }

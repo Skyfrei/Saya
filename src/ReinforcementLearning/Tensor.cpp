@@ -1,4 +1,5 @@
 #include "Tensor.h"
+#include <algorithm>
 
 TensorStruct::TensorStruct(State &state, Map &map) {
     currentMap = GetMapTensor(map);
@@ -12,7 +13,6 @@ TensorStruct::TensorStruct(State &state, Map &map) {
     enemyUnits = GetUnitsTensor(state.enemyUnits);
     enemyStructs = GetStructuresTensor(state.enemyStructs);
 }
-
 
 torch::Tensor TensorStruct::GetMapTensor(Map &map) {
     std::vector<int> data;
@@ -66,19 +66,19 @@ torch::Tensor TensorStruct::GetStructuresTensor(
 }
 torch::Tensor TensorStruct::GetTensor() {
     torch::Tensor paddedUnits =
-        torch::zeros({1, (MAX_UNITS - (playerUnits.size(1) / unitVar)) * unitVar});
+        torch::zeros({1, std::max(0L, MAX_UNITS - (playerUnits.size(1) / unitVar)) * unitVar});
     torch::Tensor paddedStructs = torch::zeros(
-        {1, (MAX_STRUCTS - (playerStructs.size(1) / strucVar)) * strucVar});
+        {1, std::max(0L, MAX_STRUCTS - (playerStructs.size(1) / strucVar)) * strucVar});
     torch::Tensor paddedUnitsEnemy =
-        torch::zeros({1, (MAX_UNITS - (enemyUnits.size(1) / unitVar)) * unitVar});
+        torch::zeros({1, std::max(0L, MAX_UNITS - (enemyUnits.size(1) / unitVar)) * unitVar});
     torch::Tensor paddedStructsEnemy = torch::zeros(
-        {1, (MAX_STRUCTS - (enemyStructs.size(1) / strucVar)) * strucVar});
+        {1, std::max(0L, MAX_STRUCTS - (enemyStructs.size(1) / strucVar)) * strucVar});
 
     std::vector<torch::Tensor> tensors = {
         playerGold,    playerFood,       playerUnits,  paddedUnits,
         playerStructs, paddedStructs,    enemyGold,    enemyFood,
         enemyUnits,    paddedUnitsEnemy, enemyStructs, paddedStructsEnemy};
-
+        
     torch::Tensor concatenatedTensor = torch::cat(tensors, 1);
 
     return concatenatedTensor;

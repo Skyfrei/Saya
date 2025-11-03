@@ -5,7 +5,7 @@ find_package(Torch REQUIRED PATHS ${TORCH_DIR})
 set(CMAKE_CXX_FLAGS ${TORCH_CXX_FLAGS})
 
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
+    set(CMAKE_BUILD_TYPE DEBUG)
 endif()
 
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")

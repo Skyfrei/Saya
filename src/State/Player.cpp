@@ -76,6 +76,10 @@ float Player::TakeAction(actionT &act) {
         reward = GetRewardFromAction(action, gold, food.y - food.x);
         Recruit(action);
     }
+    else {
+        EmptyAction act;
+        reward = GetRewardFromAction(act); 
+    }
     return reward;
 }
 void Player::Move(MoveAction &action) {
@@ -98,6 +102,45 @@ void Player::Build(BuildAction &action) {
             action.stru = s.get();
             structures.emplace_back(std::move(s));
             action.peasant->InsertAction(action);
+        }
+    }
+}
+
+void Player::CheckUnitActions(){
+    for (auto& un : units){
+        un->TakeAction(map);
+        for (auto& act : un->actionQueue){
+            std::visit([&](auto& action) {
+                if constexpr (requires { action.finished; }) {
+                    if (action.finished) {
+                        if (std::holds_alternative<MoveAction>(act))
+                        {
+                            //MoveAction &action = std::get<MoveAction>(act);
+                        }
+                        else if (std::holds_alternative<AttackAction>(act))
+                        {
+                            //AttackAction &action = std::get<AttackAction>(act);
+                        }
+                        else if (std::holds_alternative<BuildAction>(act))
+                        {
+                            //BuildAction &action = std::get<BuildAction>(act);
+                        }
+                        else if (std::holds_alternative<FarmGoldAction>(act))
+                        {
+                            FarmGoldAction &action = std::get<FarmGoldAction>(act);
+                            gold += action.gold;
+                        }
+                        else if (std::holds_alternative<RecruitAction>(act))
+                        {
+                            //RecruitAction &action = std::get<RecruitAction>(act);
+                        }
+                        else {
+                            //EmptyAction act;
+                        }
+                        un->actionQueue.erase(un->actionQueue.begin());
+                    }
+                }
+            }, act);
         }
     }
 }

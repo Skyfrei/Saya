@@ -42,6 +42,7 @@ class Window
                    std::vector<Structure *> &game_objects3,
                    std::vector<Structure *> &game_objects4
                    );
+    void RenderObjectLabel(objectType& t, float gui_x, float gui_y);
     void RenderMoves(std::string &dqn_action, std::string &ppo_action);
     void PickColor(objectType&, int);
 

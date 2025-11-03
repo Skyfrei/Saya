@@ -21,6 +21,7 @@ class TownHall;
 class Farm;
 class Barrack;
 class Unit;
+class Map;
 
 // struct Path {
 //   Path(int d, Vec2 l) : distance(d), comesFrom(l) {}
@@ -43,7 +44,7 @@ class Unit : public Living
     bool WithinDistance(Vec2 terr);
     bool CanAttack();
     Vec2 FindDifference(Vec2 terr);
-    actionT TakeAction();
+    actionT TakeAction(Map& m);
     void InsertAction(actionT);
     void ResetActions();
     bool HasCommand();

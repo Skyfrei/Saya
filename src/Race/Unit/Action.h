@@ -32,6 +32,7 @@ class Action
 {
   public:
     ActionType type;
+    bool finished = false;
     virtual ActionType GetType() = 0;
     std::string Serialize();
     // actionT Deserialize();
@@ -77,6 +78,7 @@ struct FarmGoldAction : public Action
     FarmGoldAction(Vec2 v, Terrain *te, TownHall *t);
     FarmGoldAction(Unit *p, Vec2 v, TownHall *h);
     FarmGoldAction(Unit *p, Vec2 v);
+    FarmGoldAction(Unit* p, Terrain *te, TownHall *t);
 
     ActionType GetType() override;
     bool operator==(const FarmGoldAction &a) const;

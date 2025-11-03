@@ -110,9 +110,9 @@ actionT PPO::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
         int row = mapSelect / MAP_SIZE;
         if (peasantIndex >= pl.units.size())
             return EmptyAction();
-        if (hallIndex >= pl.structures.size())
-            return EmptyAction();
         if (pl.units[peasantIndex]->is != PEASANT)
+            return EmptyAction();
+        if (hallIndex >= pl.structures.size())
             return EmptyAction();
         if (pl.structures[hallIndex]->is != HALL)
             return EmptyAction();

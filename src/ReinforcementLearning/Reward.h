@@ -56,6 +56,8 @@ float GetRewardFromAction(Args&&... args) {
     {
         int gold = 0;
         if constexpr (sizeof...(Args) >= 2) gold = std::get<1>(arg_tuple);
+//        const FarmGoldAction &farmAction = std::get<FarmGoldAction>(action);
+
         if (gold <= 500) {
             reward += 0.5f;  
         }
@@ -138,6 +140,9 @@ float GetRewardFromAction(Args&&... args) {
                 break;
         }
         reward += 0.3f;
+    }
+    else if (std::holds_alternative<EmptyAction>(action)){
+        reward -= 0.02f;
     }
     return reward;
 }
