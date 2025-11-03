@@ -172,6 +172,7 @@ bool MapRender(){
     Window win(Vec2(1000, 1000));
     int a;
     RlManager obj;
+    Map map;
     obj.LoadMemoryAsBinary();
     while(true){
         int b = rand() % 1000;
@@ -179,7 +180,7 @@ bool MapRender(){
         std::string dqn_string = GetRenderStrings(t.action);
         std::string ppo_string = GetRenderStrings(t.action);
         win.Render(t.state.playerUnits, t.state.enemyUnits, t.state.playerStructs,
-                   t.state.enemyStructs, dqn_string, ppo_string);
+                   t.state.enemyStructs, map, dqn_string, ppo_string);
         //std::cin>>a;
         //if (a == 0)
         //    exit(0);

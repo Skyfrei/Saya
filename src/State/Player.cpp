@@ -27,7 +27,9 @@ void Player::Reset(Side en){
     units.clear();
     structures.clear();
     Initialize();
-    
+    food.y = 10;
+    gold = 300;
+
     if (en == PLAYER)
         SetInitialCoordinates(Vec2(2, 2));
     else if (en == ENEMY)

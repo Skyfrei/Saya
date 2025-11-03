@@ -41,7 +41,7 @@ class RlManager
     State GetState(Player &pl, Player &en, Map &map);
     void OptimizeDQN(Map &map);
     bool ShouldResetEnvironment(Player &pl, Player &en, Map &map, float &reward);
-    void ShowInMap(State& state);
+    void ShowInMap(State& state, Map& map);
 
 
   private:
@@ -56,7 +56,7 @@ class RlManager
     const std::string memory_file_binary = "binary.bay";
     float ppoEpsilon = 0.9f;
     float epsilonDecay = 1e-3;
-    int episodeNumber = 10;
+    int episodeNumber = 20;
     int forwardSteps = 200;
     Window win;
 };

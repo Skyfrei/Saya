@@ -245,18 +245,18 @@ std::cout << "  Policy Loss: " << mean_policy_loss.item<float>()
                 }
                 State s1 = GetState(pl, en, map);
                 std::cout<<pl.gold<<std::endl;
-                ShowInMap(s1);
+                ShowInMap(s1, map);
         }
     }
     file.close();
     ppoPolicy.SaveModel("ppo_policy");
 }
 
-void RlManager::ShowInMap(State& state){
+void RlManager::ShowInMap(State& state, Map& m){
     std::string dqn_string = "yes";
     std::string ppo_string = "no";
     win.Render(state.playerUnits, state.enemyUnits, state.playerStructs,
-    state.enemyStructs, dqn_string, ppo_string);
+    state.enemyStructs, m, dqn_string, ppo_string);
 }
 
 void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {

@@ -2,6 +2,7 @@
 #include "../Race/Unit/Unit.h"
 #include "../Race/Structure/Structure.h"
 #include "../Tools/Macro.h"
+#include "../State/Map.h"
 
 Window::Window(Vec2 s) : window_size(s) {
 //    canvas_start = Vec2(win_start_x * 4, win_start_y * 4);
@@ -227,13 +228,35 @@ void Window::PickColor(objectType& t, int p){
 void Window::RenderMap(std::vector<Unit *> &game_objects,
                        std::vector<Unit *> &game_objects2,
                        std::vector<Structure *> &game_objects3,
-                       std::vector<Structure *> &game_objects4) {
+                       std::vector<Structure *> &game_objects4,
+                       Map& map) {
     // Using the previous fix for ratio calculation
   
     float ratiox = canvas_size_x / MAP_SIZE;
     float ratioy = canvas_size_y / MAP_SIZE;
-    
-    // --- Team 1 Units (game_objects) ---
+
+    for (int i = 0; i < MAP_SIZE; ++i) {
+        for (int j = 0; j < MAP_SIZE; ++j) {
+            if (map.terrain[i][j].type == GOLD) {
+                float gui_x = canvas_start.x + i * ratiox;
+                float gui_y = canvas_start.y + j * ratioy;
+
+                SDL_Vertex verts[3];
+                // Define a small 3px wide, 3px high triangle
+                verts[0].position = {gui_x, gui_y};
+                verts[1].position = {gui_x + 3.0f, gui_y};
+                verts[2].position = {gui_x + 1.5f, gui_y + 3.0f};
+
+                // Use normalized float color (0–1)
+                // --- CHANGED TO WHITE ---
+                SDL_FColor whiteColor = {1.0f, 1.0f, 1.0f, 1.0f}; 
+                for (int v = 0; v < 3; ++v)
+                    verts[v].color = whiteColor; // Apply white color
+
+                SDL_RenderGeometry(renderer, nullptr, verts, 3, nullptr, 0);
+            }
+        }
+    } 
     //
     SDL_SetRenderDrawColor(renderer, 50, 205, 50, 255);
 
@@ -299,12 +322,13 @@ SDL_AppResult Window::Render(std::vector<Unit *> &game_objects,
                              std::vector<Unit *> &game_objects2,
                              std::vector<Structure *> &game_objects3,
                              std::vector<Structure *> &game_objects4,
+                             Map& map,
                              std::string &dqn_action, std::string &ppo_action) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     RenderUI();
     RenderMoves(dqn_action, ppo_action);
-    RenderMap(game_objects, game_objects2, game_objects3, game_objects4);
+    RenderMap(game_objects, game_objects2, game_objects3, game_objects4, map);
     SDL_RenderPresent(renderer);
     return SDL_APP_CONTINUE;
 }
