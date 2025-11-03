@@ -100,23 +100,17 @@ void RlManager::OptimizeDQN(Map &map) {
 
 bool RlManager::ShouldResetEnvironment(Player &pl, Player &en, Map &map, float &reward) {
     if (!(pl.HasUnit(PEASANT) && pl.HasStructure(HALL))){
-        pl.units.clear();
-        pl.structures.clear();
-        en.units.clear();
-        en.structures.clear();
-        pl.Initialize();
-        en.Initialize();
+        map.Reset();
+        pl.Reset(PLAYER);
+        en.Reset(ENEMY);
         reward = reward - 10.0f;
         std::cout << "End state reached";
 
         return true;
     }else if (!(en.HasUnit(PEASANT) && en.HasStructure(HALL))){
-        pl.units.clear();
-        pl.structures.clear();
-        en.units.clear();
-        en.structures.clear();
-        pl.Initialize();
-        en.Initialize();
+        map.Reset();
+        pl.Reset(PLAYER);
+        en.Reset(ENEMY);
         reward = reward + 10.0f;
         std::cout << "End state reached";
 
@@ -139,6 +133,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
     
     for (int i = 0; i < episodeNumber; i++){
         done = false;
+        double fullSteps = 0;
         while (!done){
             Player playerClone = Player(pl);
             Player enemyClone = Player(en);
@@ -163,34 +158,49 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 en.CheckUnitActions();
 
                 float reward = reward_tensor.item<float>();
+
                 episode_reward += reward;
-                bool done = ShouldResetEnvironment(pl, en, map, reward);
+                done = ShouldResetEnvironment(pl, en, map, reward);
 
                 trajectory_buffer.push_back({s, action_index, reward, state_value, output_soft[0][action_index].clone().detach(), done});
+                if (fullSteps == 10000){
+                    done = true;
+                    pl.units.clear();
+                    pl.structures.clear();
+                    float random = 0.0f;
+                    ShouldResetEnvironment(pl, en, map, random);
+                }
                 if (done){
                     break;
                 }
+                fullSteps ++;
             }
             at::Tensor gae = torch::tensor(0.0f, torch::kFloat32);
-            std::vector<at::Tensor> advantages_buffer(forwardSteps);
-            std::vector<at::Tensor> returns_buffer(forwardSteps);
+            std::vector<at::Tensor> advantages_buffer(trajectory_buffer.size());
+            std::vector<at::Tensor> returns_buffer(trajectory_buffer.size());
+            
+            //bootstrap
+            at::Tensor new_value;
+            if (std::get<5>(trajectory_buffer[trajectory_buffer.size() - 1]) == 1){
+                new_value = torch::tensor(0.0f, torch::kFloat32);
+            }else{
+                State s = GetState(pl, en, map);
+                TensorStruct input_tensor(s, map);
+                new_value = ppoValue.Forward(input_tensor.GetTensor()).clone().detach();
+            }
 
             for (int t = trajectory_buffer.size() - 1; t >= 0; t--){
-                State s = std::get<0>(trajectory_buffer[t]);
-                TensorStruct input_tensor(s, map);
-                at::Tensor new_value = ppoValue.Forward(input_tensor.GetTensor());
-
                 float reward = std::get<2>(trajectory_buffer[t]);
                 at::Tensor value = std::get<3>(trajectory_buffer[t]);
                 at::Tensor delta = reward + gamma * new_value - value; 
-
-                gae = delta + gamma * (1 - done) * gae;
+                bool currDone = std::get<5>(trajectory_buffer[t]);
+                new_value = value;
+                gae = delta + gamma * (1 - currDone) * gae;
                 advantages_buffer[t] = gae.clone().detach();
                 returns_buffer[t] = (gae + value).clone().detach(); 
-                
             }
 
-            std::cout << "Episode: " << i << " | Total Reward: " << episode_reward << std::endl;
+            std::cout << "Episode: " << i <<" | Fullsteps: "<< fullSteps << " | Total Reward: " << episode_reward << std::endl;
 
             for (int k = 0; k < 5; k++){
                 policy_optimizer.zero_grad();
@@ -199,7 +209,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 at::Tensor total_policy_loss = torch::tensor(0.0f, torch::kFloat32);
                 at::Tensor total_value_loss = torch::tensor(0.0f, torch::kFloat32);
                 
-                for (int t = 0; t < forwardSteps; t++) {
+                for (int t = 0; t < trajectory_buffer.size(); t++) {
                     
                     State& s = std::get<0>(trajectory_buffer[t]);
                     int action = std::get<1>(trajectory_buffer[t]);
@@ -233,25 +243,8 @@ std::cout << "  Policy Loss: " << mean_policy_loss.item<float>()
                           << " | Value Loss: " << mean_value_loss.item<float>() 
                           << std::endl;
                 }
-
-
-
                 State s1 = GetState(pl, en, map);
-//                TensorStruct ss(s1, map);
-//                at::Tensor logits = ppoPolicy.Forward(ss.GetTensor());
-//                at::Tensor probs_ac = torch::softmax(logits, -1); // shape: [1, num_actions]
-//                int best_action = probs_ac.argmax(-1).item<int>();
-//                actionT action = ppoPolicy.MapIndexToAction(pl, en, best_action);
-//                actionT enemy_action = ppoPolicy.MapIndexToAction(en, pl, distrib(gen));
-//                float r = pl.TakeAction(action);
-//                en.TakeAction(enemy_action);
-//                State s2 = GetState(pl, en, map);
-//                std::cout<< r<< " ";
-//                pl.CheckUnitActions();
-//                en.CheckUnitActions();
-//                std::cout<<std::endl;
-                std::cout<<"Gold:"<<pl.gold<<std::endl;
-
+                std::cout<<pl.gold<<std::endl;
                 ShowInMap(s1);
         }
     }

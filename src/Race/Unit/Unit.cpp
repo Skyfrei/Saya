@@ -178,8 +178,15 @@ void Unit::Attack(Living &un) {
             }
         }
     }
-    else
-        Move(un.coordinate);
+    else{
+        std::vector<actionT> shifted(actionQueue.size());
+        for (size_t i = shifted.size() - 1; i > 0; --i) {
+            shifted[i] = actionQueue[i - 1];
+        }
+        MoveAction mov(this, Vec2(un.coordinate.x, un.coordinate.y));
+        shifted[0] = mov;
+        actionQueue = shifted;
+    }
 }
 
 bool Unit::CanAttack() {

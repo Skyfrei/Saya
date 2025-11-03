@@ -19,6 +19,7 @@ class Map
     std::vector<Living *> GetObjectsAtTerrain(Vec2);
     void RemoveOwnership(Living *, Vec2);
     void AddOwnership(Living *);
+    void Reset();
     bool operator==(const Map &other) const;
 
   public:

@@ -23,6 +23,16 @@ Player::Player(Map &m, Side en) : map(m), side(en) {
     food.y = 10;
     gold = 300;
 }
+void Player::Reset(Side en){
+    units.clear();
+    structures.clear();
+    Initialize();
+    
+    if (en == PLAYER)
+        SetInitialCoordinates(Vec2(2, 2));
+    else if (en == ENEMY)
+        SetInitialCoordinates(Vec2(MAP_SIZE - 4, MAP_SIZE - 4));
+}
 Player::Player(const Player &other) : map(other.map) {
     gold = other.gold;
     food = other.food;
@@ -46,6 +56,7 @@ Player::~Player() {
 }
 float Player::TakeAction(actionT &act) {
     float reward = 0.0f; 
+    reward += CheckUnitActions();
     if (std::holds_alternative<MoveAction>(act))
     {
         MoveAction &action = std::get<MoveAction>(act);
@@ -106,7 +117,8 @@ void Player::Build(BuildAction &action) {
     }
 }
 
-void Player::CheckUnitActions(){
+float Player::CheckUnitActions(){
+    float reward = 0.0f;
     for (auto& un : units){
         un->TakeAction(map);
         for (auto& act : un->actionQueue){
@@ -123,12 +135,14 @@ void Player::CheckUnitActions(){
                         }
                         else if (std::holds_alternative<BuildAction>(act))
                         {
-                            //BuildAction &action = std::get<BuildAction>(act);
+                            BuildAction &action = std::get<BuildAction>(act);
+                            reward = GetRewardFromAction(action, gold);
                         }
                         else if (std::holds_alternative<FarmGoldAction>(act))
                         {
                             FarmGoldAction &action = std::get<FarmGoldAction>(act);
                             gold += action.gold;
+                            reward = GetRewardFromAction(action, gold);
                         }
                         else if (std::holds_alternative<RecruitAction>(act))
                         {
@@ -143,7 +157,9 @@ void Player::CheckUnitActions(){
             }, act);
         }
     }
+    return reward;
 }
+
 void Player::FarmGold(FarmGoldAction &action) {
     action.peasant->InsertAction(action);
 }

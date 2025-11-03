@@ -40,7 +40,8 @@ class Player
     void Build(BuildAction &action);
     void FarmGold(FarmGoldAction &action);
     void Recruit(RecruitAction &action);
-    void CheckUnitActions();
+    void Reset(Side en);
+    float CheckUnitActions();
 
   public:
     int gold = 300;

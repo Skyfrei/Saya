@@ -25,6 +25,20 @@ Map::Map() {
     }
     // graph = Graph(terrain);
 }
+void Map::Reset(){
+    for (auto &row : terrain) {
+        for (auto &t : row) {
+            for (auto &l : t.onTerrainLiving) {
+                std::erase(t.onTerrainLiving, l);
+                t.structureOnTerrain = nullptr;
+                if (t.coord.x % 5 == 0 && t.coord.y % 5 == 0)
+                {
+                    t.resourceLeft = 2000;
+                }
+            }
+        }
+    }
+}
 
 bool Map::operator==(const Map &other) const {
     for (int i = 0; i < terrain.size(); i++)

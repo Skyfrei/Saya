@@ -42,14 +42,23 @@ void Peasant::Build(Structure *str) {
     {
         if (CanAttack())
         {
-            if (str->health + attack <= maxHealth)
+            if (str->health + attack <= str->maxHealth)
             {
                 str->health += attack;
+            }else{
+                str->health = str->maxHealth;
             }
         }
     }
-    else
-        Move(str->coordinate);
+    else{
+        std::vector<actionT> shifted(actionQueue.size());
+        for (size_t i = shifted.size() - 1; i > 0; --i) {
+            shifted[i] = actionQueue[i - 1];
+        }
+        MoveAction mov(this, Vec2(str->coordinate.x, str->coordinate.y));
+        shifted[0] = mov;
+        actionQueue = shifted;
+    }
 }
 
 void Peasant::FarmGold(Terrain &terr, TownHall &hall, int &g) {
@@ -57,14 +66,19 @@ void Peasant::FarmGold(Terrain &terr, TownHall &hall, int &g) {
     {
         goldInventory = 0;
         if (std::holds_alternative<FarmGoldAction>(actionQueue[0])) {
-            auto& farm = std::get<FarmGoldAction>(actionQueue[0]);
-            farm.finished = true;
+            auto& act = std::get<FarmGoldAction>(actionQueue[0]);
+            act.finished = true;
         }
     }
     if (goldInventory >= maxGoldInventory)
     {
+        std::vector<actionT> shifted(actionQueue.size());
+        for (size_t i = shifted.size() - 1; i > 0; --i) {
+            shifted[i] = actionQueue[i - 1];
+        }
         MoveAction mov(this, Vec2(hall.coordinate.x, hall.coordinate.y));
-        InsertAction(mov);
+        shifted[0] = mov;
+        actionQueue = shifted;
         return;
     }
     if (WithinDistance(terr.coord))
@@ -81,6 +95,12 @@ void Peasant::FarmGold(Terrain &terr, TownHall &hall, int &g) {
     }
     else
     {
-        Move(terr.coord);
+        std::vector<actionT> shifted(actionQueue.size());
+        for (size_t i = shifted.size() - 1; i > 0; --i) {
+            shifted[i] = actionQueue[i - 1];
+        }
+        MoveAction mov(this, Vec2(terr.coord.x, terr.coord.y));
+        shifted[0] = mov;
+        actionQueue = shifted;
     }
 }

@@ -19,9 +19,7 @@ float GetRewardFromAction(Args&&... args) {
     auto arg_tuple = std::forward_as_tuple(std::forward<Args>(args)...);
     actionT&& action = std::get<0>(arg_tuple); 
 
-//    std::visit([](auto&& act) {
-//        std::cout << "Action type enum = " << static_cast<int>(act.type) << std::endl;
-//    }, action);
+
 
     if (std::holds_alternative<MoveAction>(action))
     {
@@ -29,42 +27,50 @@ float GetRewardFromAction(Args&&... args) {
     }
     else if (std::holds_alternative<AttackAction>(action))
     {
-        // use unit here to check if death or not
         const AttackAction &attackAction = std::get<AttackAction>(action);
-        if (attackAction.object->health <= 0.0f)
-        {
+        if (attackAction.object->health <= 0.0f && attackAction.finished){
             reward += 0.5;
+        }else{
+            reward += 0.12;
         }
-        reward += 0.05;
     }
     else if (std::holds_alternative<BuildAction>(action))
     {
         const BuildAction &buildAction = std::get<BuildAction>(action);
-        // if (buildAction.stru->health >= buildAction.stru->maxHealth)
-        //{
-        //     reward += 0.3;
-        // }
-        int gold = 0;
-        if constexpr (sizeof...(Args) >= 2) gold = std::get<1>(arg_tuple);
-        if (gold < buildAction.stru->goldCost){
-            reward -= 0.3;
-            return reward;
+        if (buildAction.stru->health >= buildAction.stru->maxHealth && buildAction.finished){
+             reward += 0.3f;
+        }else{
+            int gold = 0;
+            if constexpr (sizeof...(Args) >= 2) gold = std::get<1>(arg_tuple);
+            if (gold < buildAction.stru->goldCost){
+                reward -= 0.1f;
+                return reward;
+            }
+            reward += 0.10f;       
         }
-        reward += 0.3;
     }
     else if (std::holds_alternative<FarmGoldAction>(action))
     {
         int gold = 0;
         if constexpr (sizeof...(Args) >= 2) gold = std::get<1>(arg_tuple);
-//        const FarmGoldAction &farmAction = std::get<FarmGoldAction>(action);
-
-        if (gold <= 500) {
-            reward += 0.5f;  
+        const FarmGoldAction &farmAction = std::get<FarmGoldAction>(action);
+        if (farmAction.finished){
+            Peasant &p = static_cast<Peasant &>(*farmAction.peasant);
+            float ratio = (float)farmAction.gold / p.maxGoldInventory;
+            if (gold <= 500) {
+                reward += 0.3f * ratio;  
+            }
+            else if (gold > 500) { /*gradual drop*/
+                reward += 0.3f * ratio - std::log(gold / 500) / std::log(16); 
+            }
+        }else{
+            if (gold <= 500) {
+                reward += 0.1f;  
+            }
+            else if (gold > 500) { /*gradual drop*/
+                reward += 0.1f - std::log(gold / 500) / std::log(16); 
+            }
         }
-        else if (gold > 500) { /*gradual drop*/
-            reward += 0.5f - std::log(gold / 500) / std::log(16); 
-        }
-
     }
     else if (std::holds_alternative<RecruitAction>(action))
     {
@@ -81,11 +87,11 @@ float GetRewardFromAction(Args&&... args) {
             case FOOTMAN:
                 unit = std::make_unique<Footman>();
                 if (gold < unit->goldCost) {
-                    reward -= 0.3;
+                    reward -= 0.1;
                     is_enough_resources = false;
                 }
                 if (food < unit->foodCost) {
-                    reward -= 0.3;
+                    reward -= 0.1;
                     is_enough_resources = false;
                 }
                 if (!is_enough_resources)
@@ -95,11 +101,11 @@ float GetRewardFromAction(Args&&... args) {
             case PEASANT:
                 unit = std::make_unique<Peasant>();
                 if (gold < unit->goldCost) {
-                    reward -= 0.3;
+                    reward -= 0.1;
                     is_enough_resources = false;
                 }
                 if (food < unit->foodCost) {
-                    reward -= 0.3;
+                    reward -= 0.1;
                     is_enough_resources = false;
                 }
                 if (!is_enough_resources)
@@ -109,11 +115,11 @@ float GetRewardFromAction(Args&&... args) {
             case ARCHMAGE:
                 unit = std::make_unique<ArchMage>();
                 if (gold < unit->goldCost) {
-                    reward -= 0.3;
+                    reward -= 0.1;
                     is_enough_resources = false;
                 }
                 if (food < unit->foodCost) {
-                    reward -= 0.3;
+                    reward -= 0.1;
                     is_enough_resources = false;
                 }
                 if (!is_enough_resources)
@@ -124,11 +130,11 @@ float GetRewardFromAction(Args&&... args) {
             case BLOODMAGE:
                 unit = std::make_unique<BloodMage>();
                 if (gold < unit->goldCost) {
-                    reward -= 0.3;
+                    reward -= 0.1;
                     is_enough_resources = false;
                 }
                 if (food < unit->foodCost) {
-                    reward -= 0.3;
+                    reward -= 0.1;
                     is_enough_resources = false;
                 }
                 if (!is_enough_resources)
