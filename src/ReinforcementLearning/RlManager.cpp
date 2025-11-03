@@ -146,7 +146,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
             std::vector<std::tuple<State, int, float, at::Tensor, at::Tensor, bool>> trajectory_buffer;
 
             for (int t= 0; t < forwardSteps; t++){
-                State s = GetState(playerClone, enemyClone, map);
+                State s = GetState(pl, en, map);
                 TensorStruct input_tensor(s, map);
                 at::Tensor state_value = ppoValue.Forward(input_tensor.GetTensor()).clone().detach();
                 
@@ -154,13 +154,13 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 at::Tensor output_soft = torch::softmax(output, -1);
                 at::Tensor action_tensor = torch::multinomial(output_soft, 1);
                 int action_index = action_tensor.item<int>();
-                actionT action = ppoPolicy.MapIndexToAction(playerClone, enemyClone, action_index);
-                actionT enemy_action = ppoPolicy.MapIndexToAction(enemyClone, playerClone, distrib(gen));
+                actionT action = ppoPolicy.MapIndexToAction(pl, en, action_index);
+                actionT enemy_action = ppoPolicy.MapIndexToAction(en, pl, distrib(gen));
 
-                at::Tensor reward_tensor = torch::tensor(playerClone.TakeAction(action), torch::dtype(torch::kFloat32));
-                playerClone.CheckUnitActions();
-                enemyClone.TakeAction(enemy_action);
-                enemyClone.CheckUnitActions();
+                at::Tensor reward_tensor = torch::tensor(pl.TakeAction(action), torch::dtype(torch::kFloat32));
+                pl.CheckUnitActions();
+                en.TakeAction(enemy_action);
+                en.CheckUnitActions();
 
                 float reward = reward_tensor.item<float>();
                 episode_reward += reward;
@@ -234,24 +234,25 @@ std::cout << "  Policy Loss: " << mean_policy_loss.item<float>()
                           << std::endl;
                 }
 
-            for (int k = 0; k < 10; k++){
-                State s1 = GetState(pl, en, map);
-                TensorStruct ss(s1, map);
-                at::Tensor logits = ppoPolicy.Forward(ss.GetTensor());
-                at::Tensor probs_ac = torch::softmax(logits, -1); // shape: [1, num_actions]
-                int best_action = probs_ac.argmax(-1).item<int>();
-                actionT action = ppoPolicy.MapIndexToAction(pl, en, best_action);
-                actionT enemy_action = ppoPolicy.MapIndexToAction(en, pl, distrib(gen));
-                float r = pl.TakeAction(action);
-                en.TakeAction(enemy_action);
-                State s2 = GetState(pl, en, map);
-                std::cout<< r<< " ";
-                pl.CheckUnitActions();
-                en.CheckUnitActions();
-                std::cout<<std::endl;
 
-                ShowInMap(s2);
-            }
+
+                State s1 = GetState(pl, en, map);
+//                TensorStruct ss(s1, map);
+//                at::Tensor logits = ppoPolicy.Forward(ss.GetTensor());
+//                at::Tensor probs_ac = torch::softmax(logits, -1); // shape: [1, num_actions]
+//                int best_action = probs_ac.argmax(-1).item<int>();
+//                actionT action = ppoPolicy.MapIndexToAction(pl, en, best_action);
+//                actionT enemy_action = ppoPolicy.MapIndexToAction(en, pl, distrib(gen));
+//                float r = pl.TakeAction(action);
+//                en.TakeAction(enemy_action);
+//                State s2 = GetState(pl, en, map);
+//                std::cout<< r<< " ";
+//                pl.CheckUnitActions();
+//                en.CheckUnitActions();
+//                std::cout<<std::endl;
+                std::cout<<"Gold:"<<pl.gold<<std::endl;
+
+                ShowInMap(s1);
         }
     }
     file.close();

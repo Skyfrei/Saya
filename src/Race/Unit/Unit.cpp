@@ -108,7 +108,7 @@ actionT Unit::TakeAction(Map& m) {
         Peasant &p = static_cast<Peasant &>(*this);
         FarmGoldAction &action = std::get<FarmGoldAction>(actionQueue[0]);
         action.terr = &m.GetTerrainAtCoordinate(action.destCoord);
-        if (action.terr->resourceLeft <= 0)
+        if (action.terr->resourceLeft <= 0 || p.goldInventory == p.maxGoldInventory)
         {
             action.finished = true;
             return action;

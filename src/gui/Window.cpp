@@ -229,8 +229,9 @@ void Window::RenderMap(std::vector<Unit *> &game_objects,
                        std::vector<Structure *> &game_objects3,
                        std::vector<Structure *> &game_objects4) {
     // Using the previous fix for ratio calculation
-    float ratiox = (canvas_size_x - 3.0f) / MAP_SIZE;
-    float ratioy = (canvas_size_y - 3.0f) / MAP_SIZE;
+  
+    float ratiox = canvas_size_x / MAP_SIZE;
+    float ratioy = canvas_size_y / MAP_SIZE;
     
     // --- Team 1 Units (game_objects) ---
     //
