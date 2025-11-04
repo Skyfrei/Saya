@@ -16,4 +16,7 @@ class Farm : public Structure
 
   public:
     int GetFood();
+    static int foodReceived;
 };
+
+

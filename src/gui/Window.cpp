@@ -3,6 +3,7 @@
 #include "../Race/Structure/Structure.h"
 #include "../Tools/Macro.h"
 #include "../State/Map.h"
+#include "../State/Player.h"
 
 Window::Window(Vec2 s) : window_size(s) {
 //    canvas_start = Vec2(win_start_x * 4, win_start_y * 4);
@@ -34,16 +35,10 @@ Window::Window(Vec2 s) : window_size(s) {
     ppo.pos = Vec2(algo_start_x, 200);
     moves.text = "Moves";
     moves.pos = Vec2(algo_start_x, 400);
-
-    SDL_AppResult result = InitSdl();
+    InitSdl();
 }
 
 SDL_AppResult Window::InitSdl() {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0)
-    {
-        SDL_Log("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
-    }
-
     if (!SDL_CreateWindowAndRenderer(project_name, window_size.x, window_size.y,
                                      SDL_WINDOW_RESIZABLE, &window, &renderer))
     {
@@ -129,6 +124,54 @@ void Window::RenderMoves(std::string &dqn_action, std::string &ppo_action) {
     dst.h /= 2;
     dst.w /= 2;
     SDL_RenderTexture(renderer, texture, NULL, &dst);
+}
+
+void Window::RenderPlayerUI(Player& pl, Player& en){
+    
+    SDL_Color color = {255, 255, 255, SDL_ALPHA_OPAQUE};
+    SDL_FRect dst;
+
+    TTF_Font* smallFont = TTF_OpenFont(fontPath, 13.0f);
+    if (!smallFont) {
+        SDL_Log("Failed to load small font: %s", SDL_GetError());
+        return;
+    }
+
+    // --- Player 1 (DQN) ---
+    std::string stats1 = "Gold: " + std::to_string(pl.gold) + " | Food: " + std::to_string(pl.food.x)+ "/" + std::to_string(pl.food.y);
+    SDL_Surface* textSurface = TTF_RenderText_Blended(smallFont, stats1.c_str(), stats1.size(), color);
+    if (textSurface) {
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, textSurface);
+        SDL_DestroySurface(textSurface);
+        if (texture) {
+            dst.x = algo_start_x + 5;
+            dst.y = 260;
+            SDL_GetTextureSize(texture, &dst.w, &dst.h);
+            dst.w /= 2;
+            dst.h /= 2;
+            SDL_RenderTexture(renderer, texture, nullptr, &dst);
+            SDL_DestroyTexture(texture);
+        }
+    }
+
+    // --- Player 2 (PPO) ---
+    std::string stats2 = "Gold: " + std::to_string(en.gold) + " | Food: " + std::to_string(en.food.x) + "/" + std::to_string(en.food.y);
+    textSurface = TTF_RenderText_Blended(smallFont, stats2.c_str(), stats2.size(), color);
+    if (textSurface) {
+        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, textSurface);
+        SDL_DestroySurface(textSurface);
+        if (texture) {
+            dst.x = algo_start_x + 5;
+            dst.y = 300;
+            SDL_GetTextureSize(texture, &dst.w, &dst.h);
+            dst.w /= 2;
+            dst.h /= 2;
+            SDL_RenderTexture(renderer, texture, nullptr, &dst);
+            SDL_DestroyTexture(texture);
+        }
+    }
+
+    TTF_CloseFont(smallFont);
 }
 
 /**
@@ -225,11 +268,7 @@ void Window::PickColor(objectType& t, int p){
     }
 }
 
-void Window::RenderMap(std::vector<Unit *> &game_objects,
-                       std::vector<Unit *> &game_objects2,
-                       std::vector<Structure *> &game_objects3,
-                       std::vector<Structure *> &game_objects4,
-                       Map& map) {
+void Window::RenderMap(Player& pl, Player& en, Map& map) {
     // Using the previous fix for ratio calculation
   
     float ratiox = canvas_size_x / MAP_SIZE;
@@ -260,7 +299,7 @@ void Window::RenderMap(std::vector<Unit *> &game_objects,
     //
     SDL_SetRenderDrawColor(renderer, 50, 205, 50, 255);
 
-    for (auto &obj : game_objects)
+    for (auto &obj : pl.units)
     {
         objectType ttype;
         ttype = obj->is;
@@ -275,7 +314,7 @@ void Window::RenderMap(std::vector<Unit *> &game_objects,
     // --- Team 2 Units (game_objects2) ---
     SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255);
 
-    for (auto &obj : game_objects2)
+    for (auto &obj : en.units)
     {
         objectType ttype;
         ttype = obj->is;
@@ -290,7 +329,7 @@ void Window::RenderMap(std::vector<Unit *> &game_objects,
     // --- Team 1 Structures (game_objects3) ---
     SDL_SetRenderDrawColor(renderer, 50, 205, 50, 255);
 
-    for (auto &obj : game_objects3)
+    for (auto &obj : pl.structures)
     {
         objectType ttype;
         ttype = obj->is;
@@ -305,7 +344,7 @@ void Window::RenderMap(std::vector<Unit *> &game_objects,
     //
 
     SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255);
-    for (auto &obj : game_objects4)
+    for (auto &obj : en.structures)
     {
         objectType ttype;
         ttype = obj->is;
@@ -318,17 +357,13 @@ void Window::RenderMap(std::vector<Unit *> &game_objects,
     }
 }
 
-SDL_AppResult Window::Render(std::vector<Unit *> &game_objects,
-                             std::vector<Unit *> &game_objects2,
-                             std::vector<Structure *> &game_objects3,
-                             std::vector<Structure *> &game_objects4,
-                             Map& map,
-                             std::string &dqn_action, std::string &ppo_action) {
+SDL_AppResult Window::Render(Player& pl, Player& en, Map& map, std::string &dqn_action, std::string &ppo_action) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     RenderUI();
     RenderMoves(dqn_action, ppo_action);
-    RenderMap(game_objects, game_objects2, game_objects3, game_objects4, map);
+    RenderPlayerUI(pl, en);
+    RenderMap(pl, en, map);
     SDL_RenderPresent(renderer);
     return SDL_APP_CONTINUE;
 }

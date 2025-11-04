@@ -11,6 +11,7 @@
 class Unit;
 class Structure;
 class Map;
+class Player;
 // Just decouple this into sending only strings, but keep for testingv purposes
 // rn
 struct RenderStruct
@@ -27,11 +28,7 @@ class Window
 {
   public:
     Window(Vec2 s);
-    SDL_AppResult Render(std::vector<Unit *> &game_objects,
-                         std::vector<Unit *> &game_objects2,
-                         std::vector<Structure *> &game_objects3,
-                         std::vector<Structure *> &game_objects4,
-                         Map& map,
+    SDL_AppResult Render(Player& pl, Player& en,Map& map,
                          std::string &dqn_Action,
                          std::string &ppo_action);
     void SDL_AppQuit();
@@ -39,15 +36,11 @@ class Window
   private:
     SDL_AppResult InitSdl();
     void RenderUI();
-    void RenderMap(std::vector<Unit *> &game_objects,
-                   std::vector<Unit *> &game_objects2,
-                   std::vector<Structure *> &game_objects3,
-                   std::vector<Structure *> &game_objects4,
-                   Map& map
-                   );
+    void RenderMap(Player& pl, Player& en,Map& map);
     void RenderObjectLabel(objectType& t, float gui_x, float gui_y);
     void RenderMoves(std::string &dqn_action, std::string &ppo_action);
     void PickColor(objectType&, int);
+    void RenderPlayerUI(Player& pl, Player& en);
 
   private:
     RenderStruct map;

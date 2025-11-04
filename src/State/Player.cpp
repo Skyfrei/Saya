@@ -70,6 +70,7 @@ float Player::TakeAction(actionT &act) {
         AttackAction &action = std::get<AttackAction>(act);
         reward = GetRewardFromAction(action);
         Attack(action);
+        std::cout<<"Reward for attack: " << reward<<std::endl;
     }
     else if (std::holds_alternative<BuildAction>(act))
     {
@@ -87,6 +88,7 @@ float Player::TakeAction(actionT &act) {
     {
         RecruitAction &action = std::get<RecruitAction>(act);
         reward = GetRewardFromAction(action, gold, food.y - food.x);
+        std::cout<<"Reward for recruit: " << reward<<std::endl;
         Recruit(action);
     }
     else {
@@ -138,6 +140,9 @@ float Player::CheckUnitActions(){
                         else if (std::holds_alternative<BuildAction>(act))
                         {
                             BuildAction &action = std::get<BuildAction>(act);
+                            if (action.struType == FARM){
+                                food.y += Farm::foodReceived;
+                            }
                             reward = GetRewardFromAction(action, gold);
                         }
                         else if (std::holds_alternative<FarmGoldAction>(act))
@@ -188,6 +193,7 @@ void Player::Initialize() {
         map.AddOwnership(un.get());
         units.emplace_back(std::move(un));
     }
+    ValidateFood();
 }
 void Player::SetInitialCoordinates(Vec2 v) {
     for (auto &structure : structures)
@@ -253,7 +259,7 @@ Structure &Player::FindClosestStructure(Unit &unit, StructureType type) {
 
 void Player::ValidateFood() {
     food.x = 0;
-    food.y = 0;
+    food.y = 10;
 
     for (const auto &unit : units)
     {

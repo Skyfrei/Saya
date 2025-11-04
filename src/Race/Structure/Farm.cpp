@@ -1,4 +1,7 @@
 #include "Farm.h"
+
+int Farm::foodReceived = 5;
+
 Farm::Farm(Vec2 coord) {
     health = 500;
     maxHealth = health;
@@ -26,6 +29,7 @@ void Farm::FinishBuilding() {
 Structure *Farm::Clone() const {
     return new Farm(*this);
 }
+
 int Farm::GetFood() {
-    return 5;
+    return foodReceived;
 }

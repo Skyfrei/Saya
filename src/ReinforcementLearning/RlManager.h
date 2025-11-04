@@ -41,7 +41,7 @@ class RlManager
     State GetState(Player &pl, Player &en, Map &map);
     void OptimizeDQN(Map &map);
     bool ShouldResetEnvironment(Player &pl, Player &en, Map &map, float &reward);
-    void ShowInMap(State& state, Map& map);
+    void ShowInMap(Player& pl, Player& en, Map& m);
 
 
   private:

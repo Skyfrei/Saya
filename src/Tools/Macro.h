@@ -14,8 +14,8 @@
 
 inline std::chrono::high_resolution_clock::time_point global_timer =
         std::chrono::high_resolution_clock::now();
-inline std::chrono::duration<float, std::milli> attackCooldown = std::chrono::milliseconds(200);
-inline std::chrono::duration<float, std::milli> hpCooldown = std::chrono::milliseconds(1000);
+inline std::chrono::duration<float, std::milli> attackCooldown = std::chrono::milliseconds(2);
+inline std::chrono::duration<float, std::milli> hpCooldown = std::chrono::milliseconds(100);
 inline std::chrono::duration<float, std::milli> moveCooldown = std::chrono::milliseconds(100);
 
 #endif

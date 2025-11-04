@@ -174,13 +174,16 @@ bool MapRender(){
     RlManager obj;
     Map map;
     obj.LoadMemoryAsBinary();
+    Player pl(map, PLAYER);
+    Player en(map, ENEMY);
+    pl.SetInitialCoordinates(Vec2(2, 2));
+    en.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 2));
     while(true){
         int b = rand() % 1000;
         Transition t = obj.memory[b];
         std::string dqn_string = GetRenderStrings(t.action);
         std::string ppo_string = GetRenderStrings(t.action);
-        win.Render(t.state.playerUnits, t.state.enemyUnits, t.state.playerStructs,
-                   t.state.enemyStructs, map, dqn_string, ppo_string);
+        win.Render(pl, en, map, dqn_string, ppo_string);
         //std::cin>>a;
         //if (a == 0)
         //    exit(0);
