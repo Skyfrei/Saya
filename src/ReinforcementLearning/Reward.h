@@ -19,8 +19,6 @@ float GetRewardFromAction(Args&&... args) {
     auto arg_tuple = std::forward_as_tuple(std::forward<Args>(args)...);
     actionT&& action = std::get<0>(arg_tuple); 
 
-
-
     if (std::holds_alternative<MoveAction>(action))
     {
         reward -= 0.02f;
@@ -31,7 +29,8 @@ float GetRewardFromAction(Args&&... args) {
         if (attackAction.object->health <= 0.0f && attackAction.finished){
             reward += 0.5;
         }else{
-            reward += 0.01;
+            if (attackAction.unit != nullptr)
+                reward += 0.001 * attackAction.unit->attack;
         }
     }
     else if (std::holds_alternative<BuildAction>(action))
