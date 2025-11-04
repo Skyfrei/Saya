@@ -124,6 +124,7 @@ actionT PPO::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
     {
         int offset = actionIndex - farmAction;
         UnitType unitType = static_cast<UnitType>(offset / BARRACK_INDEX_IN_STRUCTS);
+        std::cout<<"type:"<<unitType<<std::endl;
         int barrackIndex = offset % BARRACK_INDEX_IN_STRUCTS;
         if (barrackIndex >= pl.structures.size())
             return EmptyAction();

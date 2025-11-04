@@ -5,6 +5,10 @@ Game was initially though **NOT** to contain graphs. This quickly changed as I n
 AI movement, I am using SDL3. At the end of the project the AI will be able to go toe to toe with a human enemy and make the best
 possible decisions to win the game.
 
+This is what the game looks like right now (video coming soon)
+
+![Map](map.png)
+
 # How can you collaborate
 
 ## What has currently been implemented

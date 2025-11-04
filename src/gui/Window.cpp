@@ -138,14 +138,14 @@ void Window::RenderPlayerUI(Player& pl, Player& en){
     }
 
     // --- Player 1 (DQN) ---
-    std::string stats1 = "Gold: " + std::to_string(pl.gold) + " | Food: " + std::to_string(pl.food.x)+ "/" + std::to_string(pl.food.y);
+    std::string stats1 = "Pl-> Gold: " + std::to_string(pl.gold) + " | Food: " + std::to_string(pl.food.x)+ "/" + std::to_string(pl.food.y);
     SDL_Surface* textSurface = TTF_RenderText_Blended(smallFont, stats1.c_str(), stats1.size(), color);
     if (textSurface) {
         SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, textSurface);
         SDL_DestroySurface(textSurface);
         if (texture) {
             dst.x = algo_start_x + 5;
-            dst.y = 260;
+            dst.y = 460;
             SDL_GetTextureSize(texture, &dst.w, &dst.h);
             dst.w /= 2;
             dst.h /= 2;
@@ -155,14 +155,14 @@ void Window::RenderPlayerUI(Player& pl, Player& en){
     }
 
     // --- Player 2 (PPO) ---
-    std::string stats2 = "Gold: " + std::to_string(en.gold) + " | Food: " + std::to_string(en.food.x) + "/" + std::to_string(en.food.y);
+    std::string stats2 = "En-> Gold: " + std::to_string(en.gold) + " | Food: " + std::to_string(en.food.x) + "/" + std::to_string(en.food.y);
     textSurface = TTF_RenderText_Blended(smallFont, stats2.c_str(), stats2.size(), color);
     if (textSurface) {
         SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, textSurface);
         SDL_DestroySurface(textSurface);
         if (texture) {
             dst.x = algo_start_x + 5;
-            dst.y = 300;
+            dst.y = 500;
             SDL_GetTextureSize(texture, &dst.w, &dst.h);
             dst.w /= 2;
             dst.h /= 2;

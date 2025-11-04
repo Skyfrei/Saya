@@ -131,11 +131,12 @@ float Player::CheckUnitActions(){
                     if (action.finished) {
                         if (std::holds_alternative<MoveAction>(act))
                         {
-                            //MoveAction &action = std::get<MoveAction>(act);
+                            // Dont get extra when moving finishes
                         }
                         else if (std::holds_alternative<AttackAction>(act))
                         {
-                            //AttackAction &action = std::get<AttackAction>(act);
+                            AttackAction &action = std::get<AttackAction>(act);
+                            reward = GetRewardFromAction(action);
                         }
                         else if (std::holds_alternative<BuildAction>(act))
                         {
@@ -153,7 +154,7 @@ float Player::CheckUnitActions(){
                         }
                         else if (std::holds_alternative<RecruitAction>(act))
                         {
-                            //RecruitAction &action = std::get<RecruitAction>(act);
+                            // Do nothing peasants dont have this action
                         }
                         else {
                             //EmptyAction act;

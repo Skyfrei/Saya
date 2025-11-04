@@ -6,7 +6,7 @@ Footman::Footman() {
     attack = 12.5;
     maxMana = 200.0f;
     mana = 200.0f;
-    goldCost = 135;
+    goldCost = 100;
     foodCost = 2;
     buildTime = 20;
     is = FOOTMAN;
@@ -15,7 +15,7 @@ Footman::Footman() {
 Footman::Footman(Vec2 coord, float hp, float man) {
     maxHealth = 420;
     attack = 12.5;
-    goldCost = 135;
+    goldCost = 100;
     foodCost = 2;
     buildTime = 20;
     coordinate = coord;
