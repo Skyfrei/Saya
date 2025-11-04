@@ -23,7 +23,7 @@ float GetRewardFromAction(Args&&... args) {
 
     if (std::holds_alternative<MoveAction>(action))
     {
-        reward += 0.05f;
+        reward -= 0.02f;
     }
     else if (std::holds_alternative<AttackAction>(action))
     {
@@ -31,7 +31,7 @@ float GetRewardFromAction(Args&&... args) {
         if (attackAction.object->health <= 0.0f && attackAction.finished){
             reward += 0.5;
         }else{
-            reward += 0.12;
+            reward += 0.01;
         }
     }
     else if (std::holds_alternative<BuildAction>(action))
@@ -65,10 +65,10 @@ float GetRewardFromAction(Args&&... args) {
             }
         }else{
             if (gold <= 500) {
-                reward += 0.1f;  
+                reward += 0.02f;  
             }
             else if (gold > 500) { /*gradual drop*/
-                reward += 0.1f - std::log(gold / 500) / std::log(16); 
+                reward += 0.02f - std::log(gold / 500) / std::log(16); 
             }
         }
     }
