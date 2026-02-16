@@ -44,7 +44,7 @@ float GetRewardFromAction(Args&&... args) {
     {
         const BuildAction &buildAction = std::get<BuildAction>(action);
         if (buildAction.stru->health >= buildAction.stru->maxHealth && buildAction.finished){
-             reward += 5;
+             reward += 5.0f;
         }else{
             int gold = 0;
             if constexpr (sizeof...(Args) >= 2) gold = std::get<1>(arg_tuple);

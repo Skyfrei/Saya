@@ -28,14 +28,12 @@ Map::Map() {
 void Map::Reset(){
     for (auto &row : terrain) {
         for (auto &t : row) {
-            for (auto &l : t.onTerrainLiving) {
-                t.onTerrainLiving.clear(); 
-                t.structureOnTerrain = nullptr;
+            t.onTerrainLiving.clear(); 
+            t.structureOnTerrain = nullptr;
 
-                if (t.coord.x % 5 == 0 && t.coord.y % 5 == 0)
-                {
-                    t.resourceLeft = 2000;
-                }
+            if (t.coord.x % 5 == 0 && t.coord.y % 5 == 0)
+            {
+                t.resourceLeft = MAX_MINE_GOLD;
             }
         }
     }
@@ -80,17 +78,12 @@ std::vector<Living *> Map::GetObjectsAtTerrain(Vec2 v) {
     return t.onTerrainLiving;
 }
 Terrain &Map::GetTerrainAtCoordinate(Vec2 v) {
-    for (int i = 0; i < terrain.size(); i++)
-    {
-        for (int j = 0; j < terrain.size(); j++)
-        {
-            if (terrain[i][j].coord.x == v.x && terrain[i][j].coord.y == v.y)
-            {
-                return terrain[i][j];
-            }
-        }
+    int x = static_cast<int>(v.x);
+    int y = static_cast<int>(v.y);
+    if (x < 0 || x >= MAP_SIZE || y < 0 || y >= MAP_SIZE) {
+        throw std::out_of_range("Tried to access outside map!");
     }
-    return terrain[0][0];
+    return terrain[x][y];
 }
 
 

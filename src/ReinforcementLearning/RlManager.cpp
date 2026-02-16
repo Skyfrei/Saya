@@ -170,29 +170,22 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 episode_reward += reward;
                 done = ShouldResetEnvironment(pl, en, map);
 
-                trajectory_buffer.push_back({s, action_index, reward, state_value, output_soft[0][action_index].clone().detach(), done});
-                if (done) {
-                    bool lost = !(pl.HasUnit(PEASANT) || pl.HasStructure(HALL));
-                    bool won  = !(en.HasUnit(PEASANT) || en.HasStructure(HALL));
-                
-                    if (lost) {
-                        reward -= 50.0f; 
-                    } else if (won) {
-                        reward += 50.0f;
-                    }
-                    map.Reset();
-                    pl.Reset(PLAYER);
-                    en.Reset(ENEMY);
-                } 
-                else if (fullSteps >= 2500) { 
-                    done = true; 
-                    map.Reset();
-                    pl.Reset(PLAYER);
-                    en.Reset(ENEMY);
+                bool envDone = ShouldResetEnvironment(pl, en, map);
+                bool timeDone = (fullSteps >= 1500);
+                done = envDone || timeDone;
+
+                if (envDone) {
+                    if (!(pl.HasUnit(PEASANT) || pl.HasStructure(HALL))) reward -= 30.0f;
+                    else if (!(en.HasUnit(PEASANT) || en.HasStructure(HALL))) reward += 30.0f;
                 }
+
+                trajectory_buffer.push_back({s, action_index, reward, state_value, output_soft[0][action_index].clone().detach(), done});
+                if (done)
+                    break;
 
                 fullSteps ++;
             }
+
             at::Tensor gae = torch::tensor(0.0f, torch::kFloat32); // was 0 
             std::vector<at::Tensor> advantages_buffer(trajectory_buffer.size());
             std::vector<at::Tensor> returns_buffer(trajectory_buffer.size());
@@ -242,6 +235,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
 
                     at::Tensor ratio = new_prob / old_prob.detach(); 
                     at::Tensor clipped_ratio = torch::clamp(ratio, 1.0f - ppoEpsilon, 1.0f + ppoEpsilon);
+
                     at::Tensor policy_loss_1 = ratio * advantage.detach();
                     at::Tensor policy_loss_2 = clipped_ratio * advantage.detach();
                     at::Tensor policy_loss = -torch::mean(torch::min(policy_loss_1, policy_loss_2));
@@ -251,17 +245,21 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                     total_policy_loss += policy_loss;
                     total_value_loss += value_loss;
                 }
-                 at::Tensor mean_policy_loss = total_policy_loss / forwardSteps;
-                 at::Tensor mean_value_loss = total_value_loss / forwardSteps;
-                 at::Tensor total_loss = mean_policy_loss +  mean_value_loss;
-                 total_loss.backward();
-                 policy_optimizer.step();
-                 value_optimizer.step();
+                at::Tensor mean_policy_loss = total_policy_loss / forwardSteps;
+                at::Tensor mean_value_loss = total_value_loss / forwardSteps;
+                at::Tensor total_loss = mean_policy_loss +  mean_value_loss;
+                total_loss.backward();
+                policy_optimizer.step();
+                value_optimizer.step();
                 std::cout << "  Policy Loss: " << mean_policy_loss.item<float>() 
                           << " | Value Loss: " << mean_value_loss.item<float>() 
                           << std::endl;
                 }
-                State s1 = GetState(pl, en, map);
+            if (done) {
+                map.Reset();
+                pl.Reset(PLAYER);
+                en.Reset(ENEMY);
+            }
         }
     }
     file.close();

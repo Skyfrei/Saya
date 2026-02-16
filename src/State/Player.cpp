@@ -25,13 +25,9 @@ Player::Player(Map &m, Side en) : map(m), side(en) {
 }
 void Player::Reset(Side en){
     for (auto &structure : structures)
-    {
         map.RemoveOwnership(structure.get(), Vec2(structure->coordinate.x, structure->coordinate.y));
-    }
     for (auto &unit : units)
-    {
         map.RemoveOwnership(unit.get(), Vec2(unit->coordinate.x, unit->coordinate.y));
-    }
 
     units.clear();
     structures.clear();
@@ -74,6 +70,7 @@ float Player::TakeAction(actionT &act) {
         MoveAction &action = std::get<MoveAction>(act);
         reward = GetRewardFromAction(action);
         std::cout<<"Moving"<<std::endl;
+        std::cout<<action.prevCoord.x << " " <<action.destCoord.x<<std::endl;
         Move(action);
     }
     else if (std::holds_alternative<AttackAction>(act))
@@ -93,8 +90,7 @@ float Player::TakeAction(actionT &act) {
     else if (std::holds_alternative<FarmGoldAction>(act))
     {
         FarmGoldAction &action = std::get<FarmGoldAction>(act);
-        if (action.terr == nullptr)
-            action.terr = &map.GetTerrainAtCoordinate(action.destCoord);
+        action.terr = &map.GetTerrainAtCoordinate(action.destCoord);
         reward = GetRewardFromAction(action, gold);
         std::cout<<"Farming"<<std::endl;
         FarmGold(action);
@@ -202,8 +198,7 @@ float Player::CheckUnitActions(){
                         else if (std::holds_alternative<FarmGoldAction>(act))
                         {
                             FarmGoldAction &action = std::get<FarmGoldAction>(act);
-                            if (action.terr == nullptr)
-                                action.terr = &map.GetTerrainAtCoordinate(action.destCoord);
+                            action.terr = &map.GetTerrainAtCoordinate(action.destCoord);
                             std::cout<<"Gold received: " << action.gold<<std::endl;
                             gold += action.gold;
                             reward = GetRewardFromAction(action, gold);

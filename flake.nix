@@ -20,6 +20,12 @@
                     pkgs.sdl3
                     pkgs.sdl3-ttf
                     pkgs.catch2_3
+                    pkgs.harfbuzz
+                    pkgs.freetype      
+                    pkgs.glib          
+                    pkgs.icu
+                    pkgs.sysprof
+                    pkgs.graphite2
                     pkgs.cmake
                     pkgs.libtorch-bin
                     pkgs.ninja
@@ -74,6 +80,15 @@
             ];
 
         };
+        shellHook = ''
+          export CPATH="${pkgs.libtorch-bin}/include:${pkgs.libtorch-bin}/include/torch/csrc/api/include:$CPATH"
+          export CPLUS_INCLUDE_PATH="${pkgs.libtorch-bin}/include:${pkgs.libtorch-bin}/include/torch/csrc/api/include:$CPLUS_INCLUDE_PATH"
+          
+          # This helps clangd find the headers if compile_commands.json isn't enough
+          export CMAKE_EXPORT_COMPILE_COMMANDS=1
+          
+          echo "LSP Environment synced."
+        '';
     };
 
 }

@@ -58,9 +58,15 @@ actionT PPO::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
         int col = actionIndex % MAP_SIZE;
         int row = (actionIndex / MAP_SIZE) % MAP_SIZE;
         int unitIndex = (actionIndex / (MAP_SIZE * MAP_SIZE));
+
         if (unitIndex >= pl.units.size())
             return EmptyAction();
-        return MoveAction(pl.units[unitIndex].get(), Vec2(row, col));
+
+        Unit* actor = pl.units[unitIndex].get();
+        if (!actor)
+            return EmptyAction();
+
+        return MoveAction(actor, Vec2(row, col));
     }
     else if (actionIndex < attackAction)
     {
@@ -68,20 +74,22 @@ actionT PPO::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
         int playerUnit = (offset / (MAX_STRUCTS + MAX_UNITS)) % MAX_UNITS;
         if (playerUnit >= pl.units.size())
             return EmptyAction();
+        Unit* actor = pl.units[playerUnit].get();
+        if (!actor)
+            return EmptyAction();
+
         int targetIndex = offset % (MAX_STRUCTS + MAX_UNITS);
         if (targetIndex <= MAX_STRUCTS - 1)
         {
             if (targetIndex >= en.structures.size())
                 return EmptyAction();
-            return AttackAction(pl.units[playerUnit].get(),
-                                en.structures[targetIndex].get());
+            return AttackAction(actor, en.structures[targetIndex].get());
         }
         else
         {
             if (targetIndex >= en.units.size())
                 return EmptyAction();
-            return AttackAction(pl.units[playerUnit].get(),
-                                en.units[targetIndex].get());
+            return AttackAction(actor, en.units[targetIndex].get());
         }
     }
     else if (actionIndex < buildAction)
@@ -118,7 +126,8 @@ actionT PPO::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
         if (pl.structures[hallIndex]->is != HALL)
             return EmptyAction();
         return FarmGoldAction(
-            pl.units[peasantIndex].get(), Vec2(row, col),
+            pl.units[peasantIndex].get(),
+            Vec2(row, col),
             static_cast<TownHall *>(pl.structures[hallIndex].get()));
     }
     else if (actionIndex < recruitAction)
