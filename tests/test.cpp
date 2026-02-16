@@ -1,4 +1,3 @@
-#define CATCH_CONFIG_MAIN
 #include <catch2/catch_all.hpp>
 #include "../src/ReinforcementLearning/DQN.h"
 #include "../src/ReinforcementLearning/Transition.h"
@@ -12,8 +11,8 @@
 #include "../src/ReinforcementLearning/Reward.h"
 #include "../src/ReinforcementLearning/ValueNetwork.h"
 #include "../src/Tools/Enums.h"
+#include "../src/State/Manager.h"
 #include <chrono>
-#include <fstream>
 #include <random>
 
 int mem_size = 2000;
@@ -211,9 +210,24 @@ bool PPO_Test(){
     Player enemy(map, ENEMY);
     player.SetInitialCoordinates(Vec2(2, 2));
     enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 4, MAP_SIZE - 4));
+    for (auto& g: enemy.structures){
+        std::cout<<g->is<<std::endl;
+    }
     RlManager man;
     man.InitializePPO(player, enemy, map);
     man.TrainPPO(player, enemy, map);
+    return true;
+}
+
+bool PPO_vs_DQN(){
+    Manager man;
+    int game_num = 100;
+    while(game_num >= 0){
+        man.MainLoop();
+        std::cout<<"Game: " << game_num<<std::endl; 
+        game_num--;
+    }
+
     return true;
 }
 
@@ -241,4 +255,14 @@ TEST_CASE("Testing DQN", "[DQN]"){
 
 TEST_CASE("Testing PPO", "[PPO]"){
     REQUIRE(PPO_Test());
+}
+
+TEST_CASE("PPO VS DQN", "[PPO vs DQN]"){
+    //REQUIRE(PPO_vs_DQN());
+}
+
+int main(int argc, char* argv[]) {
+    // Run Catch2 tests
+    int result = Catch::Session().run(argc, argv);
+    return result;
 }

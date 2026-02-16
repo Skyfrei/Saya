@@ -27,10 +27,11 @@ class Manager
     void PrintVector(Vec2 a);
 
   public:
+    Map map;
     Player player;
     Player enemy;
     RlManager trainerManager;
-    Map map;
+
     std::chrono::high_resolution_clock::time_point time1 =
         std::chrono::high_resolution_clock::now();
     std::chrono::high_resolution_clock::time_point time =

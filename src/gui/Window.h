@@ -53,7 +53,7 @@ class Window
     SDL_Texture *texture;
 
     Vec2 window_size;
-    const float scale = 1.5f;
+    const float scale = 1.0f;
     const char *project_name = "Saya";
     SDL_Window *window;
     SDL_Renderer *renderer;

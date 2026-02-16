@@ -16,7 +16,7 @@ Map::Map() {
             if (j % 5 == 0 && i % 5 == 0)
             {
                 temp.type = GOLD;
-                temp.resourceLeft = 2000;
+                temp.resourceLeft = MAX_MINE_GOLD;
             }
             tempTerr.push_back(temp);
         }
@@ -29,8 +29,9 @@ void Map::Reset(){
     for (auto &row : terrain) {
         for (auto &t : row) {
             for (auto &l : t.onTerrainLiving) {
-                std::erase(t.onTerrainLiving, l);
+                t.onTerrainLiving.clear(); 
                 t.structureOnTerrain = nullptr;
+
                 if (t.coord.x % 5 == 0 && t.coord.y % 5 == 0)
                 {
                     t.resourceLeft = 2000;

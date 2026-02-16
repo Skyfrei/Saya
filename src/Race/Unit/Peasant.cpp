@@ -16,7 +16,7 @@ Peasant::Peasant() {
     maxMana = 200.0f;
     mana = 200.0f;
     manaRegen = 0.67f;
-    goldCost = 75;
+    goldCost = 55;
     foodCost = 1;
     buildTime = 15;
     is = PEASANT;
@@ -51,56 +51,51 @@ void Peasant::Build(Structure *str) {
         }
     }
     else{
-        std::vector<actionT> shifted(actionQueue.size());
-        for (size_t i = shifted.size() - 1; i > 0; --i) {
-            shifted[i] = actionQueue[i - 1];
-        }
         MoveAction mov(this, Vec2(str->coordinate.x, str->coordinate.y));
-        shifted[0] = mov;
-        actionQueue = shifted;
+        InsertFrontAction(mov);
     }
 }
 
 void Peasant::FarmGold(Terrain &terr, TownHall &hall, int &g) {
-    if (goldInventory > 0 && WithinDistance(hall.coordinate))
-    {
-        goldInventory = 0;
-        if (std::holds_alternative<FarmGoldAction>(actionQueue[0])) {
-            auto& act = std::get<FarmGoldAction>(actionQueue[0]);
-            act.finished = true;
+    if (goldInventory >= maxGoldInventory) {
+        if (WithinDistance(hall.coordinate)) {
+            auto it = std::find_if(actionQueue.begin(), actionQueue.end(), [](actionT& act) {
+                return std::holds_alternative<FarmGoldAction>(act);
+            });
+
+            if (it != actionQueue.end()) {
+                FarmGoldAction& farmAct = std::get<FarmGoldAction>(*it);
+                farmAct.gold = goldInventory; 
+                goldInventory = 0;
+                farmAct.finished = true;
+            }
+            return; 
+        } else {
+            MoveAction mov(this, hall.coordinate);
+            InsertFrontAction(mov);
+            return;
         }
     }
-    if (goldInventory >= maxGoldInventory)
-    {
-        std::vector<actionT> shifted(actionQueue.size());
-        for (size_t i = shifted.size() - 1; i > 0; --i) {
-            shifted[i] = actionQueue[i - 1];
-        }
-        MoveAction mov(this, Vec2(hall.coordinate.x, hall.coordinate.y));
-        shifted[0] = mov;
-        actionQueue = shifted;
-        return;
-    }
-    if (WithinDistance(terr.coord))
-    {
-        if (terr.type == GOLD)
+    else if (WithinDistance(terr.coord)){
+        if (terr.type == GOLD && terr.resourceLeft > 0)
         {
             if (CanAttack())
             {
                 goldInventory++;
                 terr.resourceLeft--;
-                g++;
+            }
+        }else{
+            for (auto& act : actionQueue) {
+                if (auto* farmAct = std::get_if<FarmGoldAction>(&act)) 
+                {
+                    farmAct->finished = true;
+                    farmAct->gold = goldInventory; 
+                }
             }
         }
-    }
-    else
+    }else
     {
-        std::vector<actionT> shifted(actionQueue.size());
-        for (size_t i = shifted.size() - 1; i > 0; --i) {
-            shifted[i] = actionQueue[i - 1];
-        }
-        MoveAction mov(this, Vec2(terr.coord.x, terr.coord.y));
-        shifted[0] = mov;
-        actionQueue = shifted;
+        MoveAction mov(this, terr.coord);
+        InsertFrontAction(mov);
     }
 }

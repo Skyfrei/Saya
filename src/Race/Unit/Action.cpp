@@ -225,6 +225,7 @@ bool MoveAction::operator==(const MoveAction &b) const {
     return false;
 }
 bool AttackAction::operator==(const AttackAction &b) const {
+    if (object == nullptr || b.object == nullptr) return false;
     return object == b.object;
 }
 bool BuildAction::operator==(const BuildAction &b) const {

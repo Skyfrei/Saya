@@ -11,8 +11,6 @@
 #include "../Tools/Enums.h"
 
 
-
-
 class PPO : public torch::nn::Module{
     public:
         PPO();
@@ -45,7 +43,7 @@ class PPO : public torch::nn::Module{
             buildAction + PEASANT_INDEX_IN_UNITS * MAP_SIZE * MAP_SIZE *
                               HALL_INDEX_IN_STRCTS; // town hall size multipled here as well
         int recruitAction =
-            farmAction + /*2 idk why 2 here wtf*/ NR_OF_UNITS * BARRACK_INDEX_IN_STRUCTS; // barrack size        
+            farmAction + /*2 idk why 2 here wtf*/ (NR_OF_UNITS * BARRACK_INDEX_IN_STRUCTS); // barrack size        
 };
 
 #endif

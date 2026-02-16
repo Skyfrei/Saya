@@ -49,9 +49,19 @@ std::vector<binary> Unit::SerializeBinary() {
 // }
 
 void Unit::InsertAction(actionT v) {
+    if (HasCommand())
+        return;
     if (std::find(actionQueue.begin(), actionQueue.end(), v) == actionQueue.end())
     {
         actionQueue.push_back(v);
+    }
+}
+void Unit::InsertFrontAction(actionT v) {
+    if (actionQueue.size() >= 2)
+        return;
+    if (std::find(actionQueue.begin(), actionQueue.end(), v) == actionQueue.end())
+    {
+        actionQueue.insert(actionQueue.begin(), v);
     }
 }
 void Unit::ResetActions() {
@@ -65,9 +75,22 @@ actionT Unit::TakeAction(Map& m) {
     if (!HasCommand())
         return {};
 
+
     if (std::holds_alternative<AttackAction>(actionQueue[0]))
     {
         AttackAction &action = std::get<AttackAction>(actionQueue[0]);
+        if (action.object == nullptr){
+            action.finished = true;
+            return action;
+        }
+
+        if (action.object->coordinate.x < 0 || action.object->coordinate.x >= MAP_SIZE ||
+            action.object->coordinate.y < 0 || action.object->coordinate.y >= MAP_SIZE){
+
+            action.finished = true;
+            return action;
+        }
+
         if (action.object->health <= 0)
         {
             action.finished = true;
@@ -81,6 +104,13 @@ actionT Unit::TakeAction(Map& m) {
     else if (std::holds_alternative<MoveAction>(actionQueue[0]))
     {
         MoveAction &action = std::get<MoveAction>(actionQueue[0]);
+        if (action.destCoord.x < 0 || action.destCoord.x >= MAP_SIZE ||
+            action.destCoord.y < 0 || action.destCoord.y >= MAP_SIZE){
+
+            action.finished = true;
+            return action;
+        }
+
         if (coordinate.x == action.destCoord.x && coordinate.y == action.destCoord.y)
         {
             action.finished = true;
@@ -93,6 +123,13 @@ actionT Unit::TakeAction(Map& m) {
     else if (std::holds_alternative<BuildAction>(actionQueue[0]))
     {
         BuildAction &action = std::get<BuildAction>(actionQueue[0]);
+        if (action.coordinate.x < 0 || action.coordinate.x >= MAP_SIZE || 
+            action.coordinate.y < 0 || action.coordinate.y >= MAP_SIZE) {
+            
+            action.finished = true;
+            return action; 
+        }
+
         if (action.stru->health >= action.stru->maxHealth)
         {
             action.finished = true;
@@ -105,14 +142,15 @@ actionT Unit::TakeAction(Map& m) {
     }
     else if (std::holds_alternative<FarmGoldAction>(actionQueue[0]))
     {
+
         Peasant &p = static_cast<Peasant &>(*this);
         FarmGoldAction &action = std::get<FarmGoldAction>(actionQueue[0]);
         action.terr = &m.GetTerrainAtCoordinate(action.destCoord);
-        if (action.terr->resourceLeft <= 0 || p.goldInventory == p.maxGoldInventory)
-        {
-            action.finished = true;
-            return action;
-        }
+        //if (action.terr->resourceLeft <= 0 || p.goldInventory == p.maxGoldInventory)
+        //{
+        //    action.finished = true;
+        //    return action;
+        //}
         action.prevCoord = coordinate;
         p.FarmGold(*action.terr, *action.hall, action.gold);
         return action;
@@ -179,13 +217,8 @@ void Unit::Attack(Living &un) {
         }
     }
     else{
-        std::vector<actionT> shifted(actionQueue.size());
-        for (size_t i = shifted.size() - 1; i > 0; --i) {
-            shifted[i] = actionQueue[i - 1];
-        }
         MoveAction mov(this, Vec2(un.coordinate.x, un.coordinate.y));
-        shifted[0] = mov;
-        actionQueue = shifted;
+        InsertFrontAction(mov);   
     }
 }
 

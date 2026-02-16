@@ -22,7 +22,7 @@ class TownHall : public Structure
     void UpgradeEquipment(Upgrade &curr);
     void FinishBuilding() override;
     Structure *Clone() const override;
-    std::string GetDescription();
+    std::string GetDescription() override;
 };
 
 #endif

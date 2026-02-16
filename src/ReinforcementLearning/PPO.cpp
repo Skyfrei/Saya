@@ -20,7 +20,7 @@ void PPO::Initialize(Map &map, State &s){
 torch::Tensor PPO::Forward(torch::Tensor x){
     x = tanh(layer1(x));
     x = tanh(layer2(x));
-    x = tanh(layer3(x));
+    x = layer3(x);
     return x;
 }
 
@@ -48,6 +48,7 @@ void PPO::LoadModel(std::string model_name){
     torch::serialize::InputArchive archive;
     archive.load_from(model_name);
     this->load(archive);
+    this->eval();
 }
 
 

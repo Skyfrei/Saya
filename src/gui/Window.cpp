@@ -6,21 +6,6 @@
 #include "../State/Player.h"
 
 Window::Window(Vec2 s) : window_size(s) {
-//    canvas_start = Vec2(win_start_x * 4, win_start_y * 4);
-//    canvas_size_x = algo_start_x - win_start_x - canvas_start.x;
-//    canvas_size_y = window_size.y - canvas_start.y;
-//
-//    map.text = "Map";
-//    map.pos = Vec2(win_start_x, win_start_y);
-//    dqn.text = "DQN";
-//    dqn.pos = Vec2(algo_start_x, win_start_y);
-//    ppo.text = "PPO";
-//    ppo.pos = Vec2(algo_start_x, 200);
-//    moves.text = "Moves";
-//    moves.pos = Vec2(algo_start_x, 400);
-//
-//    SDL_AppResult result = InitSdl();
-
 
     canvas_start = Vec2(win_start_x * 4, win_start_y * 4);
     // Corrected: Removed the extra '- win_start_x' to use the full canvas width
@@ -183,7 +168,7 @@ void Window::RenderObjectLabel(objectType& t, float gui_x, float gui_y) {
     if (std::holds_alternative<UnitType>(t)) {
         switch(std::get<UnitType>(t)){
             case UnitType::PEASANT: label = "P"; break;
-            case UnitType::FOOTMAN: label = "F"; break;
+            case UnitType::FOOTMAN: label = "S"; break;
             default: label = "?"; break;
         }
     } else if (std::holds_alternative<StructureType>(t)) {
@@ -226,45 +211,13 @@ void Window::RenderObjectLabel(objectType& t, float gui_x, float gui_y) {
 }
 
 
-void Window::PickColor(objectType& t, int p){
-    if (std::holds_alternative<UnitType>(t)) {
-        auto type = std::get<UnitType>(t);
-        switch(type){
-            case UnitType::PEASANT:
-                if (p == 0)
-                    SDL_SetRenderDrawColor(renderer, 255, 99, 71, 255);
-                else
-                    SDL_SetRenderDrawColor(renderer, 60, 179, 113, 255);
-                break;
-            case UnitType::FOOTMAN:
-                if (p == 0)
-                    SDL_SetRenderDrawColor(renderer, 70, 130, 180, 255);
-                else
-                    SDL_SetRenderDrawColor(renderer, 238, 130, 238, 255);
-                break;
-        }
-    } else if (std::holds_alternative<StructureType>(t)) {
-        auto type = std::get<StructureType>(t);
-        switch(type){
-            case StructureType::HALL:
-                if (p == 0)
-                    SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255);
-                else
-                    SDL_SetRenderDrawColor(renderer, 123, 104, 238, 255);
-                break;
-            case StructureType::BARRACK:
-                if (p == 0)
-                    SDL_SetRenderDrawColor(renderer, 244, 164, 96, 255);
-                else
-                    SDL_SetRenderDrawColor(renderer, 0, 191, 255, 255);
-                break;
-            case StructureType::FARM:
-                if (p == 0)
-                    SDL_SetRenderDrawColor(renderer, 199, 21, 133, 255);
-                else
-                    SDL_SetRenderDrawColor(renderer, 50, 205, 50, 255);
-                break;
-        }
+void Window::PickColor(objectType& t, int p) {
+    if (p == 0) {
+        // Player Team: Bright Yellow
+        SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255);
+    } else {
+        // Enemy Team: Bright Red
+        SDL_SetRenderDrawColor(renderer, 255, 50, 50, 255);
     }
 }
 
@@ -277,11 +230,11 @@ void Window::RenderMap(Player& pl, Player& en, Map& map) {
     for (int i = 0; i < MAP_SIZE; ++i) {
         for (int j = 0; j < MAP_SIZE; ++j) {
             if (map.terrain[i][j].type == GOLD) {
-                float gui_x = canvas_start.x + i * ratiox;
-                float gui_y = canvas_start.y + j * ratioy;
+                float gui_x = canvas_start.x + j * ratiox;
+                float gui_y = canvas_start.y + i * ratioy;
 
                 SDL_Vertex verts[3];
-                // Define a small 3px wide, 3px high triangle
+
                 verts[0].position = {gui_x, gui_y};
                 verts[1].position = {gui_x + 3.0f, gui_y};
                 verts[2].position = {gui_x + 1.5f, gui_y + 3.0f};
@@ -297,67 +250,41 @@ void Window::RenderMap(Player& pl, Player& en, Map& map) {
         }
     } 
     //
-    SDL_SetRenderDrawColor(renderer, 50, 205, 50, 255);
+// --- Helper to draw dots and labels ---
+    auto drawDots = [&](auto& list, int pID) {
+        for (auto &obj : list) {
+            objectType currentObjType = obj->is; 
+            float gui_x = canvas_start.x + obj->coordinate.y * ratiox;
+            float gui_y = canvas_start.y + obj->coordinate.x * ratioy;
+            // 3. Center the dot in the tile
+            float dotSize = 4.0f;
+            float final_dot_x = gui_x + (ratiox - dotSize) / 2.0f;
+            float final_dot_y = gui_y + (ratioy - dotSize) / 2.0f;
 
-    for (auto &obj : pl.units)
-    {
-        objectType ttype;
-        ttype = obj->is;
-        float gui_x = canvas_start.x + obj->coordinate.x * ratiox;
-        float gui_y = canvas_start.y + obj->coordinate.y * ratioy;
-        
-        SDL_FRect point = {gui_x, gui_y, 3.0f, 3.0f};
-        SDL_RenderFillRect(renderer, &point);
-        RenderObjectLabel(ttype, gui_x, gui_y); // Call new function
-    }
-    
-    // --- Team 2 Units (game_objects2) ---
-    SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255);
+            PickColor(currentObjType, pID);
+            
+            SDL_FRect dot = { final_dot_x, final_dot_y, dotSize, dotSize };
+            SDL_RenderFillRect(renderer, &dot);
 
-    for (auto &obj : en.units)
-    {
-        objectType ttype;
-        ttype = obj->is;
-        float gui_x = canvas_start.x + obj->coordinate.x * ratiox;
-        float gui_y = canvas_start.y + obj->coordinate.y * ratioy;
+            // Pass the ACTUAL dot position, not the tile corner
+            RenderObjectLabel(currentObjType, final_dot_x, final_dot_y);
+        }
+    };
 
-        SDL_FRect point = {gui_x, gui_y, 3.0f, 3.0f};
-        SDL_RenderFillRect(renderer, &point);
-        RenderObjectLabel(ttype, gui_x, gui_y); // Call new function
-    }
-
-    // --- Team 1 Structures (game_objects3) ---
-    SDL_SetRenderDrawColor(renderer, 50, 205, 50, 255);
-
-    for (auto &obj : pl.structures)
-    {
-        objectType ttype;
-        ttype = obj->is;
-        float gui_x = canvas_start.x + obj->coordinate.x * ratiox;
-        float gui_y = canvas_start.y + obj->coordinate.y * ratioy;
-
-        SDL_FRect point = {gui_x, gui_y, 3.0f, 3.0f};
-        SDL_RenderFillRect(renderer, &point);
-        RenderObjectLabel(ttype, gui_x, gui_y); // Call new function
-    }
-    // --- Team 2 Structures (game_objects4) ---
-    //
-
-    SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255);
-    for (auto &obj : en.structures)
-    {
-        objectType ttype;
-        ttype = obj->is;
-        float gui_x = canvas_start.x + obj->coordinate.x * ratiox;
-        float gui_y = canvas_start.y + obj->coordinate.y * ratioy;
-
-        SDL_FRect point = {gui_x, gui_y, 3.0f, 3.0f};
-        SDL_RenderFillRect(renderer, &point);
-        RenderObjectLabel(ttype, gui_x, gui_y); // Call new function
-    }
+    // --- Draw everything ---
+    drawDots(pl.units, 0);       // Team 0 (Yellow)
+    drawDots(en.units, 1);       // Team 1 (Green/Purple)
+    drawDots(pl.structures, 0);
+    drawDots(en.structures, 1);
 }
 
 SDL_AppResult Window::Render(Player& pl, Player& en, Map& map, std::string &dqn_action, std::string &ppo_action) {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_EVENT_QUIT) {
+            return SDL_APP_SUCCESS; // Signal to stop
+        }
+    }
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     RenderUI();

@@ -7,6 +7,7 @@
 #include <torch/torch.h>
 
 #include "../Race/Unit/Unit.h"
+#include "../Race/Unit/Peasant.h"
 #include "../State/Player.h"
 #include "../Tools/Vec2.h"
 #include "Transition.h"
@@ -22,7 +23,7 @@ struct TensorStruct
     torch::Tensor GetUnitsTensor(std::vector<Unit *> &units);
     torch::Tensor GetStructuresTensor(std::vector<Structure *> &structures);
     torch::Tensor GetTensor();
-    const int unitVar = 8;
+    const int unitVar = 7;
     const int strucVar = 4;
 
     torch::Tensor currentMap;

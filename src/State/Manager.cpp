@@ -1,11 +1,15 @@
 #include "Manager.h"
 #include "../Race/Structure/TownHall.h"
 #include "../Race/Unit/Peasant.h"
+#include <iostream>
+
 
 Manager::Manager() : player(map, PLAYER), enemy(map, ENEMY) {
-    player.SetInitialCoordinates(Vec2(8, 2));
-    enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 2));
-    MainLoop();
+
+    player.SetInitialCoordinates(Vec2(2, 2));
+    enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 4, MAP_SIZE - 4));
+    trainerManager.InitializePPO(player, enemy, map);
+    trainerManager.ppoPolicy.LoadModel("ppo_policy");
 }
 
 void Manager::CheckForOwnership(Player &p, Living *l, actionT actionTaken) {
@@ -13,7 +17,7 @@ void Manager::CheckForOwnership(Player &p, Living *l, actionT actionTaken) {
     {
         AttackAction &action = std::get<AttackAction>(actionTaken);
 
-        if (action.object->health <= 0)
+        if (action.object != nullptr && action.object->health <= 0)
         {
             map.RemoveOwnership(action.object, action.object->coordinate);
             if (p.side == PLAYER)
@@ -85,37 +89,38 @@ void Manager::CheckForOwnership(Player &p, Living *l, actionT actionTaken) {
 }
 
 void Manager::MainLoop() {
-    //    player.Attack(player.units[0].get(), (Living*)enemy.units[0].get());
-    //  std::cout<<player.units[0]->actionQueue.size()<<std::endl;
-
-    while ((player.HasUnit(PEASANT) && player.HasStructure(HALL)) &&
-           (enemy.HasUnit(PEASANT) && enemy.HasStructure(HALL)))
+    while (!trainerManager.ShouldResetEnvironment(player, enemy, map))
     {
-        for (int i = 0; i < player.units.size(); i++)
-        {
-            if (player.units[i]->GetActionQueueSize() > 0)
-            {
-                actionT actionDone = player.units[i]->TakeAction(map);
-                CheckForOwnership(player, player.units[i].get(), actionDone);
-            }
-            for (int i = 0; i < enemy.units.size(); i++)
-            {
-                if (enemy.units[i]->GetActionQueueSize() > 0)
-                {
-                    actionT actionDone = enemy.units[i]->TakeAction(map);
-                    CheckForOwnership(enemy, enemy.units[i].get(), actionDone);
-                }
-            }
-            // player.Attack(player.units[0].get(),
-            // (Living*)enemy.units[0].get());
-            if (Is10thSecond())
-            {
-                // Player pl(player);
-                // Player en(enemy);
-                // trainerManager.StartPolicy(map, pl, en);
-            }
+        trainerManager.ShowInMap(player, enemy, map);
+        actionT action = trainerManager.GetActionPPO(player, enemy, map);
+        player.TakeAction(action);
+        player.CheckUnitActions();
+
+        for (int i = static_cast<int>(player.units.size()) - 1; i >= 0; --i) {
+            Unit* un = player.units[i].get();
+            CheckForOwnership(player, un, action);
+        }
+        actionT action2 = trainerManager.GetActionPPO(enemy, player, map);
+        enemy.TakeAction(action2);
+        enemy.CheckUnitActions();
+        for (int i = static_cast<int>(enemy.units.size()) - 1; i >= 0; --i) {
+            Unit* un = enemy.units[i].get();
+            CheckForOwnership(enemy, un, action);
         }
     }
+
+    if (trainerManager.ShouldResetEnvironment(player, enemy, map)){
+        map.Reset();
+        player.Reset(PLAYER);
+        enemy.Reset(ENEMY);
+        std::cout << "Player loss"<<std::endl;
+    }else if(trainerManager.ShouldResetEnvironment(enemy, player, map)){
+        map.Reset();
+        player.Reset(PLAYER);
+        enemy.Reset(ENEMY);
+        std::cout << "Enemy loss"<<std::endl;
+    }
+
 }
 
 void Manager::CheckForMovement() {

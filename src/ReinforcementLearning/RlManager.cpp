@@ -11,6 +11,23 @@
 RlManager::RlManager() : win(Vec2(1000, 1000)) {
 }
 
+actionT RlManager::GetActionPPO(Player& pl, Player& en, Map& map){
+    torch::NoGradGuard no_grad; // CRITICAL: Stop tracking gradients
+    ppoPolicy.eval();           // CRITICAL: Set to evaluation mode
+    State s = GetState(pl, en, map);
+
+    TensorStruct tensorStruct(s, map);
+    std::cout << "Input Tensor Sum: " << tensorStruct.GetTensor().sum().item<float>() << std::endl;
+    auto output = ppoPolicy.Forward(tensorStruct.GetTensor());
+    // Convert raw logits to probabilities
+    auto probs = torch::softmax(output, 1);
+    // Sample an action index based on the probability distribution
+    auto action_idx = torch::multinomial(probs, 1).item<int>();
+    actionT action = ppoPolicy.MapIndexToAction(pl, en, action_idx);
+
+    return action;
+}
+
 void RlManager::InitializeDQN(Player &pl, Player &en, Map &map) {
     State s = GetState(pl, en, map);
     policyNet.Initialize(map, s);
@@ -98,22 +115,12 @@ void RlManager::OptimizeDQN(Map &map) {
     optimizer.step();
 }
 
-bool RlManager::ShouldResetEnvironment(Player &pl, Player &en, Map &map, float &reward) {
+bool RlManager::ShouldResetEnvironment(Player &pl, Player &en, Map &map) {
     if (!(pl.HasUnit(PEASANT) && pl.HasStructure(HALL))){
-        map.Reset();
-        pl.Reset(PLAYER);
-        en.Reset(ENEMY);
-        reward = reward - 10.0f;
         std::cout << "End state reached";
-
         return true;
     }else if (!(en.HasUnit(PEASANT) && en.HasStructure(HALL))){
-        map.Reset();
-        pl.Reset(PLAYER);
-        en.Reset(ENEMY);
-        reward = reward + 10.0f;
         std::cout << "End state reached";
-
         return true;
     }
     return false;
@@ -135,12 +142,13 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
         done = false;
         double fullSteps = 0;
         while (!done){
-            Player playerClone = Player(pl);
-            Player enemyClone = Player(en);
+            //Player playerClone = Player(pl);
+            //Player enemyClone = Player(en);
             float episode_reward = 0.0f;
             std::vector<std::tuple<State, int, float, at::Tensor, at::Tensor, bool>> trajectory_buffer;
 
             for (int t= 0; t < forwardSteps; t++){
+                ShowInMap(pl, en, map);
                 State s = GetState(pl, en, map);
                 TensorStruct input_tensor(s, map);
                 at::Tensor state_value = ppoValue.Forward(input_tensor.GetTensor()).clone().detach();
@@ -160,22 +168,32 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 float reward = reward_tensor.item<float>();
 
                 episode_reward += reward;
-                done = ShouldResetEnvironment(pl, en, map, reward);
+                done = ShouldResetEnvironment(pl, en, map);
 
                 trajectory_buffer.push_back({s, action_index, reward, state_value, output_soft[0][action_index].clone().detach(), done});
-                if (fullSteps == 10000){
-                    done = true;
-                    pl.units.clear();
-                    pl.structures.clear();
-                    float random = 0.0f;
-                    ShouldResetEnvironment(pl, en, map, random);
+                if (done) {
+                    bool lost = !(pl.HasUnit(PEASANT) || pl.HasStructure(HALL));
+                    bool won  = !(en.HasUnit(PEASANT) || en.HasStructure(HALL));
+                
+                    if (lost) {
+                        reward -= 50.0f; 
+                    } else if (won) {
+                        reward += 50.0f;
+                    }
+                    map.Reset();
+                    pl.Reset(PLAYER);
+                    en.Reset(ENEMY);
+                } 
+                else if (fullSteps >= 2500) { 
+                    done = true; 
+                    map.Reset();
+                    pl.Reset(PLAYER);
+                    en.Reset(ENEMY);
                 }
-                if (done){
-                    break;
-                }
+
                 fullSteps ++;
             }
-            at::Tensor gae = torch::tensor(0.0f, torch::kFloat32);
+            at::Tensor gae = torch::tensor(0.0f, torch::kFloat32); // was 0 
             std::vector<at::Tensor> advantages_buffer(trajectory_buffer.size());
             std::vector<at::Tensor> returns_buffer(trajectory_buffer.size());
             
@@ -244,7 +262,6 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                           << std::endl;
                 }
                 State s1 = GetState(pl, en, map);
-                ShowInMap(pl, en, map);
         }
     }
     file.close();
@@ -258,7 +275,7 @@ void RlManager::ShowInMap(Player& pl, Player& en, Map& m){
 }
 
 void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
-    // float updateRate = 0.005;
+    // float updateRate = 0.005;rlmana
 
     for (int i = 0; i < episodeNumber; i++)
     {
@@ -270,7 +287,7 @@ void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
                 policyNet.SelectAction(pl, en, map, currState, epsilon);
             float reward = pl.TakeAction(std::get<0>(selectedAction));
             State nextState = GetState(pl, en, map);
-            if (ShouldResetEnvironment(pl, en, map, reward))
+            if (ShouldResetEnvironment(pl, en, map))
                 break;
             Transition trans(currState, std::get<0>(selectedAction), nextState,
                              reward, std::get<1>(selectedAction));
@@ -278,7 +295,7 @@ void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
             selectedAction = policyNet.SelectAction(pl, en, map, nextState, epsilon);
             reward = en.TakeAction(std::get<0>(selectedAction));
             State nextNextState = GetState(pl, en, map);
-            if (ShouldResetEnvironment(en, pl, map, reward)) // change order of pl, en to en, pl becasue en takes action here
+            if (ShouldResetEnvironment(en, pl, map)) // change order of pl, en to en, pl becasue en takes action here
                 break;
             Transition trans1(nextState, std::get<0>(selectedAction), nextNextState,
                               reward, std::get<1>(selectedAction));

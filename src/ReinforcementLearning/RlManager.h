@@ -25,6 +25,11 @@ class RlManager
     void LoadMemoryAsString();
     void SaveMemoryAsBinary();
     void LoadMemoryAsBinary();
+    actionT GetActionPPO(Player&, Player&, Map&);
+    void ShowInMap(Player& pl, Player& en, Map& m);
+    bool ShouldResetEnvironment(Player &pl, Player &en, Map &map);
+
+
 
   public:
     std::deque<Transition> memory;
@@ -40,12 +45,10 @@ class RlManager
     Transition CreateTransition(State s, actionT a, State rextS);
     State GetState(Player &pl, Player &en, Map &map);
     void OptimizeDQN(Map &map);
-    bool ShouldResetEnvironment(Player &pl, Player &en, Map &map, float &reward);
-    void ShowInMap(Player& pl, Player& en, Map& m);
 
 
   private:
-    const int batchSize = 32;
+    const int batchSize = 32; // was 32
     float gamma = 0.94f;
     float epsilon = 0.9f;
     bool calledMemOnce = false;
@@ -54,10 +57,10 @@ class RlManager
 
     const std::string memory_file = "dqn_memory.say";
     const std::string memory_file_binary = "binary.bay";
-    float ppoEpsilon = 0.9f;
-    float epsilonDecay = 1e-3;
-    int episodeNumber = 20;
-    int forwardSteps = 200;
+    float ppoEpsilon = 0.2f;
+    float epsilonDecay = 0;
+    int episodeNumber = 100;
+    int forwardSteps = 1024;
     Window win;
 };
 #endif

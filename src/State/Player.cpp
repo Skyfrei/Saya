@@ -24,6 +24,15 @@ Player::Player(Map &m, Side en) : map(m), side(en) {
     gold = 300;
 }
 void Player::Reset(Side en){
+    for (auto &structure : structures)
+    {
+        map.RemoveOwnership(structure.get(), Vec2(structure->coordinate.x, structure->coordinate.y));
+    }
+    for (auto &unit : units)
+    {
+        map.RemoveOwnership(unit.get(), Vec2(unit->coordinate.x, unit->coordinate.y));
+    }
+
     units.clear();
     structures.clear();
     Initialize();
@@ -59,40 +68,47 @@ Player::~Player() {
 float Player::TakeAction(actionT &act) {
     float reward = 0.0f; 
     reward += CheckUnitActions();
+
     if (std::holds_alternative<MoveAction>(act))
     {
         MoveAction &action = std::get<MoveAction>(act);
         reward = GetRewardFromAction(action);
+        std::cout<<"Moving"<<std::endl;
         Move(action);
     }
     else if (std::holds_alternative<AttackAction>(act))
     {
         AttackAction &action = std::get<AttackAction>(act);
         reward = GetRewardFromAction(action);
+        std::cout<<"Attacking"<<std::endl;
         Attack(action);
-        std::cout<<"Reward for attack: " << reward<<std::endl;
     }
     else if (std::holds_alternative<BuildAction>(act))
     {
         BuildAction &action = std::get<BuildAction>(act);
         reward = GetRewardFromAction(action, gold);
+        std::cout<<"Building"<<std::endl;
         Build(action);
     }
     else if (std::holds_alternative<FarmGoldAction>(act))
     {
         FarmGoldAction &action = std::get<FarmGoldAction>(act);
+        if (action.terr == nullptr)
+            action.terr = &map.GetTerrainAtCoordinate(action.destCoord);
         reward = GetRewardFromAction(action, gold);
+        std::cout<<"Farming"<<std::endl;
         FarmGold(action);
     }
     else if (std::holds_alternative<RecruitAction>(act))
     {
         RecruitAction &action = std::get<RecruitAction>(act);
         reward = GetRewardFromAction(action, gold, food.y - food.x);
-        std::cout<<"Reward for recruit: " << reward<<std::endl;
+        std::cout<<"Recruiting"<<std::endl;
         Recruit(action);
     }
     else {
         EmptyAction act;
+        std::cout<<"Empty"<<std::endl;
         reward = GetRewardFromAction(act); 
     }
     return reward;
@@ -121,11 +137,48 @@ void Player::Build(BuildAction &action) {
     }
 }
 
+std::string GetActionName(ActionType type) {
+    switch (type) {
+        case MOVE:     return "MOVE";
+        case ATTACK:   return "ATTACK";
+        case BUILD:    return "BUILD";
+        case FARMGOLD: return "FARMGOLD";
+        case RECRUIT:  return "RECRUIT";
+        case EMPTY:    return "EMPTY";
+        default:       return "UNKNOWN";
+    }
+}
+
 float Player::CheckUnitActions(){
     float reward = 0.0f;
+    units.erase(
+        std::remove_if(units.begin(), units.end(),
+            [this, &reward](const std::unique_ptr<Unit>& un) {
+                if (un->IsDead()) {
+                    this->map.RemoveOwnership(un.get(), un->coordinate);
+                    reward -= 1.0f;
+                    return true;
+                }
+                return false;
+            }),
+        units.end()
+    );
+    
+    int i = 0;
     for (auto& un : units){
+
+        for (auto& t : un->actionQueue){
+            std::visit([&](auto& action) {
+                std::cout << "un: " << i << ": " << GetActionName(action.type) << std::endl;
+            }, t);
+        }
+        i++;
+
+
         un->TakeAction(map);
-        for (auto& act : un->actionQueue){
+        if (un->actionQueue.empty()) continue;
+
+        auto& act = un->actionQueue[0];
             std::visit([&](auto& action) {
                 if constexpr (requires { action.finished; }) {
                     if (action.finished) {
@@ -149,22 +202,20 @@ float Player::CheckUnitActions(){
                         else if (std::holds_alternative<FarmGoldAction>(act))
                         {
                             FarmGoldAction &action = std::get<FarmGoldAction>(act);
+                            if (action.terr == nullptr)
+                                action.terr = &map.GetTerrainAtCoordinate(action.destCoord);
+                            std::cout<<"Gold received: " << action.gold<<std::endl;
                             gold += action.gold;
                             reward = GetRewardFromAction(action, gold);
                         }
-                        else if (std::holds_alternative<RecruitAction>(act))
-                        {
-                            // Do nothing peasants dont have this action
-                        }
-                        else {
-                            //EmptyAction act;
-                        }
+                        else if (std::holds_alternative<RecruitAction>(act)){}
+                        else{}
                         un->actionQueue.erase(un->actionQueue.begin());
                     }
                 }
             }, act);
-        }
     }
+
     return reward;
 }
 
@@ -175,15 +226,18 @@ void Player::Recruit(RecruitAction &action) {
     if (action.stru != nullptr && action.stru->is == BARRACK)
     {
         std::unique_ptr<Unit> un = ChooseToRecruit(action.unitType);
-        if (gold - un->goldCost >= 0 && (food.y - food.x) - un->foodCost >= 0)
+        if (gold >= un->goldCost && food.x + un->foodCost <= food.y)
         {
             gold -= un->goldCost;
             food.x += un->foodCost;
             un->coordinate = action.stru->coordinate;
             map.AddOwnership(un.get());
+            if (un->is == FOOTMAN)
+                std::cout<<"Recruit footman"<<std::endl;
             units.emplace_back(std::move(un));
         }
     }
+    action.finished = true;
 }
 void Player::Initialize() {
     structures.push_back(std::make_unique<TownHall>(Vec2(0, 0)));
@@ -199,11 +253,13 @@ void Player::Initialize() {
 void Player::SetInitialCoordinates(Vec2 v) {
     for (auto &structure : structures)
     {
+        map.RemoveOwnership(structure.get(), Vec2(structure->coordinate.x, structure->coordinate.y));
         structure->coordinate = v;
         map.AddOwnership(structure.get());
     }
     for (auto &unit : units)
     {
+        map.RemoveOwnership(unit.get(), Vec2(unit->coordinate.x, unit->coordinate.y));
         unit->coordinate = v;
         map.AddOwnership(unit.get());
     }
