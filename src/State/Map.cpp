@@ -81,6 +81,7 @@ Terrain &Map::GetTerrainAtCoordinate(Vec2 v) {
     int x = static_cast<int>(v.x);
     int y = static_cast<int>(v.y);
     if (x < 0 || x >= MAP_SIZE || y < 0 || y >= MAP_SIZE) {
+        std::cout<<x<< " "<<y<< " "<<std::endl;
         throw std::out_of_range("Tried to access outside map!");
     }
     return terrain[x][y];

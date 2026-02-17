@@ -22,7 +22,7 @@ float GetRewardFromAction(Args&&... args) {
     if (std::holds_alternative<MoveAction>(action))
     {
         const MoveAction &moveAction = std::get<MoveAction>(action);
-        reward -= 0.005f;
+        reward -= 0.05f;
         if (moveAction.destCoord.x >= MAP_SIZE ||
             moveAction.destCoord.y >= MAP_SIZE){
             reward -= 2.0f;
@@ -43,7 +43,8 @@ float GetRewardFromAction(Args&&... args) {
     else if (std::holds_alternative<BuildAction>(action))
     {
         const BuildAction &buildAction = std::get<BuildAction>(action);
-        if (buildAction.stru->health >= buildAction.stru->maxHealth && buildAction.finished){
+
+        if (buildAction.finished){
              reward += 5.0f;
         }else{
             int gold = 0;
@@ -52,7 +53,11 @@ float GetRewardFromAction(Args&&... args) {
                 reward -= 0.01f;
                 return reward;
             }
-            reward += 0.6f;       
+            Peasant &p = static_cast<Peasant &>(*buildAction.peasant);
+            if (p.coordinate == buildAction.coordinate &&
+                buildAction.stru->health < buildAction.stru->maxHealth){
+                reward += 0.1f;       
+            }
         }
     }
     else if (std::holds_alternative<FarmGoldAction>(action))
@@ -67,8 +72,7 @@ float GetRewardFromAction(Args&&... args) {
             return reward;
         }
         if (p.goldInventory >= p.maxGoldInventory &&
-            (p.coordinate.x == farmAction.terr->coord.x && 
-            p.coordinate.y == farmAction.terr->coord.y)) {
+            p.coordinate == farmAction.terr->coord) {
             reward -= 2.0f; 
             return reward;
         }
@@ -77,7 +81,10 @@ float GetRewardFromAction(Args&&... args) {
             float ratio = (float)farmAction.gold / p.maxGoldInventory;
             reward += 10 * ratio;  
         }else{
-            reward += 0.01f;     
+            if (p.coordinate == farmAction.terr->coord &&
+                farmAction.terr->resourceLeft > 0){
+                reward += 0.1f;     
+            }
         }
     }
     else if (std::holds_alternative<RecruitAction>(action))

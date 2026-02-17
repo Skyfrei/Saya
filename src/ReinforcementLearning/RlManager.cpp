@@ -12,16 +12,14 @@ RlManager::RlManager() : win(Vec2(1000, 1000)) {
 }
 
 actionT RlManager::GetActionPPO(Player& pl, Player& en, Map& map){
-    torch::NoGradGuard no_grad; // CRITICAL: Stop tracking gradients
-    ppoPolicy.eval();           // CRITICAL: Set to evaluation mode
+    torch::NoGradGuard no_grad; 
+    ppoPolicy.eval();           
     State s = GetState(pl, en, map);
 
     TensorStruct tensorStruct(s, map);
     std::cout << "Input Tensor Sum: " << tensorStruct.GetTensor().sum().item<float>() << std::endl;
     auto output = ppoPolicy.Forward(tensorStruct.GetTensor());
-    // Convert raw logits to probabilities
     auto probs = torch::softmax(output, 1);
-    // Sample an action index based on the probability distribution
     auto action_idx = torch::multinomial(probs, 1).item<int>();
     actionT action = ppoPolicy.MapIndexToAction(pl, en, action_idx);
 
@@ -148,7 +146,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
             std::vector<std::tuple<State, int, float, at::Tensor, at::Tensor, bool>> trajectory_buffer;
 
             for (int t= 0; t < forwardSteps; t++){
-                ShowInMap(pl, en, map);
+                //ShowInMap(pl, en, map);
                 State s = GetState(pl, en, map);
                 TensorStruct input_tensor(s, map);
                 at::Tensor state_value = ppoValue.Forward(input_tensor.GetTensor()).clone().detach();
@@ -171,7 +169,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 done = ShouldResetEnvironment(pl, en, map);
 
                 bool envDone = ShouldResetEnvironment(pl, en, map);
-                bool timeDone = (fullSteps >= 1500);
+                bool timeDone = (fullSteps >= 5000);
                 done = envDone || timeDone;
 
                 if (envDone) {

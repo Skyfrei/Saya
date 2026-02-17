@@ -162,14 +162,7 @@ float Player::CheckUnitActions(){
     
     int i = 0;
     for (auto& un : units){
-
-        for (auto& t : un->actionQueue){
-            std::visit([&](auto& action) {
-                std::cout << "un: " << i << ": " << GetActionName(action.type) << std::endl;
-            }, t);
-        }
         i++;
-
 
         un->TakeAction(map);
         if (un->actionQueue.empty()) continue;

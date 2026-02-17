@@ -180,7 +180,7 @@ BuildAction::BuildAction(Structure *s) : stru(s) {
     type = BUILD;
 }
 BuildAction::BuildAction(Unit *p, StructureType s, Vec2 c)
-    : peasant(p), struType(s), coordinate(c) {
+    : peasant(p), struType(s), coordinate(c), prevCoord(p->coordinate) {
     type = BUILD;
     switch (struType) {
         case HALL:
@@ -209,7 +209,7 @@ FarmGoldAction::FarmGoldAction(Unit *p, Vec2 v) : destCoord(v), peasant(p) {
     type = FARMGOLD;
 }
 FarmGoldAction::FarmGoldAction(Unit *p, Vec2 v, TownHall *h)
-    : peasant(p), destCoord(v), hall(h) {
+    : peasant(p), destCoord(v), hall(h), prevCoord(p->coordinate) {
     type = FARMGOLD;
 }
 RecruitAction::RecruitAction(UnitType typeOfUnit, Structure *s)
