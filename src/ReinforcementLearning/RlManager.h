@@ -29,8 +29,6 @@ class RlManager
     void ShowInMap(Player& pl, Player& en, Map& m);
     bool ShouldResetEnvironment(Player &pl, Player &en, Map &map);
 
-
-
   public:
     std::deque<Transition> memory;
     DQN policyNet;
@@ -45,7 +43,7 @@ class RlManager
     Transition CreateTransition(State s, actionT a, State rextS);
     State GetState(Player &pl, Player &en, Map &map);
     void OptimizeDQN(Map &map);
-
+    at::Tensor GetMask(Player&, int);
 
   private:
     const int batchSize = 32; // was 32

@@ -22,21 +22,21 @@ float GetRewardFromAction(Args&&... args) {
     if (std::holds_alternative<MoveAction>(action))
     {
         const MoveAction &moveAction = std::get<MoveAction>(action);
-        reward -= 0.05f;
         if (moveAction.destCoord.x >= MAP_SIZE ||
             moveAction.destCoord.y >= MAP_SIZE){
-            reward -= 2.0f;
+            reward -= 1.0f;
         }
     }
     else if (std::holds_alternative<AttackAction>(action))
     {
         const AttackAction &attackAction = std::get<AttackAction>(action);
-        if (attackAction.object->health <= 0.0f && attackAction.finished){
-            reward += 10.0f;
+        if (attackAction.finished){
+            reward += 5.0f;
         }else{
-            if (attackAction.unit != nullptr) {
+            if (attackAction.unit != nullptr &&
+                attackAction.unit->coordinate == attackAction.object->coordinate) {
                 float survivalPanic = (attackAction.unit->health / attackAction.unit->maxHealth);
-                reward += (0.1f * attackAction.unit->attack) * survivalPanic;
+                reward += (0.01f * attackAction.unit->attack) * survivalPanic;
             }
         }
     }
@@ -45,7 +45,7 @@ float GetRewardFromAction(Args&&... args) {
         const BuildAction &buildAction = std::get<BuildAction>(action);
 
         if (buildAction.finished){
-             reward += 5.0f;
+             reward += 10.0f;
         }else{
             int gold = 0;
             if constexpr (sizeof...(Args) >= 2) gold = std::get<1>(arg_tuple);
@@ -55,7 +55,8 @@ float GetRewardFromAction(Args&&... args) {
             }
             Peasant &p = static_cast<Peasant &>(*buildAction.peasant);
             if (p.coordinate == buildAction.coordinate &&
-                buildAction.stru->health < buildAction.stru->maxHealth){
+                buildAction.stru->health < buildAction.stru->maxHealth &&
+                buildAction.stru->health > 0){
                 reward += 0.1f;       
             }
         }
@@ -68,12 +69,12 @@ float GetRewardFromAction(Args&&... args) {
         Peasant &p = static_cast<Peasant &>(*farmAction.peasant);
 
         if (farmAction.terr->resourceLeft <= 0) {
-            reward -= 2.0f; 
+            reward -= 0.1f; 
             return reward;
         }
         if (p.goldInventory >= p.maxGoldInventory &&
             p.coordinate == farmAction.terr->coord) {
-            reward -= 2.0f; 
+            reward -= 0.1f; 
             return reward;
         }
 
@@ -81,8 +82,7 @@ float GetRewardFromAction(Args&&... args) {
             float ratio = (float)farmAction.gold / p.maxGoldInventory;
             reward += 10 * ratio;  
         }else{
-            if (p.coordinate == farmAction.terr->coord &&
-                farmAction.terr->resourceLeft > 0){
+            if (p.coordinate == farmAction.terr->coord){
                 reward += 0.1f;     
             }
         }
@@ -108,7 +108,7 @@ float GetRewardFromAction(Args&&... args) {
                     is_enough_resources = false;
                 }
                 if (!is_enough_resources){
-                    reward -= 0.05f;
+                    reward -= 0.01f;
                     return reward;
                 }
                 break;
@@ -122,7 +122,7 @@ float GetRewardFromAction(Args&&... args) {
                     is_enough_resources = false;
                 }
                 if (!is_enough_resources){
-                    reward -= 0.05f;
+                    reward -= 0.01f;
                     return reward;
                 }
                 break;
@@ -136,7 +136,7 @@ float GetRewardFromAction(Args&&... args) {
                     is_enough_resources = false;
 
                 if (!is_enough_resources){
-                    reward -= 0.05f;
+                    reward -= 0.01f;
                     return reward;
                 }
                 reward += 0.2f;
@@ -151,7 +151,7 @@ float GetRewardFromAction(Args&&... args) {
                     is_enough_resources = false;
 
                 if (!is_enough_resources){
-                    reward -= 0.05f;
+                    reward -= 0.01f;
                     return reward;
                 }
                 reward += 0.2f;
@@ -160,7 +160,7 @@ float GetRewardFromAction(Args&&... args) {
             default:
                 break;
         }
-        reward += 5;
+        reward += 5.0f;
     }
     else if (std::holds_alternative<EmptyAction>(action)){
         reward -= 1.0f;

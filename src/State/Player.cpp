@@ -69,22 +69,18 @@ float Player::TakeAction(actionT &act) {
     {
         MoveAction &action = std::get<MoveAction>(act);
         reward = GetRewardFromAction(action);
-        std::cout<<"Moving"<<std::endl;
-        std::cout<<action.prevCoord.x << " " <<action.destCoord.x<<std::endl;
         Move(action);
     }
     else if (std::holds_alternative<AttackAction>(act))
     {
         AttackAction &action = std::get<AttackAction>(act);
         reward = GetRewardFromAction(action);
-        std::cout<<"Attacking"<<std::endl;
         Attack(action);
     }
     else if (std::holds_alternative<BuildAction>(act))
     {
         BuildAction &action = std::get<BuildAction>(act);
         reward = GetRewardFromAction(action, gold);
-        std::cout<<"Building"<<std::endl;
         Build(action);
     }
     else if (std::holds_alternative<FarmGoldAction>(act))
@@ -92,19 +88,16 @@ float Player::TakeAction(actionT &act) {
         FarmGoldAction &action = std::get<FarmGoldAction>(act);
         action.terr = &map.GetTerrainAtCoordinate(action.destCoord);
         reward = GetRewardFromAction(action, gold);
-        std::cout<<"Farming"<<std::endl;
         FarmGold(action);
     }
     else if (std::holds_alternative<RecruitAction>(act))
     {
         RecruitAction &action = std::get<RecruitAction>(act);
         reward = GetRewardFromAction(action, gold, food.y - food.x);
-        std::cout<<"Recruiting"<<std::endl;
         Recruit(action);
     }
     else {
         EmptyAction act;
-        std::cout<<"Empty"<<std::endl;
         reward = GetRewardFromAction(act); 
     }
     return reward;
@@ -175,6 +168,7 @@ float Player::CheckUnitActions(){
                         {
                             // Dont get extra when moving finishes
                         }
+                        else if (std::holds_alternative<RecruitAction>(act)){}
                         else if (std::holds_alternative<AttackAction>(act))
                         {
                             AttackAction &action = std::get<AttackAction>(act);
@@ -196,8 +190,8 @@ float Player::CheckUnitActions(){
                             gold += action.gold;
                             reward = GetRewardFromAction(action, gold);
                         }
-                        else if (std::holds_alternative<RecruitAction>(act)){}
                         else{}
+
                         un->actionQueue.erase(un->actionQueue.begin());
                     }
                 }
@@ -220,8 +214,6 @@ void Player::Recruit(RecruitAction &action) {
             food.x += un->foodCost;
             un->coordinate = action.stru->coordinate;
             map.AddOwnership(un.get());
-            if (un->is == FOOTMAN)
-                std::cout<<"Recruit footman"<<std::endl;
             units.emplace_back(std::move(un));
         }
     }

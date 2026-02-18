@@ -19,6 +19,7 @@ class PPO : public torch::nn::Module{
         actionT MapIndexToAction(Player &pl, Player &en, int actionIndex);
         void SaveModel(std::string model_name);
         void LoadModel(std::string model_name);
+        int GetOutputSize();
 
     private:
         void QValue();
@@ -28,7 +29,6 @@ class PPO : public torch::nn::Module{
         torch::nn::Linear layer1{nullptr}, layer2{nullptr}, layer3{nullptr};
         torch::nn::Tanh tanh;
 
-    private:
         const float epsilon = 0.2f;
         const float discount = 0.9f;
         int actionSize = 0;

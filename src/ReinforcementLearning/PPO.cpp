@@ -23,6 +23,9 @@ torch::Tensor PPO::Forward(torch::Tensor x){
     x = layer3(x);
     return x;
 }
+int PPO::GetOutputSize() {
+    return recruitAction;
+}
 
 void PPO::QValue(){
     //return action array
