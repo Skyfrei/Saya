@@ -29,8 +29,8 @@ class Window
   public:
     Window(Vec2 s);
     SDL_AppResult Render(Player& pl, Player& en,Map& map,
-                         std::string &dqn_Action,
-                         std::string &ppo_action);
+                         std::string dqn_Action,
+                         std::string ppo_action);
     void SDL_AppQuit();
 
   private:
@@ -49,8 +49,12 @@ class Window
     RenderStruct moves;
     TTF_Font *font;
     const char *fontPath = "./MonaspaceXenonFrozen-Regular.ttf";
-    SDL_Surface *text;
-    SDL_Texture *texture;
+    TTF_Font* smallFont = nullptr;
+
+    SDL_Texture* dqn_tex = nullptr;
+    SDL_Texture* ppo_tex = nullptr;
+    std::string cached_dqn_text = "";
+    std::string cached_ppo_text = "";
 
     Vec2 window_size;
     const float scale = 1.0f;

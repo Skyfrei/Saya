@@ -132,6 +132,7 @@ actionT Unit::TakeAction(Map& m) {
 
         if (action.stru->health >= action.stru->maxHealth)
         {
+            action.stru->isBuilt = true;
             action.finished = true;
             return action;
         }

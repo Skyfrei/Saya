@@ -54,10 +54,11 @@ bool Map::operator==(const Map &other) const {
 }
 void Map::RemoveOwnership(Living *l, Vec2 v) {
     Terrain &terr = GetTerrainAtCoordinate(v);
-
     if (auto s = dynamic_cast<Structure *>(l))
     {
-        terr.structureOnTerrain = nullptr;
+        if (terr.structureOnTerrain == s) {
+            terr.structureOnTerrain = nullptr;
+        }
     }
     else{
         std::erase(terr.onTerrainLiving, l);
@@ -82,7 +83,7 @@ Terrain &Map::GetTerrainAtCoordinate(Vec2 v) {
     int y = static_cast<int>(v.y);
     if (x < 0 || x >= MAP_SIZE || y < 0 || y >= MAP_SIZE) {
         std::cout<<x<< " "<<y<< " "<<std::endl;
-        throw std::out_of_range("Tried to access outside map!");
+        //throw std::out_of_range("Tried to access outside map!");
     }
     return terrain[x][y];
 }

@@ -61,10 +61,12 @@ float GetRewardFromAction(Args&&... args) {
              reward += 30.0f;
         }else{
             Peasant &p = static_cast<Peasant &>(*buildAction.peasant);
-            if (p.coordinate == buildAction.coordinate &&
-                buildAction.stru->health < buildAction.stru->maxHealth &&
-                buildAction.stru->health > 0){
-                reward += 0.5f;       
+            if (buildAction.stru != nullptr){ 
+                if (p.coordinate == buildAction.coordinate &&
+                    buildAction.stru->health < buildAction.stru->maxHealth &&
+                    buildAction.stru->health > 0){
+                    reward += 0.5f;       
+                }
             }
         }
     }

@@ -45,7 +45,8 @@ SDL_AppResult Window::InitSdl() {
     }
 
     font = TTF_OpenFontIO(stream, true, 22.0f);
-    if (!font)
+    smallFont = TTF_OpenFont(fontPath, 13.0f); // Load small font ONCE here
+    if (!font || !smallFont)
     {
         SDL_Log("Couldn't open font: %s\n", SDL_GetError());
         return SDL_APP_FAILURE;
@@ -74,94 +75,77 @@ void Window::RenderUI() {
 void Window::RenderMoves(std::string &dqn_action, std::string &ppo_action) {
     SDL_FRect dst;
     SDL_Color color = {255, 255, 255, SDL_ALPHA_OPAQUE};
-    text = TTF_RenderText_Blended_Wrapped(font, dqn_action.data(),
-                                          dqn_action.length(), color, 250);
-    if (text)
-    {
-        texture = SDL_CreateTextureFromSurface(renderer, text);
-        SDL_DestroySurface(text);
-    }
-    if (!texture)
-    {
-        SDL_Log("Couldn't create text: %s\n", SDL_GetError());
-    }
-    dst.x = algo_start_x + 5;
-    dst.y = win_start_y + 10;
-    SDL_GetTextureSize(texture, &dst.w, &dst.h);
-    dst.h /= 2;
-    dst.w /= 2;
-    SDL_RenderTexture(renderer, texture, NULL, &dst);
 
-    text = TTF_RenderText_Blended_Wrapped(font, dqn_action.data(),
-                                          dqn_action.length(), color, 250);
-    if (text)
-    {
-        texture = SDL_CreateTextureFromSurface(renderer, text);
-        SDL_DestroySurface(text);
+    // --- DQN TEXTURE CACHE ---
+    if (dqn_action != cached_dqn_text) {
+        if (dqn_tex) SDL_DestroyTexture(dqn_tex); // Free the old GPU resource
+        
+        SDL_Surface* surf = TTF_RenderText_Blended_Wrapped(font, dqn_action.c_str(), 0, color, 250);
+        if (surf) {
+            dqn_tex = SDL_CreateTextureFromSurface(renderer, surf);
+            SDL_DestroySurface(surf);
+            cached_dqn_text = dqn_action; // Update the cache key
+        }
     }
-    if (!texture)
-    {
-        SDL_Log("Couldn't create text: %s\n", SDL_GetError());
+
+    if (dqn_tex) {
+        dst.x = algo_start_x + 5;
+        dst.y = win_start_y + 10;
+        SDL_GetTextureSize(dqn_tex, &dst.w, &dst.h);
+        dst.w /= 2.0f; dst.h /= 2.0f;
+        SDL_RenderTexture(renderer, dqn_tex, NULL, &dst);
     }
-    dst.x = algo_start_x + 5;
-    dst.y = 220;
-    SDL_GetTextureSize(texture, &dst.w, &dst.h);
-    dst.h /= 2;
-    dst.w /= 2;
-    SDL_RenderTexture(renderer, texture, NULL, &dst);
+
+    // --- PPO TEXTURE CACHE ---
+    if (ppo_action != cached_ppo_text) {
+        if (ppo_tex) SDL_DestroyTexture(ppo_tex); // Free the old GPU resource
+
+        SDL_Surface* surf = TTF_RenderText_Blended_Wrapped(font, ppo_action.c_str(), 0, color, 250);
+        if (surf) {
+            ppo_tex = SDL_CreateTextureFromSurface(renderer, surf);
+            SDL_DestroySurface(surf);
+            cached_ppo_text = ppo_action; // Update the cache key
+        }
+    }
+
+    if (ppo_tex) {
+        dst.x = algo_start_x + 5;
+        dst.y = 220; 
+        SDL_GetTextureSize(ppo_tex, &dst.w, &dst.h);
+        dst.w /= 2.0f; dst.h /= 2.0f;
+        SDL_RenderTexture(renderer, ppo_tex, NULL, &dst);
+    }
 }
 
-void Window::RenderPlayerUI(Player& pl, Player& en){
+void Window::RenderPlayerUI(Player& pl, Player& en) {
+    if (!smallFont) return; 
+
+    SDL_Color color = {255, 255, 255, 255};
     
-    SDL_Color color = {255, 255, 255, SDL_ALPHA_OPAQUE};
-    SDL_FRect dst;
-
-    TTF_Font* smallFont = TTF_OpenFont(fontPath, 13.0f);
-    if (!smallFont) {
-        SDL_Log("Failed to load small font: %s", SDL_GetError());
-        return;
-    }
-
-    // --- Player 1 (DQN) ---
-    std::string stats1 = "Pl-> Gold: " + std::to_string(pl.gold) + " | Food: " + std::to_string(pl.food.x)+ "/" + std::to_string(pl.food.y);
-    SDL_Surface* textSurface = TTF_RenderText_Blended(smallFont, stats1.c_str(), stats1.size(), color);
-    if (textSurface) {
-        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, textSurface);
-        SDL_DestroySurface(textSurface);
-        if (texture) {
-            dst.x = algo_start_x + 5;
-            dst.y = 460;
-            SDL_GetTextureSize(texture, &dst.w, &dst.h);
-            dst.w /= 2;
-            dst.h /= 2;
-            SDL_RenderTexture(renderer, texture, nullptr, &dst);
-            SDL_DestroyTexture(texture);
+    auto drawStatLine = [&](Player& p, float y, std::string label) {
+        std::string s = label + "-> Gold: " + std::to_string(p.gold) + 
+                        " | Food: " + std::to_string(p.food.x) + "/" + std::to_string(p.food.y);
+        
+        SDL_Surface* surf = TTF_RenderText_Blended(smallFont, s.c_str(), 0, color);
+        if (surf) {
+            SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
+            SDL_DestroySurface(surf);
+            if (tex) {
+                SDL_FRect dst;
+                SDL_GetTextureSize(tex, &dst.w, &dst.h);
+                dst.x = algo_start_x + 5;
+                dst.y = y;
+                dst.w /= 2.0f; dst.h /= 2.0f;
+                SDL_RenderTexture(renderer, tex, NULL, &dst);
+                SDL_DestroyTexture(tex);
+            }
         }
-    }
+    };
 
-    // --- Player 2 (PPO) ---
-    std::string stats2 = "En-> Gold: " + std::to_string(en.gold) + " | Food: " + std::to_string(en.food.x) + "/" + std::to_string(en.food.y);
-    textSurface = TTF_RenderText_Blended(smallFont, stats2.c_str(), stats2.size(), color);
-    if (textSurface) {
-        SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, textSurface);
-        SDL_DestroySurface(textSurface);
-        if (texture) {
-            dst.x = algo_start_x + 5;
-            dst.y = 500;
-            SDL_GetTextureSize(texture, &dst.w, &dst.h);
-            dst.w /= 2;
-            dst.h /= 2;
-            SDL_RenderTexture(renderer, texture, nullptr, &dst);
-            SDL_DestroyTexture(texture);
-        }
-    }
-
-    TTF_CloseFont(smallFont);
+    drawStatLine(pl, 460.0f, "Pl");
+    drawStatLine(en, 500.0f, "En");
 }
 
-/**
- * @brief Gets the abbreviation for an object and renders it above the object's position.
- */
 
 void Window::RenderObjectLabel(objectType& t, float gui_x, float gui_y) {
     std::string label;
@@ -278,7 +262,7 @@ void Window::RenderMap(Player& pl, Player& en, Map& map) {
     drawDots(en.structures, 1);
 }
 
-SDL_AppResult Window::Render(Player& pl, Player& en, Map& map, std::string &dqn_action, std::string &ppo_action) {
+SDL_AppResult Window::Render(Player& pl, Player& en, Map& map, std::string dqn_action, std::string ppo_action) {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_EVENT_QUIT) {
@@ -298,4 +282,12 @@ SDL_AppResult Window::Render(Player& pl, Player& en, Map& map, std::string &dqn_
 void Window::SDL_AppQuit() {
     if (font)
         TTF_CloseFont(font);
+    if (smallFont)
+        TTF_CloseFont(smallFont);
+    if (dqn_tex)
+        SDL_DestroyTexture(dqn_tex);
+    if (ppo_tex)
+        SDL_DestroyTexture(ppo_tex);
+
+
 }

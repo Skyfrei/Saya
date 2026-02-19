@@ -19,6 +19,7 @@ TensorStruct::TensorStruct(State &state, Map &map) {
 
 torch::Tensor TensorStruct::GetMapTensor(Map &map) {
     std::vector<float> data;
+    data.reserve(MAP_SIZE * MAP_SIZE * 4);
 
     for (const auto &row : map.terrain)
     {

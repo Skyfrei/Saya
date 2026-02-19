@@ -22,7 +22,7 @@ class Structure : public Living
 
   public:
     StructureType is = OTHER;
-    bool isBeingBuilt = false;
+    bool isBuilt = false;
 };
 
 #endif

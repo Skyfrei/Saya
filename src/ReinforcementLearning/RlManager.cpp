@@ -17,7 +17,6 @@ actionT RlManager::GetActionPPO(Player& pl, Player& en, Map& map){
     State s = GetState(pl, en, map);
 
     TensorStruct tensorStruct(s, map);
-    std::cout << "Input Tensor Sum: " << tensorStruct.GetTensor().sum().item<float>() << std::endl;
     auto output = ppoPolicy.Forward(tensorStruct.GetTensor());
     auto probs = torch::softmax(output, 1);
     auto action_idx = torch::multinomial(probs, 1).item<int>();

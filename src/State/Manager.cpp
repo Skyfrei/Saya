@@ -91,20 +91,12 @@ void Manager::CheckForOwnership(Player &p, Living *l, actionT actionTaken) {
 void Manager::MainLoop() {
     while (!trainerManager.ShouldResetEnvironment(player, enemy, map))
     {
-        trainerManager.ShowInMap(player, enemy, map);
         actionT action = trainerManager.GetActionPPO(player, enemy, map);
         player.TakeAction(action);
 
-        for (int i = static_cast<int>(player.units.size()) - 1; i >= 0; --i) {
-            Unit* un = player.units[i].get();
-            CheckForOwnership(player, un, action);
-        }
         actionT action2 = trainerManager.GetActionPPO(enemy, player, map);
         enemy.TakeAction(action2);
-        for (int i = static_cast<int>(enemy.units.size()) - 1; i >= 0; --i) {
-            Unit* un = enemy.units[i].get();
-            CheckForOwnership(enemy, un, action);
-        }
+        //trainerManager.ShowInMap(player, enemy, map);
     }
 
     if (trainerManager.ShouldResetEnvironment(player, enemy, map)){

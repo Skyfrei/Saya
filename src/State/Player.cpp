@@ -122,6 +122,23 @@ float Player::CheckUnitActions(){
             }),
         units.end()
     );
+
+    structures.erase(
+        std::remove_if(structures.begin(), structures.end(),
+            [this, &reward](const std::unique_ptr<Structure>& stru) {
+                if (stru->IsDead()) {
+                    reward -= 2.0f;
+                    if (stru->is == FARM && stru->isBuilt){
+                        food.y -= Farm::foodReceived;
+                       std::cout<<"hate";
+                    }
+                    this->map.RemoveOwnership(stru.get(), stru->coordinate);
+                    return true;
+                }
+                return false;
+            }),
+        structures.end()
+    );
     
     int i = 0;
     for (auto& un : units){
@@ -144,10 +161,13 @@ float Player::CheckUnitActions(){
                     else if (std::holds_alternative<BuildAction>(act))
                     {
                         BuildAction &action = std::get<BuildAction>(act);
-                        if (action.struType == FARM){
+                        if (action.struType == FARM && action.finished){
                             food.y += Farm::foodReceived;
                         }
-                        reward = GetRewardFromAction(action, gold);
+                        if (action.finished)
+                            action.stru->isBuilt = true;
+
+                        reward = GetRewardFromAction(action);
                     }
                     else if (std::holds_alternative<FarmGoldAction>(act))
                     {
