@@ -158,7 +158,9 @@ at::Tensor RlManager::GetMask(Player &pl, int outputSize){
         mask.narrow(1, start, length).fill_(0);
     }
 
-    if (pl.gold < 55 || !pl.HasStructure(BARRACK)) {
+    if ((pl.gold < 80 || !pl.HasStructure(BARRACK)) && 
+        (pl.gold < 55 || !pl.HasStructure(HALL))) 
+    {
         int start = farmEnd;
         int length = recruitEnd - farmEnd;
         mask.narrow(1, start, length).fill_(0);
@@ -167,7 +169,6 @@ at::Tensor RlManager::GetMask(Player &pl, int outputSize){
     if (pl.units.empty()) {
         mask.narrow(1, 0, attackEnd).fill_(0); // Blocks Move and Attack
     }
-    
 
     return mask;
 }
@@ -177,6 +178,10 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
         ppoPolicy.parameters(), torch::optim::AdamWOptions(3e-4).weight_decay(1e-4));
     torch::optim::AdamW value_optimizer(
         ppoValue.parameters(), torch::optim::AdamWOptions(3e-4).weight_decay(1e-4));
+
+    double start_lr = 8e-4; // A bit "bigger" to start
+    double end_lr = 1e-4;
+
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> distrib(0, ppoPolicy.layer3->options.out_features() - 1);
@@ -185,6 +190,17 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
     bool done = false;
     
     for (int i = 0; i < episodeNumber; i++){
+        // 2. Update the optimizers
+        double progress = static_cast<double>(i) / episodeNumber;
+        double current_lr = start_lr + progress * (end_lr - start_lr);
+
+        for (auto &group : policy_optimizer.param_groups()) {
+            static_cast<torch::optim::AdamWOptions &>(group.options()).lr(current_lr);
+        }
+        for (auto &group : value_optimizer.param_groups()) {
+            static_cast<torch::optim::AdamWOptions &>(group.options()).lr(current_lr);
+        }
+
         done = false;
         double fullSteps = 0;
         std::unordered_map<std::string, int> action_count_map = {{"move", 0}, {"attack", 0}, {"build", 0}, {"farm", 0}, {"recruit", 0}};
@@ -197,6 +213,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
             for (int t= 0; t < forwardSteps; t++){
                 //ShowInMap(pl, en, map);
                 // Player move
+
                 State s = GetState(pl, en, map);
                 TensorStruct input_tensor(s, map);
                 at::Tensor state_value = ppoValue.Forward(input_tensor.GetTensor()).clone().detach();
@@ -229,12 +246,9 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 // enemy move ends
 
                 at::Tensor reward_tensor = torch::tensor(pl.TakeAction(action), torch::dtype(torch::kFloat32));
-
-                pl.CheckUnitActions();
                 en.TakeAction(enemy_action);
-                en.CheckUnitActions();
 
-                float reward = reward_tensor.item<float>();
+                float reward = reward_tensor.item<float>() - 0.1f; // 0.1 here is a time penalty
 
                 episode_reward += reward;
                 done = ShouldResetEnvironment(pl, en, map);
@@ -244,8 +258,8 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 done = envDone || timeDone;
 
                 if (envDone) {
-                    if (!(pl.HasUnit(PEASANT) || pl.HasStructure(HALL))) reward -= 30.0f;
-                    else if (!(en.HasUnit(PEASANT) || en.HasStructure(HALL))) reward += 30.0f;
+                    if (!(pl.HasUnit(PEASANT) || pl.HasStructure(HALL))) reward -= 100.0f;
+                    else if (!(en.HasUnit(PEASANT) || en.HasStructure(HALL))) reward += 100.0f;
                 }
 
                 trajectory_buffer.push_back({s, action_index, reward, state_value, output_soft[0][action_index].clone().detach(), done});
@@ -258,7 +272,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
             for (const auto& [action, count] : action_count_map) {
                 std::cout << action << ": " << count << " | ";
             }
-            std::cout<<std::endl;
+            std::cout<< "p.gold: "<< pl.gold<< " | en.gold: "<< en.gold<<std::endl;
 
             at::Tensor gae = torch::tensor(0.0f, torch::kFloat32); // was 0 
             std::vector<at::Tensor> advantages_buffer(trajectory_buffer.size());
@@ -316,7 +330,12 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 
                     at::Tensor current_value = ppoValue.Forward(input.GetTensor());
                     at::Tensor value_loss = torch::mse_loss(current_value, returns);
-                    total_policy_loss += policy_loss;
+
+                    /** entropy here to make the model explore **/
+                    at::Tensor entropy = -(new_probabs * torch::log(new_probabs + 1e-10)).sum(-1).mean();
+                    float entropy_coeff = 0.2f; 
+                    total_policy_loss += (policy_loss - entropy_coeff * entropy);
+                    /** end **/
                     total_value_loss += value_loss;
                 }
                 at::Tensor mean_policy_loss = total_policy_loss / forwardSteps;

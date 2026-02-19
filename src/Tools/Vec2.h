@@ -16,6 +16,10 @@ class Vec2
     constexpr bool operator==(const Vec2 &) const = default;
     constexpr bool operator!=(const Vec2 &) const = default;
     constexpr auto operator<=>(const Vec2 &) const = default;
+    constexpr Vec2 operator-(const Vec2& other) const {
+        return {x - other.x, y - other.y};
+    }
+
     int x, y;
 };
 

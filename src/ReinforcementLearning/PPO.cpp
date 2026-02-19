@@ -136,13 +136,26 @@ actionT PPO::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
     else if (actionIndex < recruitAction)
     {
         int offset = actionIndex - farmAction;
-        UnitType unitType = static_cast<UnitType>(offset / BARRACK_INDEX_IN_STRUCTS);
-        int barrackIndex = offset % BARRACK_INDEX_IN_STRUCTS;
-        if (barrackIndex >= pl.structures.size())
+        
+        int unitTypeInt = offset / MAX_STRUCTS;
+        int structureIndex = offset % MAX_STRUCTS;
+
+        if (unitTypeInt >= NR_OF_UNITS)
             return EmptyAction();
-        if (pl.structures[barrackIndex]->is != BARRACK)
+        if (structureIndex >= pl.structures.size())
             return EmptyAction();
-        return RecruitAction(unitType, pl.structures[barrackIndex].get());
+
+        UnitType unitType = static_cast<UnitType>(unitTypeInt);
+        Structure* stru = pl.structures[structureIndex].get();
+
+        if (unitType == PEASANT) {
+            if (stru->is != HALL) return EmptyAction();
+        } 
+        else if (unitType == FOOTMAN) {
+            if (stru->is != BARRACK) return EmptyAction();
+        }
+
+        return RecruitAction(unitType, stru);
     }
     return EmptyAction();
 }

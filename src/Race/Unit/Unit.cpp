@@ -111,7 +111,7 @@ actionT Unit::TakeAction(Map& m) {
             return action;
         }
 
-        if (coordinate.x == action.destCoord.x && coordinate.y == action.destCoord.y)
+        if (coordinate == action.destCoord)
         {
             action.finished = true;
             return action;
@@ -162,30 +162,73 @@ int Unit::GetActionQueueSize() {
 }
 
 void Unit::Move(Vec2 terr) {
-    if (!IsMovable())
-    {
-        return;
-    }
+    //if (!IsMovable())
+    //{
+    //    return;
+    //}
     Vec2 difference;
     difference.x = coordinate.x - terr.x;
     difference.y = coordinate.y - terr.y;
 
     if (difference.x > 0 && difference.y > 0)
         ChangeCoordinate(NW);
+
     else if (difference.x > 0 && difference.y < 0)
         ChangeCoordinate(NE);
+
     else if (difference.x < 0 && difference.y > 0)
         ChangeCoordinate(SW);
+
     else if (difference.x < 0 && difference.y < 0)
         ChangeCoordinate(SE);
+
     else if (difference.x == 0 && difference.y < 0)
         ChangeCoordinate(E);
+
     else if (difference.x == 0 && difference.y > 0)
         ChangeCoordinate(W);
+
     else if (difference.x > 0 && difference.y == 0)
         ChangeCoordinate(N);
+
     else if (difference.x < 0 && difference.y == 0)
         ChangeCoordinate(S);
+}
+
+void Unit::ChangeCoordinate(MoveType dir) {
+    switch (dir)
+    {
+    case W:
+        coordinate.y -= 1;
+        break;
+    case NW:
+        coordinate.x -= 1;
+        coordinate.y -= 1;
+        break;
+    case N:
+        coordinate.x -= 1;
+        break;
+    case NE:
+        coordinate.x -= 1;
+        coordinate.y += 1;
+        break;
+    case E:
+        coordinate.y += 1;
+        break;
+    case SE:
+        coordinate.x += 1;
+        coordinate.y += 1;
+        break;
+    case S:
+        coordinate.x += 1;
+        break;
+    case SW:
+        coordinate.x += 1;
+        coordinate.y -= 1;
+        break;
+    default:
+        break;
+    }
 }
 
 bool Unit::WithinDistance(Vec2 terr) {
@@ -259,38 +302,4 @@ void Unit::RegenHealth() {
     }
 }
 
-void Unit::ChangeCoordinate(MoveType dir) {
-    switch (dir)
-    {
-    case W:
-        coordinate.y -= 1;
-        break;
-    case NW:
-        coordinate.x -= 1;
-        coordinate.y -= 1;
-        break;
-    case N:
-        coordinate.x -= 1;
-        break;
-    case NE:
-        coordinate.x -= 1;
-        coordinate.y += 1;
-        break;
-    case E:
-        coordinate.y += 1;
-        break;
-    case SE:
-        coordinate.x += 1;
-        coordinate.y += 1;
-        break;
-    case S:
-        coordinate.x += 1;
-        break;
-    case SW:
-        coordinate.x += 1;
-        coordinate.y -= 1;
-        break;
-    default:
-        break;
-    }
-}
+

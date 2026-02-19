@@ -26,17 +26,30 @@ float GetRewardFromAction(Args&&... args) {
             moveAction.destCoord.y >= MAP_SIZE){
             reward -= 1.0f;
         }
+        Peasant* p = dynamic_cast<Peasant*>(moveAction.unit);
+        if (p && p->goldInventory > 0) {
+            Vec2 currentDiff = p->coordinate - moveAction.destCoord;
+            Vec2 prevDiff = moveAction.destCoord - moveAction.prevCoord;
+
+            float oldDistSq = (prevDiff.x * prevDiff.x) + (prevDiff.y * prevDiff.y);
+            float newDistSq = (currentDiff.x * currentDiff.x) + (currentDiff.y * currentDiff.y);
+
+            if (newDistSq < oldDistSq) {
+                reward += 0.01f; // Closer to base!
+            } else {
+                reward -= 0.01f; // Walking away/sideways!
+            }
+        }
     }
     else if (std::holds_alternative<AttackAction>(action))
     {
         const AttackAction &attackAction = std::get<AttackAction>(action);
         if (attackAction.finished){
-            reward += 5.0f;
+            reward += 20.0f;
         }else{
             if (attackAction.unit != nullptr &&
                 attackAction.unit->coordinate == attackAction.object->coordinate) {
-                float survivalPanic = (attackAction.unit->health / attackAction.unit->maxHealth);
-                reward += (0.01f * attackAction.unit->attack) * survivalPanic;
+                reward += attackAction.unit->attack * 0.4f;
             }
         }
     }
@@ -45,26 +58,18 @@ float GetRewardFromAction(Args&&... args) {
         const BuildAction &buildAction = std::get<BuildAction>(action);
 
         if (buildAction.finished){
-             reward += 10.0f;
+             reward += 30.0f;
         }else{
-            int gold = 0;
-            if constexpr (sizeof...(Args) >= 2) gold = std::get<1>(arg_tuple);
-            if (gold < buildAction.stru->goldCost){
-                reward -= 0.01f;
-                return reward;
-            }
             Peasant &p = static_cast<Peasant &>(*buildAction.peasant);
             if (p.coordinate == buildAction.coordinate &&
                 buildAction.stru->health < buildAction.stru->maxHealth &&
                 buildAction.stru->health > 0){
-                reward += 0.1f;       
+                reward += 0.5f;       
             }
         }
     }
     else if (std::holds_alternative<FarmGoldAction>(action))
     {
-        int gold = 0;
-        if constexpr (sizeof...(Args) >= 2) gold = std::get<1>(arg_tuple);
         const FarmGoldAction &farmAction = std::get<FarmGoldAction>(action);
         Peasant &p = static_cast<Peasant &>(*farmAction.peasant);
 
@@ -80,7 +85,7 @@ float GetRewardFromAction(Args&&... args) {
 
         if (farmAction.finished){
             float ratio = (float)farmAction.gold / p.maxGoldInventory;
-            reward += 10 * ratio;  
+            reward += 3 * ratio;  
         }else{
             if (p.coordinate == farmAction.terr->coord){
                 reward += 0.1f;     
@@ -90,77 +95,33 @@ float GetRewardFromAction(Args&&... args) {
     else if (std::holds_alternative<RecruitAction>(action))
     {
         const RecruitAction &recruitAction = std::get<RecruitAction>(action);
-        int gold = 0;
-        int food = 0;
-        if constexpr (sizeof...(Args) >= 2) gold = std::get<1>(arg_tuple);
-        if constexpr (sizeof...(Args) >= 3) food = std::get<2>(arg_tuple);
+        if (!recruitAction.finished)
+            return -0.1f;
 
         std::unique_ptr<Unit> unit;
-        bool is_enough_resources = true;
-
         switch(recruitAction.unitType){
             case FOOTMAN:
                 unit = std::make_unique<Footman>();
-                if (gold < unit->goldCost) {
-                    is_enough_resources = false;
-                }
-                if (food < unit->foodCost) {
-                    is_enough_resources = false;
-                }
-                if (!is_enough_resources){
-                    reward -= 0.01f;
-                    return reward;
-                }
+                reward += 3.0f * (unit->goldCost / 10.0f);
                 break;
 
             case PEASANT:
                 unit = std::make_unique<Peasant>();
-                if (gold < unit->goldCost) {
-                    is_enough_resources = false;
-                }
-                if (food < unit->foodCost) {
-                    is_enough_resources = false;
-                }
-                if (!is_enough_resources){
-                    reward -= 0.01f;
-                    return reward;
-                }
+                reward += 3.0f * (unit->goldCost / 10.0f);
                 break;
 
             case ARCHMAGE:
                 unit = std::make_unique<ArchMage>();
-                if (gold < unit->goldCost) 
-                    is_enough_resources = false;
-
-                if (food < unit->foodCost)
-                    is_enough_resources = false;
-
-                if (!is_enough_resources){
-                    reward -= 0.01f;
-                    return reward;
-                }
-                reward += 0.2f;
+                reward += 3.0f * (unit->goldCost / 10.0f);
                 break;
 
             case BLOODMAGE:
                 unit = std::make_unique<BloodMage>();
-                if (gold < unit->goldCost)
-                    is_enough_resources = false;
-
-                if (food < unit->foodCost) 
-                    is_enough_resources = false;
-
-                if (!is_enough_resources){
-                    reward -= 0.01f;
-                    return reward;
-                }
-                reward += 0.2f;
+                reward += 3.0f * (unit->goldCost / 10.0f);
                 break;
-
             default:
                 break;
         }
-        reward += 5.0f;
     }
     else if (std::holds_alternative<EmptyAction>(action)){
         reward -= 1.0f;

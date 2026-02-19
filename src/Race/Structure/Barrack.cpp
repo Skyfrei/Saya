@@ -6,7 +6,7 @@
 Barrack::Barrack(Vec2 coord) {
     health = 1500;
     maxHealth = health;
-    goldCost = 220;
+    goldCost = 200;
     is = BARRACK;
     buildTime = 70;
     coordinate = coord;

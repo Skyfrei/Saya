@@ -6,7 +6,7 @@ Footman::Footman() {
     attack = 15.5;
     maxMana = 200.0f;
     mana = 200.0f;
-    goldCost = 80;
+    goldCost = 75;
     foodCost = 2;
     buildTime = 20;
     is = FOOTMAN;

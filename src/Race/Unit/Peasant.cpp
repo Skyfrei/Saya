@@ -51,7 +51,7 @@ void Peasant::Build(Structure *str) {
         }
     }
     else{
-        MoveAction mov(this, Vec2(str->coordinate.x, str->coordinate.y));
+        MoveAction mov(this, str->coordinate);
         InsertFrontAction(mov);
     }
 }

@@ -94,7 +94,6 @@ void Manager::MainLoop() {
         trainerManager.ShowInMap(player, enemy, map);
         actionT action = trainerManager.GetActionPPO(player, enemy, map);
         player.TakeAction(action);
-        player.CheckUnitActions();
 
         for (int i = static_cast<int>(player.units.size()) - 1; i >= 0; --i) {
             Unit* un = player.units[i].get();
@@ -102,7 +101,6 @@ void Manager::MainLoop() {
         }
         actionT action2 = trainerManager.GetActionPPO(enemy, player, map);
         enemy.TakeAction(action2);
-        enemy.CheckUnitActions();
         for (int i = static_cast<int>(enemy.units.size()) - 1; i >= 0; --i) {
             Unit* un = enemy.units[i].get();
             CheckForOwnership(enemy, un, action);
