@@ -12,13 +12,12 @@ public:
     static void Init(Player* pl, Player* en);
 
     void RemoveFromAttackAction(Living* deadEntity, Side side);
-    DeathManager(Player* p, Player* e) : pl(p), en(e){}
     protected:
         static DeathManager* instance;
 
 private:
     DeathManager() = delete;
-
+    DeathManager(Player* p, Player* e) : pl(p), en(e){}
     DeathManager(const DeathManager&) = delete;
     void operator=(const DeathManager&) = delete;
 

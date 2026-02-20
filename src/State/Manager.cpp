@@ -96,21 +96,15 @@ void Manager::MainLoop() {
         actionT action = trainerManager.GetActionPPO(player, enemy, map);
         player.TakeAction(action);
 
-        actionT action2 = trainerManager.GetActionPPO(enemy, player, map);
-        enemy.TakeAction(action2);
+        //actionT action2 = trainerManager.GetActionPPO(enemy, player, map);
+        //enemy.TakeAction(action2);
         enemy.CheckUnitActions();
     }
 
-    if (trainerManager.ShouldResetEnvironment(player, enemy, map)){
+    if(trainerManager.ShouldResetEnvironment(player, enemy, map)){
         map.Reset();
         player.Reset(PLAYER);
         enemy.Reset(ENEMY);
-        std::cout << "Player loss"<<std::endl;
-    }else if(trainerManager.ShouldResetEnvironment(enemy, player, map)){
-        map.Reset();
-        player.Reset(PLAYER);
-        enemy.Reset(ENEMY);
-        std::cout << "Enemy loss"<<std::endl;
     }
 
 }

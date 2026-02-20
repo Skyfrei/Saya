@@ -4,7 +4,7 @@ TownHall::TownHall(Vec2 coord) {
     health = 1500;
     maxHealth = health;
     coordinate = coord;
-    goldCost = 300;
+    goldCost = 590;
     is = HALL;
     buildTime = 180;
 }

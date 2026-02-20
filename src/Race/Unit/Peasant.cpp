@@ -31,7 +31,7 @@ Peasant::Peasant(Vec2 coord, float hp, float man) {
     manaRegen = 0.67f;
     maxMana = 200.0f;
 
-    goldCost = 75;
+    goldCost = 55;
     foodCost = 1;
     buildTime = 15;
     is = PEASANT;

@@ -53,6 +53,7 @@ float GetRewardFromAction(Args&&... args) {
                 reward += attackAction.unit->attack * 0.4f;
             }
         }
+        std::cout<<"Attack reward: "<<reward<<std::endl;
     }
     else if (std::holds_alternative<BuildAction>(action))
     {

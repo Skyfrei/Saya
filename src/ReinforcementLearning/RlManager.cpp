@@ -114,14 +114,23 @@ void RlManager::OptimizeDQN(Map &map) {
 }
 
 bool RlManager::ShouldResetEnvironment(Player &pl, Player &en, Map &map) {
-    if (!pl.HasUnit(PEASANT) && !pl.HasStructure(HALL)){
-        std::cout << "End state reached";
+    const int hallCost = 590;
+
+    auto Reset = [&](Player& p){
+        bool hasPeasant = p.HasUnit(PEASANT);
+        bool hasHall = p.HasStructure(HALL);
+
+        if (!hasPeasant && !hasHall) return true;
+        if (hasPeasant && !hasHall && p.gold < hallCost) return true;
+
+        return false;
+    };
+
+    if (Reset(pl) || Reset(en)){
+        std::cout<<"State end.";
         return true;
     }
-    if (!en.HasUnit(PEASANT) && !en.HasStructure(HALL)){
-        std::cout << "End state reached";
-        return true;
-    }
+
     return false;
 }
 
@@ -259,8 +268,19 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 done = envDone || timeDone;
 
                 if (envDone) {
-                    if (!(pl.HasUnit(PEASANT) || pl.HasStructure(HALL))) reward -= 100.0f;
-                    else if (!(en.HasUnit(PEASANT) || en.HasStructure(HALL))) reward += 100.0f;
+                    const int hallCost = 580; 
+                    bool plLost = (!pl.HasUnit(PEASANT) && !pl.HasStructure(HALL)) || 
+                                  (pl.HasUnit(PEASANT) && !pl.HasStructure(HALL) && pl.gold < hallCost);
+                
+                    bool enLost = (!en.HasUnit(PEASANT) && !en.HasStructure(HALL)) || 
+                                  (en.HasUnit(PEASANT) && !en.HasStructure(HALL) && en.gold < hallCost);
+                
+                    if (plLost) {
+                        reward -= 100.0f;
+                    } 
+                    else if (enLost) {
+                        reward += 100.0f;
+                    }
                 }
 
                 trajectory_buffer.push_back({s, action_index, reward, state_value, output_soft[0][action_index].clone().detach(), done});
