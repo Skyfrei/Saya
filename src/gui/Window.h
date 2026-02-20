@@ -53,6 +53,9 @@ class Window
 
     SDL_Texture* dqn_tex = nullptr;
     SDL_Texture* ppo_tex = nullptr;
+
+
+    //SDL_Surface* surf = nullptr;
     std::string cached_dqn_text = "";
     std::string cached_ppo_text = "";
 

@@ -10,6 +10,7 @@ Manager::Manager() : player(map, PLAYER), enemy(map, ENEMY) {
     enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 4, MAP_SIZE - 4));
     trainerManager.InitializePPO(player, enemy, map);
     trainerManager.ppoPolicy.LoadModel("ppo_policy");
+    DeathManager::Init(&player, &enemy);
 }
 
 void Manager::CheckForOwnership(Player &p, Living *l, actionT actionTaken) {
@@ -91,12 +92,13 @@ void Manager::CheckForOwnership(Player &p, Living *l, actionT actionTaken) {
 void Manager::MainLoop() {
     while (!trainerManager.ShouldResetEnvironment(player, enemy, map))
     {
+        trainerManager.ShowInMap(player, enemy, map);
         actionT action = trainerManager.GetActionPPO(player, enemy, map);
         player.TakeAction(action);
 
         actionT action2 = trainerManager.GetActionPPO(enemy, player, map);
         enemy.TakeAction(action2);
-        //trainerManager.ShowInMap(player, enemy, map);
+        enemy.CheckUnitActions();
     }
 
     if (trainerManager.ShouldResetEnvironment(player, enemy, map)){

@@ -79,7 +79,7 @@ actionT Unit::TakeAction(Map& m) {
     if (std::holds_alternative<AttackAction>(actionQueue[0]))
     {
         AttackAction &action = std::get<AttackAction>(actionQueue[0]);
-        if (action.object == nullptr){
+        if (!action.object){
             action.finished = true;
             return action;
         }
@@ -94,6 +94,7 @@ actionT Unit::TakeAction(Map& m) {
         if (action.object->health <= 0)
         {
             action.finished = true;
+            action.object = nullptr;
             return action;
         }
         action.prevCoord = coordinate;
@@ -123,6 +124,11 @@ actionT Unit::TakeAction(Map& m) {
     else if (std::holds_alternative<BuildAction>(actionQueue[0]))
     {
         BuildAction &action = std::get<BuildAction>(actionQueue[0]);
+        if (!action.stru){
+            action.finished = true;
+            return action;
+        }
+
         if (action.coordinate.x < 0 || action.coordinate.x >= MAP_SIZE || 
             action.coordinate.y < 0 || action.coordinate.y >= MAP_SIZE) {
             
@@ -146,12 +152,11 @@ actionT Unit::TakeAction(Map& m) {
 
         Peasant &p = static_cast<Peasant &>(*this);
         FarmGoldAction &action = std::get<FarmGoldAction>(actionQueue[0]);
+        if (!action.hall){
+            action.finished = true;
+            return action;
+        }
         action.terr = &m.GetTerrainAtCoordinate(action.destCoord);
-        //if (action.terr->resourceLeft <= 0 || p.goldInventory == p.maxGoldInventory)
-        //{
-        //    action.finished = true;
-        //    return action;
-        //}
         action.prevCoord = coordinate;
         p.FarmGold(*action.terr, *action.hall, action.gold);
         return action;

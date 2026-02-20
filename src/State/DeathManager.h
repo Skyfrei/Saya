@@ -1,0 +1,28 @@
+#ifndef __DEATH_MANAGER_H__
+#define __DEATH_MANAGER_H__
+
+#include <vector>
+#include <variant>
+#include "Player.h"
+#include "../Tools/Enums.h"
+
+class DeathManager {
+public:
+    static DeathManager& GetSingleton();
+    static void Init(Player* pl, Player* en);
+
+    void RemoveFromAttackAction(Living* deadEntity, Side side);
+    DeathManager(Player* p, Player* e) : pl(p), en(e){}
+    protected:
+        static DeathManager* instance;
+
+private:
+    DeathManager() = delete;
+
+    DeathManager(const DeathManager&) = delete;
+    void operator=(const DeathManager&) = delete;
+
+    Player* pl;
+    Player* en;
+};
+#endif

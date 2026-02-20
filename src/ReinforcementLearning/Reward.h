@@ -44,11 +44,12 @@ float GetRewardFromAction(Args&&... args) {
     else if (std::holds_alternative<AttackAction>(action))
     {
         const AttackAction &attackAction = std::get<AttackAction>(action);
-        if (attackAction.finished){
-            reward += 20.0f;
+        if (!attackAction.object){
+            if (attackAction.finished){
+                reward += 20.0f;
+            }
         }else{
-            if (attackAction.unit != nullptr &&
-                attackAction.unit->coordinate == attackAction.object->coordinate) {
+            if (attackAction.unit && attackAction.unit->coordinate == attackAction.object->coordinate) {
                 reward += attackAction.unit->attack * 0.4f;
             }
         }
@@ -56,8 +57,10 @@ float GetRewardFromAction(Args&&... args) {
     else if (std::holds_alternative<BuildAction>(action))
     {
         const BuildAction &buildAction = std::get<BuildAction>(action);
+        if (!buildAction.stru)
+            return reward;
 
-        if (buildAction.finished){
+        if (buildAction.finished && buildAction.stru->isBuilt){
              reward += 30.0f;
         }else{
             Peasant &p = static_cast<Peasant &>(*buildAction.peasant);
@@ -74,6 +77,8 @@ float GetRewardFromAction(Args&&... args) {
     {
         const FarmGoldAction &farmAction = std::get<FarmGoldAction>(action);
         Peasant &p = static_cast<Peasant &>(*farmAction.peasant);
+        if (!farmAction.hall)
+            return reward;
 
         if (farmAction.terr->resourceLeft <= 0) {
             reward -= 0.1f; 

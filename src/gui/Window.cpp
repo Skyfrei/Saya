@@ -118,26 +118,27 @@ void Window::RenderMoves(std::string &dqn_action, std::string &ppo_action) {
 }
 
 void Window::RenderPlayerUI(Player& pl, Player& en) {
-    if (!smallFont) return; 
+    if (!smallFont || !renderer) return; 
 
     SDL_Color color = {255, 255, 255, 255};
     
     auto drawStatLine = [&](Player& p, float y, std::string label) {
         std::string s = label + "-> Gold: " + std::to_string(p.gold) + 
                         " | Food: " + std::to_string(p.food.x) + "/" + std::to_string(p.food.y);
-        
-        SDL_Surface* surf = TTF_RenderText_Blended(smallFont, s.c_str(), 0, color);
-        if (surf) {
-            SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
-            SDL_DestroySurface(surf);
-            if (tex) {
-                SDL_FRect dst;
-                SDL_GetTextureSize(tex, &dst.w, &dst.h);
-                dst.x = algo_start_x + 5;
-                dst.y = y;
-                dst.w /= 2.0f; dst.h /= 2.0f;
-                SDL_RenderTexture(renderer, tex, NULL, &dst);
-                SDL_DestroyTexture(tex);
+        if (smallFont){
+            SDL_Surface* surf = TTF_RenderText_Blended(smallFont, s.c_str(), 0, color);
+            if (surf) {
+                SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
+                if (tex) {
+                    SDL_FRect dst;
+                    SDL_GetTextureSize(tex, &dst.w, &dst.h);
+                    dst.x = algo_start_x + 5;
+                    dst.y = y;
+                    dst.w /= 2.0f; dst.h /= 2.0f;
+                    SDL_RenderTexture(renderer, tex, NULL, &dst);
+                    SDL_DestroyTexture(tex);
+                }
+                SDL_DestroySurface(surf);
             }
         }
     };

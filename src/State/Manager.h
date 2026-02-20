@@ -11,6 +11,9 @@
 #include "../ReinforcementLearning/RlManager.h"
 #include "../ReinforcementLearning/Transition.h"
 #include "../State/Map.h"
+#include "../State/DeathManager.h"
+
+
 
 #include "Player.h"
 

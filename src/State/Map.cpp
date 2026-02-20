@@ -54,7 +54,8 @@ bool Map::operator==(const Map &other) const {
 }
 void Map::RemoveOwnership(Living *l, Vec2 v) {
     Terrain &terr = GetTerrainAtCoordinate(v);
-    if (auto s = dynamic_cast<Structure *>(l))
+    Structure* s = dynamic_cast<Structure*>(l);
+    if (s)
     {
         if (terr.structureOnTerrain == s) {
             terr.structureOnTerrain = nullptr;

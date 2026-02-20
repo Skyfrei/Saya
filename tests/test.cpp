@@ -14,6 +14,7 @@
 #include "../src/State/Manager.h"
 #include <chrono>
 #include <random>
+#include "../src/State/DeathManager.h"
 
 int mem_size = 2000;
 std::string StringReplay(){
@@ -215,6 +216,8 @@ bool PPO_Test(){
     }
     RlManager man;
     man.InitializePPO(player, enemy, map);
+    DeathManager::Init(&player, &enemy);
+
     //man.ppoPolicy.LoadModel("ppo_policy");
     man.TrainPPO(player, enemy, map);
     return true;
