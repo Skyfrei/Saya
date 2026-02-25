@@ -69,6 +69,9 @@ actionT PPO::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
         if (!actor)
             return EmptyAction();
 
+        if (actor.coordinate == Vec2(row, col))
+            return EmptyAction();
+
         return MoveAction(actor, Vec2(row, col));
     }
     else if (actionIndex < attackAction)

@@ -201,6 +201,12 @@ at::Tensor RlManager::GetMask(Player &pl, Player& en, int outputSize){
     for (int u = 0; u < MAX_UNITS; u++) {
         if (u >= pl.units.size() || pl.units[u]->GetActionQueueSize() >= 1)
             mask.narrow(1, u * MAP_SIZE * MAP_SIZE, MAP_SIZE * MAP_SIZE).fill_(0);
+        else {
+            int currentX = pl.units[u]->x; 
+            int currentY = pl.units[u]->y; 
+            int currentLocationIndex = unitMoveStart + (currentX * MAP_SIZE + currentY);
+            mask[0][currentLocationIndex] = 0.0f;
+        }
     }
 
     // Attack
@@ -527,8 +533,8 @@ void RlManager::ShowInMap(Player& pl, Player& en, Map& m, at::Tensor& tensor){
             
         } else if (std::holds_alternative<FarmGoldAction>(action)) {
             auto& act = std::get<FarmGoldAction>(action);
-            ppo_string += "Farm with unit( " + std::to_string(act.peasant->coordinate.x) + "," +
-                std::to_string(act.peasant->coordinate.y) + ")" + "at (" + std::to_string(act.destCoord.x)
+            ppo_string += "Farm with unit (" + std::to_string(act.peasant->coordinate.x) + "," +
+                std::to_string(act.peasant->coordinate.y) + ") " + "at (" + std::to_string(act.destCoord.x)
                 + ", " + std::to_string(act.destCoord.y) + ")";
             
         } else if (std::holds_alternative<BuildAction>(action)) {
@@ -573,9 +579,6 @@ void RlManager::ShowInMap(Player& pl, Player& en, Map& m, at::Tensor& tensor){
         }
         ppo_string += "\n";
     }
-
-
-
     win.Render(pl, en, m, dqn_string, ppo_string);
 }
 
