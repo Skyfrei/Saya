@@ -5,7 +5,7 @@ int Farm::foodReceived = 5;
 Farm::Farm(Vec2 coord) {
     health = 500;
     maxHealth = health;
-    goldCost = 100;
+    goldCost = 80;
     buildTime = 10;
     is = FARM;
     coordinate = coord;
@@ -14,7 +14,7 @@ Farm::Farm(Vec2 coord) {
 Farm::Farm(Vec2 coord, float hp) {
     health = hp;
     maxHealth = 500;
-    goldCost = 100;
+    goldCost = 80;
     buildTime = 10;
     is = FARM;
     coordinate = coord;

@@ -80,7 +80,7 @@ void Window::RenderMoves(std::string &dqn_action, std::string &ppo_action) {
     if (dqn_action != cached_dqn_text) {
         if (dqn_tex) SDL_DestroyTexture(dqn_tex); // Free the old GPU resource
         
-        SDL_Surface* surf = TTF_RenderText_Blended_Wrapped(font, dqn_action.c_str(), 0, color, 250);
+        SDL_Surface* surf = TTF_RenderText_Blended_Wrapped(font, dqn_action.c_str(), 0, color, 650);
         if (surf) {
             dqn_tex = SDL_CreateTextureFromSurface(renderer, surf);
             SDL_DestroySurface(surf);
@@ -100,7 +100,7 @@ void Window::RenderMoves(std::string &dqn_action, std::string &ppo_action) {
     if (ppo_action != cached_ppo_text) {
         if (ppo_tex) SDL_DestroyTexture(ppo_tex); // Free the old GPU resource
 
-        SDL_Surface* surf = TTF_RenderText_Blended_Wrapped(font, ppo_action.c_str(), 0, color, 250);
+        SDL_Surface* surf = TTF_RenderText_Blended_Wrapped(font, ppo_action.c_str(), 0, color, 650);
         if (surf) {
             ppo_tex = SDL_CreateTextureFromSurface(renderer, surf);
             SDL_DestroySurface(surf);

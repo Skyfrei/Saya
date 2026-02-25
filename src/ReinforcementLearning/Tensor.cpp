@@ -45,6 +45,7 @@ torch::Tensor TensorStruct::GetVec(Vec2 food) {
 
 torch::Tensor TensorStruct::GetUnitsTensor(std::vector<Unit *> &units) {
     std::vector<float> data;
+    data.reserve(units.size() * 8);
     for (const auto &unit : units)
     {
         if (unit->maxHealth <= 0)
@@ -55,6 +56,8 @@ torch::Tensor TensorStruct::GetUnitsTensor(std::vector<Unit *> &units) {
         data.push_back(static_cast<float>(unit->coordinate.y) / MAP_SIZE);
         data.push_back(static_cast<float>(unit->is) / NR_OF_UNITS);
         data.push_back(static_cast<float>(unit->attack) / 20.0f);
+        data.push_back(static_cast<float>(unit->GetActionQueueSize() / 2.0f));
+
         if (unit->maxMana <= 0)
             data.push_back(0.0f);
         else

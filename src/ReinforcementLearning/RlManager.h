@@ -26,8 +26,9 @@ class RlManager
     void SaveMemoryAsBinary();
     void LoadMemoryAsBinary();
     actionT GetActionPPO(Player&, Player&, Map&);
-    void ShowInMap(Player& pl, Player& en, Map& m);
+    void ShowInMap(Player& pl, Player& en, Map& m, at::Tensor& );
     bool ShouldResetEnvironment(Player &pl, Player &en, Map &map);
+    actionT GetActionPPOEnemy(Player& pl, Player& en, Map& map);
 
   public:
     std::deque<Transition> memory;
@@ -36,6 +37,7 @@ class RlManager
     
     std::deque<Transition> ppoMemory;
     PPO ppoPolicy;
+    PPO enemyPPO;
     ValueNetwork ppoValue;
 
   private:
@@ -43,7 +45,7 @@ class RlManager
     Transition CreateTransition(State s, actionT a, State rextS);
     State GetState(Player &pl, Player &en, Map &map);
     void OptimizeDQN(Map &map);
-    at::Tensor GetMask(Player&, int);
+    at::Tensor GetMask(Player&, Player&, int);
 
   private:
     const int batchSize = 32; // was 32
@@ -57,7 +59,7 @@ class RlManager
     const std::string memory_file_binary = "binary.bay";
     float ppoEpsilon = 0.2f;
     float epsilonDecay = 0;
-    int episodeNumber = 50;
+    int episodeNumber = 100;
     int forwardSteps = 1024;
     Window win;
 };

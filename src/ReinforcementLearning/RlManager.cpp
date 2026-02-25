@@ -10,19 +10,54 @@
 
 RlManager::RlManager() : win(Vec2(1000, 1000)) {
 }
-
 actionT RlManager::GetActionPPO(Player& pl, Player& en, Map& map){
     torch::NoGradGuard no_grad; 
-    ppoPolicy.eval();           
     State s = GetState(pl, en, map);
 
     TensorStruct tensorStruct(s, map);
-    //std::cout << "Input Tensor Sum: " << tensorStruct.GetTensor().sum().item<float>() << std::endl;
+    
     auto output = ppoPolicy.Forward(tensorStruct.GetTensor());
-    auto probs = torch::softmax(output, 1);
-    auto action_idx = torch::multinomial(probs, 1).item<int>();
-    actionT action = ppoPolicy.MapIndexToAction(pl, en, action_idx);
+    torch::Tensor mask = GetMask(pl, en, ppoPolicy.GetOutputSize()); 
 
+    at::Tensor masked_output = output.masked_fill(mask == 0, -1e10);
+    auto probs = torch::softmax(masked_output, 1);
+    //int action_idx = probs.argmax(1).item<int>();
+    //actionT action = ppoPolicy.MapIndexToAction(pl, en, action_idx);
+
+
+    int k = std::min(5, (int)probs.size(1));
+    auto topk_res = probs.topk(k, 1);
+    auto top_probs = std::get<0>(topk_res);  
+    auto top_indices = std::get<1>(topk_res);
+
+    int sample_idx = torch::multinomial(top_probs, 1).item<int>();
+    int action_idx = top_indices[0][sample_idx].item<int>();
+    actionT action = ppoPolicy.MapIndexToAction(pl, en, action_idx);
+    return action;
+}
+
+actionT RlManager::GetActionPPOEnemy(Player& en, Player& pl, Map& map){
+    torch::NoGradGuard no_grad; 
+    State s = GetState(en, pl, map);
+
+    TensorStruct tensorStruct(s, map);
+    
+    auto output = enemyPPO.Forward(tensorStruct.GetTensor());
+    torch::Tensor mask = GetMask(en, pl, enemyPPO.GetOutputSize()); 
+
+    at::Tensor masked_output = output.masked_fill(mask == 0, -1e10);
+    auto probs = torch::softmax(masked_output, 1);
+    int action_idx = probs.argmax(1).item<int>();
+    actionT action = enemyPPO.MapIndexToAction(en, pl, action_idx);
+
+    //int k = std::min(10, (int)probs.size(1));
+    //auto topk_res = probs.topk(k, 1);
+    //auto top_probs = std::get<0>(topk_res);  
+    //auto top_indices = std::get<1>(topk_res);
+
+    //int sample_idx = torch::multinomial(top_probs, 1).item<int>();
+    //int action_idx = top_indices[0][sample_idx].item<int>();
+    //actionT action = enemyPPO.MapIndexToAction(en, pl, action_idx);
     return action;
 }
 
@@ -45,6 +80,9 @@ void RlManager::InitializeDQN(Player &pl, Player &en, Map &map) {
 void RlManager::InitializePPO(Player &pl, Player &en, Map &map){
     State s = GetState(pl, en, map);
     ppoPolicy.Initialize(map, s);
+    enemyPPO.Initialize(map, s);
+    enemyPPO.LoadModel("ppo_policy");
+
     ppoValue.Initialize(ppoPolicy);
     torch::Device device(torch::kCPU);
 
@@ -121,13 +159,11 @@ bool RlManager::ShouldResetEnvironment(Player &pl, Player &en, Map &map) {
         bool hasHall = p.HasStructure(HALL);
 
         if (!hasPeasant && !hasHall) return true;
-        if (hasPeasant && !hasHall && p.gold < hallCost) return true;
 
         return false;
     };
 
     if (Reset(pl) || Reset(en)){
-        std::cout<<"State end.";
         return true;
     }
 
@@ -148,38 +184,110 @@ void count_action(std::unordered_map<std::string, int>& m, actionT& act){
     else
         m["empty"]++;
 }
-at::Tensor RlManager::GetMask(Player &pl, int outputSize){
+
+at::Tensor RlManager::GetMask(Player &pl, Player& en, int outputSize){
     auto mask = torch::ones({1, outputSize}, torch::kFloat32);
     int moveEnd = ppoPolicy.moveAction;
     int attackEnd = ppoPolicy.attackAction;
     int buildEnd = ppoPolicy.buildAction;
     int farmEnd = ppoPolicy.farmAction;
     int recruitEnd = ppoPolicy.recruitAction;
+    int recruitStart = farmEnd;
+    int attackStride = (MAX_STRUCTS + MAX_UNITS);
+    int buildStride = NR_OF_STRUCTS * MAP_SIZE * MAP_SIZE;
+    int farmStride = MAP_SIZE * MAP_SIZE * HALL_INDEX_IN_STRCTS;
 
-    if (pl.gold < 100 || !pl.HasUnit(PEASANT)) {
+    // Move
+    for (int u = 0; u < MAX_UNITS; u++) {
+        if (u >= pl.units.size() || pl.units[u]->GetActionQueueSize() >= 1)
+            mask.narrow(1, u * MAP_SIZE * MAP_SIZE, MAP_SIZE * MAP_SIZE).fill_(0);
+    }
+
+    // Attack
+    for (int u = 0; u < MAX_UNITS; u++) {
+        int unitAttackStart = moveEnd + (u * attackStride);
+        if (u >= pl.units.size() || pl.units[u]->GetActionQueueSize() >= 1) {
+            mask.narrow(1, unitAttackStart, attackStride).fill_(0);
+            continue;
+        }
+
+        for (int t = 0; t < attackStride; t++) {
+            bool targetExists = false;
+            if (t < MAX_STRUCTS) {
+                if (t < en.structures.size()) targetExists = true;
+            } else {
+                int unitTargetIdx = t - MAX_STRUCTS;
+                if (unitTargetIdx < en.units.size()) targetExists = true;
+            }
+
+            if (!targetExists) {
+                mask[0][unitAttackStart + t] = 0.0f;
+            }
+        }
+    }
+
+    // Build
+    if (pl.gold < 100) {
         int start = attackEnd;
         int length = buildEnd - attackEnd;
         mask.narrow(1, start, length).fill_(0);
+    }else{
+        int buildStride = NR_OF_STRUCTS * MAP_SIZE * MAP_SIZE;
+        for (int u = 0; u < PEASANT_INDEX_IN_UNITS; u++) {
+            int startIdx = attackEnd + (u * buildStride);
+            
+            bool canBuild = true;
+            if (u >= pl.units.size() || 
+                pl.units[u]->is != PEASANT || 
+                pl.units[u]->GetActionQueueSize() >= 1 ) 
+            {
+                canBuild = false;
+            }
+        
+            if (!canBuild) {
+                mask.narrow(1, startIdx, buildStride).fill_(0);
+            }
+        }
     }
-
-    if (!pl.HasUnit(PEASANT)) {
-        int start = buildEnd;
-        int length = farmEnd - buildEnd;
-        mask.narrow(1, start, length).fill_(0);
+    // Farm
+    for (int u = 0; u < PEASANT_INDEX_IN_UNITS; u++) {
+        bool validPeasant = (u < pl.units.size() && 
+                             pl.units[u]->is == PEASANT && 
+                             pl.units[u]->GetActionQueueSize() == 0);
+    
+        for (int h = 0; h < HALL_INDEX_IN_STRCTS; h++) {
+            bool validHall = (h < pl.structures.size() && 
+                              pl.structures[h]->is == HALL);
+    
+            int startIdx = buildEnd + (u * MAP_SIZE * MAP_SIZE * HALL_INDEX_IN_STRCTS)+ (h * MAP_SIZE * MAP_SIZE);
+    
+            if (!validPeasant || !validHall) {
+                mask.narrow(1, startIdx, MAP_SIZE * MAP_SIZE).fill_(0); 
+            }
+        }
     }
-
-    if ((pl.gold < 80 || !pl.HasStructure(BARRACK)) && 
-        (pl.gold < 55 || !pl.HasStructure(HALL))) 
-    {
-        int start = farmEnd;
-        int length = recruitEnd - farmEnd;
-        mask.narrow(1, start, length).fill_(0);
+    // Recruit
+    
+    for (int offset = 0; offset < (recruitEnd - farmEnd); offset++) {
+        int unitTypeInt = offset / MAX_STRUCTS;
+        int structureIndex = offset % MAX_STRUCTS;
+        
+        bool isValid = false; 
+        
+        if (structureIndex < pl.structures.size()) {
+            Structure* stru = pl.structures[structureIndex].get();
+            UnitType unitType = static_cast<UnitType>(unitTypeInt);
+            if (unitType == PEASANT && stru->is == HALL && pl.gold >= 55) {
+                isValid = true;
+            } 
+            else if (unitType == FOOTMAN && stru->is == BARRACK && pl.gold >= 75) {
+                isValid = true;
+            }
+        }
+        if (!isValid) {
+            mask[0][recruitStart + offset] = 0.0f;
+        }
     }
-
-    if (pl.units.empty()) {
-        mask.narrow(1, 0, attackEnd).fill_(0); // Blocks Move and Attack
-    }
-
     return mask;
 }
 
@@ -215,24 +323,24 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
         double fullSteps = 0;
         std::unordered_map<std::string, int> action_count_map = {{"move", 0}, {"attack", 0}, {"build", 0}, {"farm", 0}, {"recruit", 0}};
         while (!done){
-            //Player playerClone = Player(pl);
-            //Player enemyClone = Player(en);
             float episode_reward = 0.0f;
-            std::vector<std::tuple<State, int, float, at::Tensor, at::Tensor, bool>> trajectory_buffer;
+            std::vector<std::tuple<TensorStruct, int, float, at::Tensor, at::Tensor, bool, at::Tensor>> trajectory_buffer;
 
             for (int t= 0; t < forwardSteps; t++){
-                //ShowInMap(pl, en, map);
-                // Player move
 
                 State s = GetState(pl, en, map);
                 TensorStruct input_tensor(s, map);
                 at::Tensor state_value = ppoValue.Forward(input_tensor.GetTensor()).clone().detach();
                 
                 at::Tensor output = ppoPolicy.Forward(input_tensor.GetTensor());
-                at::Tensor mask = GetMask(pl, ppoPolicy.GetOutputSize());
-                at::Tensor masked_output = output.masked_fill(mask == 0, -1e10);
+                at::Tensor mask = GetMask(pl, en, ppoPolicy.GetOutputSize());
 
-                at::Tensor output_soft = torch::softmax(masked_output, -1); // change the masked_output with output if u dont want masking
+                auto lamba_output = [](const at::Tensor& output, const at::Tensor& mask){
+                    at::Tensor masked_output = output.masked_fill(mask == 0, -1e10);
+                    return torch::softmax(masked_output, -1);
+                };
+
+                at::Tensor output_soft = lamba_output(output, mask); 
                 at::Tensor action_tensor = torch::multinomial(output_soft, 1);
                 int action_index = action_tensor.item<int>();
                 actionT action = ppoPolicy.MapIndexToAction(pl, en, action_index);
@@ -242,48 +350,42 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 // Enemy move
                 State s1 = GetState(en, pl, map);
                 TensorStruct input_tensor1(s1, map);
-                at::Tensor state_value1 = ppoValue.Forward(input_tensor1.GetTensor()).clone().detach();
+                at::Tensor state_value1 = enemyPPO.Forward(input_tensor1.GetTensor()).clone().detach();
                 
                 at::Tensor output1 = ppoPolicy.Forward(input_tensor1.GetTensor());
-                at::Tensor mask1 = GetMask(en, ppoPolicy.GetOutputSize());
-                at::Tensor masked_output1 = output1.masked_fill(mask1 == 0, -1e10);
+                at::Tensor mask1 = GetMask(en, pl, ppoPolicy.GetOutputSize());
+                at::Tensor output_soft1 = lamba_output(output1, mask1);
 
-                at::Tensor output_soft1 = torch::softmax(masked_output1, -1); // change the masked_output with output if u dont want masking
                 at::Tensor action_tensor1 = torch::multinomial(output_soft1, 1);
                 int action_index1 = action_tensor1.item<int>();
-                actionT enemy_action = ppoPolicy.MapIndexToAction(en, pl, action_index);
-                
-                // enemy move ends
+                actionT enemy_action = enemyPPO.MapIndexToAction(en, pl, action_index1);
 
                 at::Tensor reward_tensor = torch::tensor(pl.TakeAction(action), torch::dtype(torch::kFloat32));
                 en.TakeAction(enemy_action);
 
                 float reward = reward_tensor.item<float>() - 0.1f; // 0.1 here is a time penalty
-
                 episode_reward += reward;
-                done = ShouldResetEnvironment(pl, en, map);
 
+                ShowInMap(pl, en, map, output_soft);
                 bool envDone = ShouldResetEnvironment(pl, en, map);
                 bool timeDone = (fullSteps >= 5000);
                 done = envDone || timeDone;
 
-                if (envDone) {
+               if (envDone) {
                     const int hallCost = 580; 
-                    bool plLost = (!pl.HasUnit(PEASANT) && !pl.HasStructure(HALL)) || 
-                                  (pl.HasUnit(PEASANT) && !pl.HasStructure(HALL) && pl.gold < hallCost);
+                    bool plLost = (!pl.HasUnit(PEASANT) && !pl.HasStructure(HALL));
                 
-                    bool enLost = (!en.HasUnit(PEASANT) && !en.HasStructure(HALL)) || 
-                                  (en.HasUnit(PEASANT) && !en.HasStructure(HALL) && en.gold < hallCost);
+                    bool enLost = (!en.HasUnit(PEASANT) && !en.HasStructure(HALL)); 
                 
                     if (plLost) {
-                        reward -= 100.0f;
+                        reward -= 500.0f;
                     } 
                     else if (enLost) {
-                        reward += 100.0f;
+                        reward += 500.0f;
                     }
                 }
 
-                trajectory_buffer.push_back({s, action_index, reward, state_value, output_soft[0][action_index].clone().detach(), done});
+                trajectory_buffer.push_back({input_tensor, action_index, reward, state_value, output_soft[0][action_index].clone().detach(), done, mask.clone().detach()});
                 if (done)
                     break;
 
@@ -293,7 +395,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
             for (const auto& [action, count] : action_count_map) {
                 std::cout << action << ": " << count << " | ";
             }
-            std::cout<< "p.gold: "<< pl.gold<< " | en.gold: "<< en.gold<<std::endl;
+            std::cout<< "p.gold: "<< pl.gold<< "|en.gold: "<< en.gold << "|pun: "<<pl.units.size()<< "|eun: "<<en.units.size() << std::endl;
 
             at::Tensor gae = torch::tensor(0.0f, torch::kFloat32); // was 0 
             std::vector<at::Tensor> advantages_buffer(trajectory_buffer.size());
@@ -330,16 +432,20 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 at::Tensor total_value_loss = torch::tensor(0.0f, torch::kFloat32);
                 
                 for (int t = 0; t < trajectory_buffer.size(); t++) {
-                    
-                    State& s = std::get<0>(trajectory_buffer[t]);
+                    TensorStruct& input = std::get<0>(trajectory_buffer[t]);                   
                     int action = std::get<1>(trajectory_buffer[t]);
                     at::Tensor old_prob = std::get<4>(trajectory_buffer[t]);
+                    at::Tensor old_mask = std::get<6>(trajectory_buffer[t]);
+
                     
                     at::Tensor advantage = advantages_buffer[t];
                     at::Tensor returns = returns_buffer[t];
-                    TensorStruct input(s, map);
+
                     at::Tensor new_tensor = ppoPolicy.Forward(input.GetTensor());
-                    at::Tensor new_probabs = torch::softmax(new_tensor, -1);
+                    /** applying mask here **/
+                    at::Tensor masked_new_tensor = new_tensor.masked_fill(old_mask == 0, -1e10);
+                    at::Tensor new_probabs = torch::softmax(masked_new_tensor, -1);
+                    /** end of mask here **/
                     at::Tensor new_prob = new_probabs[0][action];
 
                     at::Tensor ratio = new_prob / old_prob.detach(); 
@@ -354,7 +460,10 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
 
                     /** entropy here to make the model explore **/
                     at::Tensor entropy = -(new_probabs * torch::log(new_probabs + 1e-10)).sum(-1).mean();
-                    float entropy_coeff = 0.2f; 
+                    float start_entropy = 0.20f;
+                    float end_entropy = 0.05f;
+                    float progress = static_cast<float>(i) / episodeNumber; 
+                    float entropy_coeff = start_entropy - progress * (start_entropy - end_entropy);
                     total_policy_loss += (policy_loss - entropy_coeff * entropy);
                     /** end **/
                     total_value_loss += value_loss;
@@ -380,9 +489,80 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
     ppoPolicy.SaveModel("ppo_policy");
 }
 
-void RlManager::ShowInMap(Player& pl, Player& en, Map& m){
+void RlManager::ShowInMap(Player& pl, Player& en, Map& m, at::Tensor& tensor){
     std::string dqn_string = "yes";
-    std::string ppo_string = "no";
+    std::string ppo_string = "";
+
+    int k = std::min(5, (int)tensor.size(1));
+    auto topk_res = tensor.topk(k, 1);
+    auto top_values = std::get<0>(topk_res);
+    auto top_indices = std::get<1>(topk_res);
+
+    for (int i = 0; i < k; ++i) {
+        int action_idx = top_indices[0][i].item<int>();
+        float conf_value = top_values[0][i].item<float>(); 
+        actionT action = ppoPolicy.MapIndexToAction(pl, en, action_idx);
+        char buf[16];
+        snprintf(buf, sizeof(buf), "%.1f%%", conf_value * 100.0f);
+        ppo_string += std::to_string(i + 1) + ". [" + std::string(buf) + "] ";
+
+        if (std::holds_alternative<MoveAction>(action)) {
+            auto& act = std::get<MoveAction>(action);
+            ppo_string += "Move unit (" + std::to_string(act.unit->coordinate.x) + ", "
+                + std::to_string(act.unit->coordinate.y) + ")"+ ") to (" + 
+                std::to_string(act.destCoord.x) + ", " + std::to_string(act.destCoord.y) + ")";
+            
+        } else if (std::holds_alternative<FarmGoldAction>(action)) {
+            auto& act = std::get<FarmGoldAction>(action);
+            ppo_string += "Farm with unit( " + std::to_string(act.peasant->coordinate.x) + "," +
+                std::to_string(act.peasant->coordinate.y) + ")" + "at (" + std::to_string(act.destCoord.x)
+                + ", " + std::to_string(act.destCoord.y) + ")";
+            
+        } else if (std::holds_alternative<BuildAction>(action)) {
+            auto& act = std::get<BuildAction>(action);
+            std::string bType = "";
+            switch(act.struType){
+                 case HALL:
+                    bType = "Hall";
+                    break;
+                case BARRACK:
+                    bType = "Barrack";
+                    break;
+                case FARM:
+                    bType = "Farm";
+                    break;
+                default:
+                    break;
+            }
+            ppo_string += "Build at (" + std::to_string(act.coordinate.x) + ", " + std::to_string(act.coordinate.y) + ") "
+                        + bType;
+            
+        } else if (std::holds_alternative<AttackAction>(action)) {
+            auto& act = std::get<AttackAction>(action);
+            ppo_string += "Attack " + std::to_string(act.object->coordinate.x) + ", "+ std::to_string(act.object->coordinate.y); 
+            
+        } else if (std::holds_alternative<RecruitAction>(action)) {
+            auto& act = std::get<RecruitAction>(action);
+            std::string uType = "";
+            switch(act.unitType){
+                case FOOTMAN:
+                    uType = "Footman";
+                    break;
+                case PEASANT:
+                    uType = "Peasant";
+                    break;
+                default:
+                    break;
+            }
+            ppo_string += "Recruit type: " + uType; 
+        } else if (std::holds_alternative<EmptyAction>(action)) {
+            ppo_string += "Empty ACTION";
+        }
+        ppo_string += "\n";
+    }
+
+
+
     win.Render(pl, en, m, dqn_string, ppo_string);
 }
 

@@ -69,13 +69,13 @@ float Player::TakeAction(actionT &act) {
     if (std::holds_alternative<MoveAction>(act))
     {
         MoveAction &action = std::get<MoveAction>(act);
-        reward = GetRewardFromAction(action);
+        reward += GetRewardFromAction(action);
         Move(action);
     }
     else if (std::holds_alternative<AttackAction>(act))
     {
         AttackAction &action = std::get<AttackAction>(act);
-        reward = GetRewardFromAction(action);
+        reward += GetRewardFromAction(action);
         Attack(action);
     }
     else if (std::holds_alternative<BuildAction>(act))
@@ -85,27 +85,29 @@ float Player::TakeAction(actionT &act) {
             reward -= 0.01f;
             return reward;
         }else{
-            reward += action.stru->goldCost / 10.0f;
+            reward += 3.0 * (action.stru->goldCost / 10.0f);
         }
-        reward = GetRewardFromAction(action);
+        reward += GetRewardFromAction(action);
         Build(action);
     }
     else if (std::holds_alternative<FarmGoldAction>(act))
     {
         FarmGoldAction &action = std::get<FarmGoldAction>(act);
         action.terr = &map.GetTerrainAtCoordinate(action.destCoord);
-        reward = GetRewardFromAction(action, gold);
+        if (gold <= 750){
+            reward += GetRewardFromAction(action, gold);
+        }
         FarmGold(action);
     }
     else if (std::holds_alternative<RecruitAction>(act))
     {
         RecruitAction &action = std::get<RecruitAction>(act);
         Recruit(action); // recruit first then get rewaard to check if action finished
-        reward = GetRewardFromAction(action);
+        reward += GetRewardFromAction(action);
     }
     else {
         EmptyAction act;
-        reward = GetRewardFromAction(act); 
+        reward += GetRewardFromAction(act); 
     }
     return reward;
 }
@@ -113,19 +115,18 @@ float Player::CheckUnitActions(){
     float reward = 0.0f;
     std::erase_if(units, [this, &reward](const auto& un) {
         if (un->IsDead()) {
-            reward -= 2.0f * (un->goldCost / 10.0);
+            reward -= 3.0f * (un->goldCost / 10.0);
+            food.x -= un->foodCost; 
             DeathManager::GetSingleton().RemoveFromAttackAction(un.get(), side);
             this->map.RemoveOwnership(un.get(), un->coordinate);
-            reward -= 1.0f;
             return true;
         }
         return false;
     });
 
-    // 2. Cleanup Dead Structures
     std::erase_if(structures, [this, &reward](const auto& stru) {
         if (stru->IsDead()) {
-            reward -= 2.0f * (stru->goldCost / 10.0);
+            reward -= 3.0f * (stru->goldCost / 10.0);
             DeathManager::GetSingleton().RemoveFromAttackAction(stru.get(), side);
 
             for (auto& un : units) {
@@ -156,45 +157,54 @@ float Player::CheckUnitActions(){
     });
     
     int i = 0;
+    bool one_is_being_attacked = false;
     for (auto& un : units){
         un->TakeAction(map);
         if (un->actionQueue.empty()) continue;
 
         auto& act = un->actionQueue[0];
-            std::visit([&](auto& action) {
-                if constexpr (requires { action.finished; }) {
-                    if (std::holds_alternative<MoveAction>(act))
-                    {
-                        MoveAction &action = std::get<MoveAction>(act);
-                        reward += GetRewardFromAction(action);
-                    }
-                    else if (std::holds_alternative<AttackAction>(act))
-                    {
-                        AttackAction &action = std::get<AttackAction>(act);
-                        reward += GetRewardFromAction(action);
-                    }
-                    else if (std::holds_alternative<BuildAction>(act))
-                    {
-                        BuildAction &action = std::get<BuildAction>(act);
-                        if (action.stru){
-                            if (action.struType == FARM && action.finished && action.stru->isBuilt){
-                                food.y += Farm::foodReceived;
+        std::visit([&](auto& action) {
+            if constexpr (requires { action.finished; }) {
+                if (std::holds_alternative<MoveAction>(act))
+                {
+                    MoveAction &action = std::get<MoveAction>(act);
+                    reward += GetRewardFromAction(action);
+                }
+                else if (std::holds_alternative<AttackAction>(act))
+                {
+                    AttackAction &action = std::get<AttackAction>(act);
+                    if (action.object != nullptr && un->WithinDistance(action.object->coordinate)){
+                        Structure* hall = dynamic_cast<Structure*>(action.object);
+                        if (hall){
+                            if (!one_is_being_attacked){
+                                one_is_being_attacked = true;
+                                un->health -= 20;
                             }
                         }
-
-                        reward += GetRewardFromAction(action);
                     }
-                    else if (std::holds_alternative<FarmGoldAction>(act))
-                    {
-                        FarmGoldAction &action = std::get<FarmGoldAction>(act);
-                        action.terr = &map.GetTerrainAtCoordinate(action.destCoord);
-                        gold += action.gold;
-                        reward += GetRewardFromAction(action, gold);
-                    }
-                    if (action.finished)
-                        un->actionQueue.erase(un->actionQueue.begin());
+                    reward += GetRewardFromAction(action);
                 }
-            }, act);
+                else if (std::holds_alternative<BuildAction>(act))
+                {
+                    BuildAction &action = std::get<BuildAction>(act);
+                    if (action.stru){
+                        if (action.struType == FARM && action.finished && action.stru->isBuilt){
+                            food.y += Farm::foodReceived;
+                        }
+                    }
+                    reward += GetRewardFromAction(action);
+                }
+                else if (std::holds_alternative<FarmGoldAction>(act))
+                {
+                    FarmGoldAction &action = std::get<FarmGoldAction>(act);
+                    action.terr = &map.GetTerrainAtCoordinate(action.destCoord);
+                    gold += action.gold;
+                    reward += GetRewardFromAction(action, gold);
+                }
+                if (action.finished)
+                    un->actionQueue.erase(un->actionQueue.begin());
+            }
+        }, act);
     }
 
     return reward;

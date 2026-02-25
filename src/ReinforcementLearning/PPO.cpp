@@ -99,8 +99,9 @@ actionT PPO::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
     {
         int offset = actionIndex - attackAction;
         int unit = offset / (NR_OF_STRUCTS * MAP_SIZE * MAP_SIZE);
+
         StructureType struSelect = static_cast<StructureType>(
-            (offset / MAP_SIZE * MAP_SIZE) % NR_OF_STRUCTS);
+            (offset / (MAP_SIZE * MAP_SIZE)) % NR_OF_STRUCTS);
         int mapSelect = offset % (MAP_SIZE * MAP_SIZE);
         int col = mapSelect % MAP_SIZE;
         int row = mapSelect / MAP_SIZE;
@@ -140,10 +141,12 @@ actionT PPO::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
         int unitTypeInt = offset / MAX_STRUCTS;
         int structureIndex = offset % MAX_STRUCTS;
 
-        if (unitTypeInt >= NR_OF_UNITS)
+        if (unitTypeInt >= NR_OF_UNITS){
             return EmptyAction();
-        if (structureIndex >= pl.structures.size())
+        }
+        if (structureIndex >= pl.structures.size()){
             return EmptyAction();
+        }
 
         UnitType unitType = static_cast<UnitType>(unitTypeInt);
         Structure* stru = pl.structures[structureIndex].get();

@@ -37,23 +37,23 @@ float GetRewardFromAction(Args&&... args) {
             if (newDistSq < oldDistSq) {
                 reward += 0.01f; // Closer to base!
             } else {
-                reward -= 0.01f; // Walking away/sideways!
+                reward -= 0.1f; // Walking away/sideways!
             }
         }
     }
     else if (std::holds_alternative<AttackAction>(action))
     {
         const AttackAction &attackAction = std::get<AttackAction>(action);
-        if (!attackAction.object){
+        if (attackAction.object == nullptr){
             if (attackAction.finished){
                 reward += 20.0f;
+                std::cout<<"Finished attack."<<std::endl;
             }
         }else{
             if (attackAction.unit && attackAction.unit->coordinate == attackAction.object->coordinate) {
                 reward += attackAction.unit->attack * 0.4f;
             }
         }
-        std::cout<<"Attack reward: "<<reward<<std::endl;
     }
     else if (std::holds_alternative<BuildAction>(action))
     {
@@ -62,7 +62,8 @@ float GetRewardFromAction(Args&&... args) {
             return reward;
 
         if (buildAction.finished && buildAction.stru->isBuilt){
-             reward += 30.0f;
+            std::cout<<"Building finished"<<std::endl;
+            reward += 50.0f;
         }else{
             Peasant &p = static_cast<Peasant &>(*buildAction.peasant);
             if (buildAction.stru != nullptr){ 

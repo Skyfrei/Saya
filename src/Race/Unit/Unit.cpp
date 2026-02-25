@@ -74,12 +74,12 @@ bool Unit::HasCommand() {
 actionT Unit::TakeAction(Map& m) {
     if (!HasCommand())
         return {};
+    actionT& act = actionQueue[0];
 
-
-    if (std::holds_alternative<AttackAction>(actionQueue[0]))
+    if (std::holds_alternative<AttackAction>(act))
     {
-        AttackAction &action = std::get<AttackAction>(actionQueue[0]);
-        if (!action.object){
+        AttackAction &action = std::get<AttackAction>(act);
+        if (action.object == nullptr){
             action.finished = true;
             return action;
         }
@@ -94,17 +94,17 @@ actionT Unit::TakeAction(Map& m) {
         if (action.object->health <= 0)
         {
             action.finished = true;
-            action.object = nullptr;
             return action;
         }
+         
         action.prevCoord = coordinate;
         Attack(*action.object);
         return action;
     }
 
-    else if (std::holds_alternative<MoveAction>(actionQueue[0]))
+    else if (std::holds_alternative<MoveAction>(act))
     {
-        MoveAction &action = std::get<MoveAction>(actionQueue[0]);
+        MoveAction &action = std::get<MoveAction>(act);
         if (action.destCoord.x < 0 || action.destCoord.x >= MAP_SIZE ||
             action.destCoord.y < 0 || action.destCoord.y >= MAP_SIZE){
 
@@ -121,10 +121,10 @@ actionT Unit::TakeAction(Map& m) {
         Move(action.destCoord);
         return action;
     }
-    else if (std::holds_alternative<BuildAction>(actionQueue[0]))
+    else if (std::holds_alternative<BuildAction>(act))
     {
-        BuildAction &action = std::get<BuildAction>(actionQueue[0]);
-        if (!action.stru){
+        BuildAction &action = std::get<BuildAction>(act);
+        if (action.stru == nullptr){
             action.finished = true;
             return action;
         }
@@ -135,23 +135,24 @@ actionT Unit::TakeAction(Map& m) {
             action.finished = true;
             return action; 
         }
-
         if (action.stru->health >= action.stru->maxHealth)
         {
             action.stru->isBuilt = true;
             action.finished = true;
             return action;
         }
+
         action.prevCoord = coordinate;
         Peasant &p = static_cast<Peasant &>(*this);
         p.Build(action.stru);
+
         return action;
     }
-    else if (std::holds_alternative<FarmGoldAction>(actionQueue[0]))
+    else if (std::holds_alternative<FarmGoldAction>(act))
     {
 
         Peasant &p = static_cast<Peasant &>(*this);
-        FarmGoldAction &action = std::get<FarmGoldAction>(actionQueue[0]);
+        FarmGoldAction &action = std::get<FarmGoldAction>(act);
         if (!action.hall){
             action.finished = true;
             return action;
