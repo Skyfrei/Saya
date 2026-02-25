@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <memory>
+#include <set>
 
 #include "../Race/Structure/Barrack.h"
 #include "../Race/Structure/Farm.h"
@@ -64,23 +65,36 @@ Player::~Player() {
 }
 float Player::TakeAction(actionT &act) {
     float reward = 0.0f; 
-    reward += CheckUnitActions();
+    std::vector<Living*> deleted_living = CheckUnitActions(reward);
+    auto ptr_deleted = [&deleted_living](Living* l){
+        for (auto& p : deleted_living){
+            if (l == p)
+                return true;
+        }
+        return false;
+    };
 
     if (std::holds_alternative<MoveAction>(act))
     {
         MoveAction &action = std::get<MoveAction>(act);
+        if (ptr_deleted(action.unit))
+            return reward;
         reward += GetRewardFromAction(action);
         Move(action);
     }
     else if (std::holds_alternative<AttackAction>(act))
     {
         AttackAction &action = std::get<AttackAction>(act);
+        if (ptr_deleted(action.unit))
+            return reward;
         reward += GetRewardFromAction(action);
         Attack(action);
     }
     else if (std::holds_alternative<BuildAction>(act))
     {
         BuildAction &action = std::get<BuildAction>(act);
+        if (ptr_deleted(action.peasant))
+            return reward;
         if (gold < action.stru->goldCost){
             reward -= 0.01f;
             return reward;
@@ -93,6 +107,8 @@ float Player::TakeAction(actionT &act) {
     else if (std::holds_alternative<FarmGoldAction>(act))
     {
         FarmGoldAction &action = std::get<FarmGoldAction>(act);
+        if (ptr_deleted(action.peasant))
+            return reward;
         action.terr = &map.GetTerrainAtCoordinate(action.destCoord);
         if (gold <= 750){
             reward += GetRewardFromAction(action, gold);
@@ -102,6 +118,8 @@ float Player::TakeAction(actionT &act) {
     else if (std::holds_alternative<RecruitAction>(act))
     {
         RecruitAction &action = std::get<RecruitAction>(act);
+        if (ptr_deleted(action.stru))
+            return reward;
         Recruit(action); // recruit first then get rewaard to check if action finished
         reward += GetRewardFromAction(action);
     }
@@ -111,12 +129,14 @@ float Player::TakeAction(actionT &act) {
     }
     return reward;
 }
-float Player::CheckUnitActions(){
-    float reward = 0.0f;
-    std::erase_if(units, [this, &reward](const auto& un) {
+std::vector<Living*> Player::CheckUnitActions(float& reward){
+    std::vector<Living*> deleted_ptr;
+
+    std::erase_if(units, [this, &reward, &deleted_ptr](const auto& un) {
         if (un->IsDead()) {
             reward -= 3.0f * (un->goldCost / 10.0);
             food.x -= un->foodCost; 
+            deleted_ptr.push_back(un.get());
             DeathManager::GetSingleton().RemoveFromAttackAction(un.get(), side);
             this->map.RemoveOwnership(un.get(), un->coordinate);
             return true;
@@ -124,9 +144,10 @@ float Player::CheckUnitActions(){
         return false;
     });
 
-    std::erase_if(structures, [this, &reward](const auto& stru) {
+    std::erase_if(structures, [this, &reward, &deleted_ptr](const auto& stru) {
         if (stru->IsDead()) {
             reward -= 3.0f * (stru->goldCost / 10.0);
+            deleted_ptr.push_back(stru.get());
             DeathManager::GetSingleton().RemoveFromAttackAction(stru.get(), side);
 
             for (auto& un : units) {
@@ -158,6 +179,12 @@ float Player::CheckUnitActions(){
     
     int i = 0;
     bool one_is_being_attacked = false;
+    std::set<actionT*> finished_actions;
+
+    auto is_finished = [&](actionT& act) {
+        return !finished_actions.insert(&act).second;
+    };
+
     for (auto& un : units){
         un->TakeAction(map);
         if (un->actionQueue.empty()) continue;
@@ -189,7 +216,8 @@ float Player::CheckUnitActions(){
                     BuildAction &action = std::get<BuildAction>(act);
                     if (action.stru){
                         if (action.struType == FARM && action.finished && action.stru->isBuilt){
-                            food.y += Farm::foodReceived;
+                            if (!is_finished(act))
+                                food.y += Farm::foodReceived;
                         }
                     }
                     reward += GetRewardFromAction(action);
@@ -206,8 +234,7 @@ float Player::CheckUnitActions(){
             }
         }, act);
     }
-
-    return reward;
+    return deleted_ptr;
 }
 void Player::Move(MoveAction &action) {
     action.unit->InsertAction(action);

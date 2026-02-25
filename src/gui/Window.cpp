@@ -45,7 +45,7 @@ SDL_AppResult Window::InitSdl() {
     }
 
     font = TTF_OpenFontIO(stream, true, 22.0f);
-    smallFont = TTF_OpenFont(fontPath, 13.0f); // Load small font ONCE here
+    smallFont = TTF_OpenFont(fontPath, 20.0f); // Load small font ONCE here
     if (!font || !smallFont)
     {
         SDL_Log("Couldn't open font: %s\n", SDL_GetError());

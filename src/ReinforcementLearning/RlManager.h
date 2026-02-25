@@ -49,7 +49,7 @@ class RlManager
 
   private:
     const int batchSize = 32; // was 32
-    float gamma = 0.94f;
+    float gamma = 0.98f;
     float epsilon = 0.9f;
     bool calledMemOnce = false;
     const int maxSize = 10000;

@@ -309,6 +309,9 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
     
     for (int i = 0; i < episodeNumber; i++){
         // 2. Update the optimizers
+        if (i % (episodeNumber - 1) == 0 && i != 0){
+            ppoPolicy.SaveModel("ppo_policy" + std::to_string(i));
+        }
         double progress = static_cast<double>(i) / episodeNumber;
         double current_lr = start_lr + progress * (end_lr - start_lr);
 

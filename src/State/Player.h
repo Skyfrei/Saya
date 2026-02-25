@@ -41,7 +41,7 @@ class Player
     void FarmGold(FarmGoldAction &action);
     void Recruit(RecruitAction &action);
     void Reset(Side en);
-    float CheckUnitActions();
+    std::vector<Living*> CheckUnitActions(float& reward);
 
   public:
     int gold = 300;
