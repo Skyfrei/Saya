@@ -259,10 +259,20 @@ at::Tensor RlManager::GetMask(Player &pl, Player& en, int outputSize){
             bool validHall = (h < pl.structures.size() && 
                               pl.structures[h]->is == HALL);
     
-            int startIdx = buildEnd + (u * MAP_SIZE * MAP_SIZE * HALL_INDEX_IN_STRCTS)+ (h * MAP_SIZE * MAP_SIZE);
+            int startIdx = buildEnd + (u * MAP_SIZE * MAP_SIZE * HALL_INDEX_IN_STRCTS) + (h * MAP_SIZE * MAP_SIZE);
     
             if (!validPeasant || !validHall) {
                 mask.narrow(1, startIdx, MAP_SIZE * MAP_SIZE).fill_(0); 
+            } else {
+                for (int x = 0; x < MAP_SIZE; x++) {
+                    for (int y = 0; y < MAP_SIZE; y++) {
+                        int actionIdx = startIdx + (x * MAP_SIZE + y);
+                        auto& terr = pl.map.GetTerrainAtCoordinate(Vec2(x, y));
+                        if (terr.resourceLeft <= 0) { 
+                            mask[0][actionIdx] = 0.0f;
+                        }
+                    }
+                }
             }
         }
     }
@@ -559,7 +569,7 @@ void RlManager::ShowInMap(Player& pl, Player& en, Map& m, at::Tensor& tensor){
             }
             ppo_string += "Recruit type: " + uType; 
         } else if (std::holds_alternative<EmptyAction>(action)) {
-            ppo_string += "Empty ACTION";
+            ppo_string += "Empty action";
         }
         ppo_string += "\n";
     }
