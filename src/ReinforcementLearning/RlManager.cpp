@@ -223,7 +223,7 @@ at::Tensor RlManager::GetMask(Player &pl, Player& en, int outputSize){
     for (int u = 0; u < MAX_UNITS; u++) {
         if (u < pl.units.size() && pl.units[u]->GetActionQueueSize() == 0) {
             int unitMoveStart = u * MAP_SIZE * MAP_SIZE;
-            mask.narrow(1, unitMoveStart, MAP_SIZE * MAP_SIZE).fill_(1.0f); // Enable all tiles
+            mask.narrow(1, unitMoveStart, MAP_SIZE * MAP_SIZE).fill_(1.0f); 
 
             int curX = pl.units[u]->coordinate.x; 
             int curY = pl.units[u]->coordinate.y; 
@@ -245,7 +245,7 @@ at::Tensor RlManager::GetMask(Player &pl, Player& en, int outputSize){
                 }
 
                 if (targetExists) {
-                    mask[0][unitAttackStart + t] = 1.0f; // Enable if target exists
+                    mask[0][unitAttackStart + t] = 1.0f; 
                 }
             }
         }
@@ -256,7 +256,7 @@ at::Tensor RlManager::GetMask(Player &pl, Player& en, int outputSize){
         for (int u = 0; u < PEASANT_INDEX_IN_UNITS; u++) {
             if (u < pl.units.size() && pl.units[u]->is == PEASANT && pl.units[u]->GetActionQueueSize() == 0) {
                 int startIdx = attackEnd + (u * buildStride);
-                mask.narrow(1, startIdx, buildStride).fill_(1.0f); // Enable building
+                mask.narrow(1, startIdx, buildStride).fill_(1.0f);
             }
         }
     }
@@ -267,7 +267,6 @@ at::Tensor RlManager::GetMask(Player &pl, Player& en, int outputSize){
             for (int h = 0; h < HALL_INDEX_IN_STRCTS; h++) {
                 if (h < pl.structures.size() && pl.structures[h]->is == HALL) {
                     int startIdx = buildEnd + (u * MAP_SIZE * MAP_SIZE * HALL_INDEX_IN_STRCTS) + (h * MAP_SIZE * MAP_SIZE);
-                    // Only enable tiles with resources
                     for (int x = 0; x < MAP_SIZE; x++) {
                         for (int y = 0; y < MAP_SIZE; y++) {
                             if (pl.map.GetTerrainAtCoordinate(Vec2(x, y)).resourceLeft > 0) {
@@ -309,7 +308,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
     torch::optim::AdamW value_optimizer(
         ppoValue.parameters(), torch::optim::AdamWOptions(3e-4).weight_decay(1e-4));
 
-    ppoPolicy.LoadModel("models/ppo_policy-02-27_14-19");
+    //ppoPolicy.LoadModel("models/ppo_policy-02-27_14-19");
     double start_lr = 8e-4; // A bit "bigger" to start
     double end_lr = 1e-4;
 
@@ -507,7 +506,7 @@ void RlManager::ShowInMap(Player& pl, Player& en, Map& m, at::Tensor& tensor){
     std::string dqn_string = "yes";
     std::string ppo_string = "";
 
-    int k = std::min(8, (int)tensor.size(1));
+    int k = std::min(10, (int)tensor.size(1));
     auto topk_res = tensor.topk(k, 1);
     auto top_values = std::get<0>(topk_res);
     auto top_indices = std::get<1>(topk_res);
