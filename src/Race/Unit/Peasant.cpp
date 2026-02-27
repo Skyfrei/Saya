@@ -10,9 +10,9 @@
 #include "../Structure/TownHall.h"
 
 Peasant::Peasant() {
-    health = 240;
+    health = 200;
     maxHealth = health;
-    attack = 5.5;
+    attack = 3.5;
     maxMana = 200.0f;
     mana = 200.0f;
     manaRegen = 0.67f;
@@ -26,8 +26,8 @@ Peasant::Peasant(Vec2 coord, float hp, float man) {
     coordinate = coord;
     health = hp;
     mana = man;
-    maxHealth = 240;
-    attack = 5.5;
+    maxHealth = 200;
+    attack = 3.5;
     manaRegen = 0.67f;
     maxMana = 200.0f;
 

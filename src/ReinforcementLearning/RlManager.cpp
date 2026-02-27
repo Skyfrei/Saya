@@ -7,6 +7,7 @@
 #include <tuple>
 #include "Tensor.h"
 #include <algorithm>
+#include <iomanip>
 
 RlManager::RlManager() : win(Vec2(1000, 1000)) {
 }
@@ -74,14 +75,13 @@ void RlManager::InitializeDQN(Player &pl, Player &en, Map &map) {
         policyNet.to(device);
         targetNet.to(device);
     }
-
 }
 
 void RlManager::InitializePPO(Player &pl, Player &en, Map &map){
     State s = GetState(pl, en, map);
     ppoPolicy.Initialize(map, s);
     enemyPPO.Initialize(map, s);
-    enemyPPO.LoadModel("ppo_policy");
+    enemyPPO.LoadModel("models/ppo_policy30");
 
     ppoValue.Initialize(ppoPolicy);
     torch::Device device(torch::kCPU);
@@ -93,7 +93,6 @@ void RlManager::InitializePPO(Player &pl, Player &en, Map &map){
         ppoPolicy.to(device);
         ppoValue.to(device);
     }
-
 }
 
 void RlManager::OptimizeDQN(Map &map) {
@@ -202,9 +201,9 @@ at::Tensor RlManager::GetMask(Player &pl, Player& en, int outputSize){
         if (u >= pl.units.size() || pl.units[u]->GetActionQueueSize() >= 1)
             mask.narrow(1, u * MAP_SIZE * MAP_SIZE, MAP_SIZE * MAP_SIZE).fill_(0);
         else {
-            int currentX = pl.units[u]->x; 
-            int currentY = pl.units[u]->y; 
-            int currentLocationIndex = unitMoveStart + (currentX * MAP_SIZE + currentY);
+            int currentX = pl.units[u]->coordinate.x; 
+            int currentY = pl.units[u]->coordinate.y; 
+            int currentLocationIndex = (u * MAP_SIZE * MAP_SIZE) + (currentX * MAP_SIZE) + currentY;
             mask[0][currentLocationIndex] = 0.0f;
         }
     }
@@ -306,6 +305,14 @@ at::Tensor RlManager::GetMask(Player &pl, Player& en, int outputSize){
     }
     return mask;
 }
+std::string get_current_time(){
+    auto now = std::chrono::system_clock::now();
+    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+    std::stringstream ss;
+    ss << std::put_time(std::localtime(&now_c), "%m-%d_%H-%M");
+
+    return ss.str();
+}
 
 void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
     torch::optim::AdamW policy_optimizer(
@@ -319,15 +326,19 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> distrib(0, ppoPolicy.layer3->options.out_features() - 1);
-    std::ofstream file;
-    file.open("ppo_loss.txt", std::ios_base::app);
+    std::uniform_int_distribution<> distr(1, 5);
+
+
     bool done = false;
     
     for (int i = 0; i < episodeNumber; i++){
-        // 2. Update the optimizers
-        if (i % (episodeNumber - 1) == 0 && i != 0){
-            ppoPolicy.SaveModel("ppo_policy" + std::to_string(i));
+        if (i % 10 == 0 && i != 0){
+            int randomNumber = distr(gen) * 10;
+            
+            ppoPolicy.SaveModel("models/ppo_policy-" + get_current_time());
+            enemyPPO.LoadModel("models/ppo_policy" + std::to_string(randomNumber));
         }
+        // Updating optimizers
         double progress = static_cast<double>(i) / episodeNumber;
         double current_lr = start_lr + progress * (end_lr - start_lr);
 
@@ -369,10 +380,9 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 // Enemy move
                 State s1 = GetState(en, pl, map);
                 TensorStruct input_tensor1(s1, map);
-                at::Tensor state_value1 = enemyPPO.Forward(input_tensor1.GetTensor()).clone().detach();
+                at::Tensor output1 = enemyPPO.Forward(input_tensor1.GetTensor()).clone().detach();
                 
-                at::Tensor output1 = ppoPolicy.Forward(input_tensor1.GetTensor());
-                at::Tensor mask1 = GetMask(en, pl, ppoPolicy.GetOutputSize());
+                at::Tensor mask1 = GetMask(en, pl, enemyPPO.GetOutputSize());
                 at::Tensor output_soft1 = lamba_output(output1, mask1);
 
                 at::Tensor action_tensor1 = torch::multinomial(output_soft1, 1);
@@ -504,7 +514,6 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
             }
         }
     }
-    file.close();
     ppoPolicy.SaveModel("ppo_policy");
 }
 

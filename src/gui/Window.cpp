@@ -265,9 +265,24 @@ void Window::RenderMap(Player& pl, Player& en, Map& map) {
 
 SDL_AppResult Window::Render(Player& pl, Player& en, Map& map, std::string dqn_action, std::string ppo_action) {
     SDL_Event event;
+    static bool is_paused = false;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_EVENT_QUIT) {
             return SDL_APP_SUCCESS; // Signal to stop
+        }
+        if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_SPACE) {
+            is_paused = !is_paused; // Toggle the state
+        }
+
+        while (is_paused) {
+            while (SDL_PollEvent(&event)) {
+                if (event.type == SDL_EVENT_QUIT) return SDL_APP_SUCCESS;
+                
+                if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_SPACE) {
+                    is_paused = false; // Resume game
+                }
+            }
+            SDL_Delay(10); 
         }
     }
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);

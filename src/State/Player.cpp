@@ -66,6 +66,7 @@ Player::~Player() {
 float Player::TakeAction(actionT &act) {
     float reward = 0.0f; 
     std::vector<Living*> deleted_living = CheckUnitActions(reward);
+
     auto ptr_deleted = [&deleted_living](Living* l){
         for (auto& p : deleted_living){
             if (l == p)
@@ -79,7 +80,6 @@ float Player::TakeAction(actionT &act) {
         MoveAction &action = std::get<MoveAction>(act);
         if (ptr_deleted(action.unit))
             return reward;
-        reward += GetRewardFromAction(action);
         Move(action);
     }
     else if (std::holds_alternative<AttackAction>(act))
@@ -87,7 +87,6 @@ float Player::TakeAction(actionT &act) {
         AttackAction &action = std::get<AttackAction>(act);
         if (ptr_deleted(action.unit))
             return reward;
-        reward += GetRewardFromAction(action);
         Attack(action);
     }
     else if (std::holds_alternative<BuildAction>(act))
@@ -95,13 +94,13 @@ float Player::TakeAction(actionT &act) {
         BuildAction &action = std::get<BuildAction>(act);
         if (ptr_deleted(action.peasant))
             return reward;
+
         if (gold < action.stru->goldCost){
             reward -= 0.01f;
             return reward;
-        }else{
-            reward += 3.0 * (action.stru->goldCost / 10.0f);
         }
-        reward += GetRewardFromAction(action);
+
+        reward += action.stru->goldCost / 10.0f;
         Build(action);
     }
     else if (std::holds_alternative<FarmGoldAction>(act))
@@ -109,10 +108,6 @@ float Player::TakeAction(actionT &act) {
         FarmGoldAction &action = std::get<FarmGoldAction>(act);
         if (ptr_deleted(action.peasant))
             return reward;
-        action.terr = &map.GetTerrainAtCoordinate(action.destCoord);
-        if (gold <= 750){
-            reward += GetRewardFromAction(action, gold);
-        }
         FarmGold(action);
     }
     else if (std::holds_alternative<RecruitAction>(act))
@@ -227,7 +222,9 @@ std::vector<Living*> Player::CheckUnitActions(float& reward){
                     FarmGoldAction &action = std::get<FarmGoldAction>(act);
                     action.terr = &map.GetTerrainAtCoordinate(action.destCoord);
                     gold += action.gold;
-                    reward += GetRewardFromAction(action, gold);
+                    if (gold <= 600){
+                        reward += GetRewardFromAction(action, gold);
+                    }
                 }
                 if (action.finished)
                     un->actionQueue.erase(un->actionQueue.begin());

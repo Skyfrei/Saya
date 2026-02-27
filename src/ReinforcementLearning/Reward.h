@@ -70,7 +70,7 @@ float GetRewardFromAction(Args&&... args) {
                 if (p.coordinate == buildAction.coordinate &&
                     buildAction.stru->health < buildAction.stru->maxHealth &&
                     buildAction.stru->health > 0){
-                    reward += 0.5f;       
+                    reward += 0.1f;       
                 }
             }
         }
