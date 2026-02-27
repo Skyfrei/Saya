@@ -8,6 +8,27 @@
 #include "Tensor.h"
 #include <algorithm>
 #include <iomanip>
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
+std::string get_random_model(const std::string& directory) {
+    std::vector<std::string> models;
+    
+    if (fs::exists(directory) && fs::is_directory(directory)) {
+        for (const auto& entry : fs::directory_iterator(directory)) {
+            if (entry.is_regular_file()) {
+                std::string pathWithoutExt = (entry.path().parent_path() / entry.path().stem()).string();
+                models.push_back(pathWithoutExt);
+            }
+        }
+    }
+
+    static std::mt19937 gen(std::random_device{}()); 
+    std::uniform_int_distribution<> dist(0, (int)models.size() - 1);
+
+    return models[dist(gen)];
+}
 
 RlManager::RlManager() : win(Vec2(1000, 1000)) {
 }
@@ -22,18 +43,20 @@ actionT RlManager::GetActionPPO(Player& pl, Player& en, Map& map){
 
     at::Tensor masked_output = output.masked_fill(mask == 0, -1e10);
     auto probs = torch::softmax(masked_output, 1);
-    //int action_idx = probs.argmax(1).item<int>();
+    int action_idx = probs.argmax(1).item<int>();
+    actionT action = ppoPolicy.MapIndexToAction(pl, en, action_idx);
+
+    ShowInMap(pl, en, map, probs);
+    //int k = std::min(5, (int)probs.size(1));
+    //auto topk_res = probs.topk(k, 1);
+    //auto top_probs = std::get<0>(topk_res);  
+    //auto top_indices = std::get<1>(topk_res);
+
+    //int sample_idx = torch::multinomial(top_probs, 1).item<int>();
+    //int action_idx = top_indices[0][sample_idx].item<int>();
     //actionT action = ppoPolicy.MapIndexToAction(pl, en, action_idx);
 
 
-    int k = std::min(5, (int)probs.size(1));
-    auto topk_res = probs.topk(k, 1);
-    auto top_probs = std::get<0>(topk_res);  
-    auto top_indices = std::get<1>(topk_res);
-
-    int sample_idx = torch::multinomial(top_probs, 1).item<int>();
-    int action_idx = top_indices[0][sample_idx].item<int>();
-    actionT action = ppoPolicy.MapIndexToAction(pl, en, action_idx);
     return action;
 }
 
@@ -81,7 +104,7 @@ void RlManager::InitializePPO(Player &pl, Player &en, Map &map){
     State s = GetState(pl, en, map);
     ppoPolicy.Initialize(map, s);
     enemyPPO.Initialize(map, s);
-    enemyPPO.LoadModel("models/ppo_policy30");
+    enemyPPO.LoadModel(get_random_model("models/"));
 
     ppoValue.Initialize(ppoPolicy);
     torch::Device device(torch::kCPU);
@@ -198,83 +221,58 @@ at::Tensor RlManager::GetMask(Player &pl, Player& en, int outputSize){
 
     // Move
     for (int u = 0; u < MAX_UNITS; u++) {
-        if (u >= pl.units.size() || pl.units[u]->GetActionQueueSize() >= 1)
-            mask.narrow(1, u * MAP_SIZE * MAP_SIZE, MAP_SIZE * MAP_SIZE).fill_(0);
-        else {
-            int currentX = pl.units[u]->coordinate.x; 
-            int currentY = pl.units[u]->coordinate.y; 
-            int currentLocationIndex = (u * MAP_SIZE * MAP_SIZE) + (currentX * MAP_SIZE) + currentY;
-            mask[0][currentLocationIndex] = 0.0f;
+        if (u < pl.units.size() && pl.units[u]->GetActionQueueSize() == 0) {
+            int unitMoveStart = u * MAP_SIZE * MAP_SIZE;
+            mask.narrow(1, unitMoveStart, MAP_SIZE * MAP_SIZE).fill_(1.0f); // Enable all tiles
+
+            int curX = pl.units[u]->coordinate.x; 
+            int curY = pl.units[u]->coordinate.y; 
+            mask[0][unitMoveStart + (curX * MAP_SIZE) + curY] = 0.0f;
         }
     }
 
     // Attack
     for (int u = 0; u < MAX_UNITS; u++) {
         int unitAttackStart = moveEnd + (u * attackStride);
-        if (u >= pl.units.size() || pl.units[u]->GetActionQueueSize() >= 1) {
-            mask.narrow(1, unitAttackStart, attackStride).fill_(0);
-            continue;
-        }
+        if (u < pl.units.size() && pl.units[u]->GetActionQueueSize() == 0) {
+            for (int t = 0; t < attackStride; t++) {
+                bool targetExists = false;
+                if (t < MAX_STRUCTS) {
+                    if (t < en.structures.size()) targetExists = true;
+                } else {
+                    int unitTargetIdx = t - MAX_STRUCTS;
+                    if (unitTargetIdx < en.units.size()) targetExists = true;
+                }
 
-        for (int t = 0; t < attackStride; t++) {
-            bool targetExists = false;
-            if (t < MAX_STRUCTS) {
-                if (t < en.structures.size()) targetExists = true;
-            } else {
-                int unitTargetIdx = t - MAX_STRUCTS;
-                if (unitTargetIdx < en.units.size()) targetExists = true;
-            }
-
-            if (!targetExists) {
-                mask[0][unitAttackStart + t] = 0.0f;
+                if (targetExists) {
+                    mask[0][unitAttackStart + t] = 1.0f; // Enable if target exists
+                }
             }
         }
     }
 
     // Build
-    if (pl.gold < 100) {
-        int start = attackEnd;
-        int length = buildEnd - attackEnd;
-        mask.narrow(1, start, length).fill_(0);
-    }else{
-        int buildStride = NR_OF_STRUCTS * MAP_SIZE * MAP_SIZE;
+    if (pl.gold >= 100) {
         for (int u = 0; u < PEASANT_INDEX_IN_UNITS; u++) {
-            int startIdx = attackEnd + (u * buildStride);
-            
-            bool canBuild = true;
-            if (u >= pl.units.size() || 
-                pl.units[u]->is != PEASANT || 
-                pl.units[u]->GetActionQueueSize() >= 1 ) 
-            {
-                canBuild = false;
-            }
-        
-            if (!canBuild) {
-                mask.narrow(1, startIdx, buildStride).fill_(0);
+            if (u < pl.units.size() && pl.units[u]->is == PEASANT && pl.units[u]->GetActionQueueSize() == 0) {
+                int startIdx = attackEnd + (u * buildStride);
+                mask.narrow(1, startIdx, buildStride).fill_(1.0f); // Enable building
             }
         }
     }
+
     // Farm
     for (int u = 0; u < PEASANT_INDEX_IN_UNITS; u++) {
-        bool validPeasant = (u < pl.units.size() && 
-                             pl.units[u]->is == PEASANT && 
-                             pl.units[u]->GetActionQueueSize() == 0);
-    
-        for (int h = 0; h < HALL_INDEX_IN_STRCTS; h++) {
-            bool validHall = (h < pl.structures.size() && 
-                              pl.structures[h]->is == HALL);
-    
-            int startIdx = buildEnd + (u * MAP_SIZE * MAP_SIZE * HALL_INDEX_IN_STRCTS) + (h * MAP_SIZE * MAP_SIZE);
-    
-            if (!validPeasant || !validHall) {
-                mask.narrow(1, startIdx, MAP_SIZE * MAP_SIZE).fill_(0); 
-            } else {
-                for (int x = 0; x < MAP_SIZE; x++) {
-                    for (int y = 0; y < MAP_SIZE; y++) {
-                        int actionIdx = startIdx + (x * MAP_SIZE + y);
-                        auto& terr = pl.map.GetTerrainAtCoordinate(Vec2(x, y));
-                        if (terr.resourceLeft <= 0) { 
-                            mask[0][actionIdx] = 0.0f;
+        if (u < pl.units.size() && pl.units[u]->is == PEASANT && pl.units[u]->GetActionQueueSize() == 0) {
+            for (int h = 0; h < HALL_INDEX_IN_STRCTS; h++) {
+                if (h < pl.structures.size() && pl.structures[h]->is == HALL) {
+                    int startIdx = buildEnd + (u * MAP_SIZE * MAP_SIZE * HALL_INDEX_IN_STRCTS) + (h * MAP_SIZE * MAP_SIZE);
+                    // Only enable tiles with resources
+                    for (int x = 0; x < MAP_SIZE; x++) {
+                        for (int y = 0; y < MAP_SIZE; y++) {
+                            if (pl.map.GetTerrainAtCoordinate(Vec2(x, y)).resourceLeft > 0) {
+                                mask[0][startIdx + (x * MAP_SIZE + y)] = 1.0f;
+                            }
                         }
                     }
                 }
@@ -282,25 +280,14 @@ at::Tensor RlManager::GetMask(Player &pl, Player& en, int outputSize){
         }
     }
     // Recruit
-    
     for (int offset = 0; offset < (recruitEnd - farmEnd); offset++) {
         int unitTypeInt = offset / MAX_STRUCTS;
         int structureIndex = offset % MAX_STRUCTS;
-        
-        bool isValid = false; 
-        
         if (structureIndex < pl.structures.size()) {
             Structure* stru = pl.structures[structureIndex].get();
             UnitType unitType = static_cast<UnitType>(unitTypeInt);
-            if (unitType == PEASANT && stru->is == HALL && pl.gold >= 55) {
-                isValid = true;
-            } 
-            else if (unitType == FOOTMAN && stru->is == BARRACK && pl.gold >= 75) {
-                isValid = true;
-            }
-        }
-        if (!isValid) {
-            mask[0][recruitStart + offset] = 0.0f;
+            if (unitType == PEASANT && stru->is == HALL && pl.gold >= 55) mask[0][recruitStart + offset] = 1.0f;
+            else if (unitType == FOOTMAN && stru->is == BARRACK && pl.gold >= 75) mask[0][recruitStart + offset] = 1.0f;
         }
     }
     return mask;
@@ -314,29 +301,28 @@ std::string get_current_time(){
     return ss.str();
 }
 
+
+
 void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
     torch::optim::AdamW policy_optimizer(
         ppoPolicy.parameters(), torch::optim::AdamWOptions(3e-4).weight_decay(1e-4));
     torch::optim::AdamW value_optimizer(
         ppoValue.parameters(), torch::optim::AdamWOptions(3e-4).weight_decay(1e-4));
 
+    ppoPolicy.LoadModel("models/ppo_policy-02-27_14-19");
     double start_lr = 8e-4; // A bit "bigger" to start
     double end_lr = 1e-4;
 
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> distrib(0, ppoPolicy.layer3->options.out_features() - 1);
-    std::uniform_int_distribution<> distr(1, 5);
-
 
     bool done = false;
     
     for (int i = 0; i < episodeNumber; i++){
         if (i % 10 == 0 && i != 0){
-            int randomNumber = distr(gen) * 10;
-            
             ppoPolicy.SaveModel("models/ppo_policy-" + get_current_time());
-            enemyPPO.LoadModel("models/ppo_policy" + std::to_string(randomNumber));
+            enemyPPO.LoadModel(get_random_model("models/"));
         }
         // Updating optimizers
         double progress = static_cast<double>(i) / episodeNumber;
@@ -521,7 +507,7 @@ void RlManager::ShowInMap(Player& pl, Player& en, Map& m, at::Tensor& tensor){
     std::string dqn_string = "yes";
     std::string ppo_string = "";
 
-    int k = std::min(5, (int)tensor.size(1));
+    int k = std::min(8, (int)tensor.size(1));
     auto topk_res = tensor.topk(k, 1);
     auto top_values = std::get<0>(topk_res);
     auto top_indices = std::get<1>(topk_res);
@@ -537,7 +523,7 @@ void RlManager::ShowInMap(Player& pl, Player& en, Map& m, at::Tensor& tensor){
         if (std::holds_alternative<MoveAction>(action)) {
             auto& act = std::get<MoveAction>(action);
             ppo_string += "Move unit (" + std::to_string(act.unit->coordinate.x) + ", "
-                + std::to_string(act.unit->coordinate.y) + ")"+ ") to (" + 
+                + std::to_string(act.unit->coordinate.y) + ") to (" + 
                 std::to_string(act.destCoord.x) + ", " + std::to_string(act.destCoord.y) + ")";
             
         } else if (std::holds_alternative<FarmGoldAction>(action)) {

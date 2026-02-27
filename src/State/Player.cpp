@@ -182,7 +182,10 @@ std::vector<Living*> Player::CheckUnitActions(float& reward){
 
     for (auto& un : units){
         un->TakeAction(map);
-        if (un->actionQueue.empty()) continue;
+        if (un->actionQueue.empty()){
+            reward -= 0.01f;
+            continue;
+        }
 
         auto& act = un->actionQueue[0];
         std::visit([&](auto& action) {
@@ -210,12 +213,13 @@ std::vector<Living*> Player::CheckUnitActions(float& reward){
                 {
                     BuildAction &action = std::get<BuildAction>(act);
                     if (action.stru){
-                        if (action.struType == FARM && action.finished && action.stru->isBuilt){
-                            if (!is_finished(act))
-                                food.y += Farm::foodReceived;
+                        if (!is_finished(act)){
+                            if (action.struType == FARM && action.finished && action.stru->isBuilt){
+                                    food.y += Farm::foodReceived;
+                            }
+                            reward += GetRewardFromAction(action);
                         }
                     }
-                    reward += GetRewardFromAction(action);
                 }
                 else if (std::holds_alternative<FarmGoldAction>(act))
                 {
