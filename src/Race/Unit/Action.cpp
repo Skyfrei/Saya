@@ -178,6 +178,7 @@ AttackAction::AttackAction(Unit *un, Living *o) : object(o), unit(un) {
 }
 BuildAction::BuildAction(Structure *s) : stru(s) {
     type = BUILD;
+    bool paid = false;
 }
 BuildAction::BuildAction(Unit *p, StructureType s, Vec2 c)
     : peasant(p), struType(s), coordinate(c), prevCoord(p->coordinate) {
@@ -195,6 +196,7 @@ BuildAction::BuildAction(Unit *p, StructureType s, Vec2 c)
         default:
             break;
     }
+    bool paid = false;
 }
 FarmGoldAction::FarmGoldAction(Vec2 v, Terrain *te, TownHall *t)
     : destCoord(v), terr(te), hall(t) {

@@ -99,9 +99,9 @@ float Player::TakeAction(actionT &act) {
             reward -= 0.01f;
             return reward;
         }
-
-        reward += action.stru->goldCost / 10.0f;
         Build(action);
+        if (action.paid)
+            reward += action.stru->goldCost / 10.0f;
     }
     else if (std::holds_alternative<FarmGoldAction>(act))
     {
@@ -174,10 +174,16 @@ std::vector<Living*> Player::CheckUnitActions(float& reward){
     
     int i = 0;
     bool one_is_being_attacked = false;
-    std::set<actionT*> finished_actions;
-
-    auto is_finished = [&](actionT& act) {
-        return !finished_actions.insert(&act).second;
+    std::vector<actionT> finished_actions;
+    
+    auto is_finished = [&](const actionT& act) {
+        auto it = std::find(finished_actions.begin(), finished_actions.end(), act);
+        
+        if (it != finished_actions.end())
+            return true;
+        
+        finished_actions.push_back(act);
+        return false;
     };
 
     for (auto& un : units){
@@ -257,6 +263,7 @@ void Player::Build(BuildAction &action) {
             action.stru = s.get();
             structures.emplace_back(std::move(s));
             action.peasant->InsertAction(action);
+            action.paid = true;
         }
     }
 }

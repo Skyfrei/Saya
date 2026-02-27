@@ -72,6 +72,7 @@ struct BuildAction : public Action
     StructureType struType;
     Vec2 coordinate;
     Unit *peasant;
+    bool paid = false;
 };
 struct FarmGoldAction : public Action
 {
