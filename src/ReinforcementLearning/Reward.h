@@ -47,9 +47,11 @@ float GetRewardFromAction(Args&&... args) {
         if (attackAction.object == nullptr){
             if (attackAction.finished){
                 reward += 20.0f;
-                std::cout<<"Finished attack."<<std::endl;
             }
         }else{
+            TownHall* hall = dynamic_cast<TownHall*>(attackAction.object);
+            if (hall)
+                reward += 1.5f;
             if (attackAction.unit && attackAction.unit->coordinate == attackAction.object->coordinate) {
                 reward += attackAction.unit->attack * 0.4f;
             }
@@ -62,8 +64,7 @@ float GetRewardFromAction(Args&&... args) {
             return reward;
 
         if (buildAction.finished && buildAction.stru->isBuilt){
-            std::cout<<"Building finished"<<std::endl;
-            reward += 50.0f;
+            reward += 20.0f;
         }else{
             Peasant &p = static_cast<Peasant &>(*buildAction.peasant);
             if (buildAction.stru != nullptr){ 

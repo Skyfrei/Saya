@@ -155,9 +155,11 @@ actionT PPO::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
         Structure* stru = pl.structures[structureIndex].get();
 
         if (unitType == PEASANT) {
+            if (pl.gold < 55) return EmptyAction();
             if (stru->is != HALL) return EmptyAction();
         } 
         else if (unitType == FOOTMAN) {
+            if (pl.gold < 75) return EmptyAction();
             if (stru->is != BARRACK) return EmptyAction();
         }
 

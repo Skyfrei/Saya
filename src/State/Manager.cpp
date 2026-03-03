@@ -9,7 +9,7 @@ Manager::Manager() : player(map, PLAYER), enemy(map, ENEMY) {
     player.SetInitialCoordinates(Vec2(2, 2));
     enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 4, MAP_SIZE - 4));
     trainerManager.InitializePPO(player, enemy, map);
-    trainerManager.ppoPolicy.LoadModel("models/ppo_policy-02-27_12-16");
+    trainerManager.ppoPolicy.LoadModel("models/ppo_policy-03-03_17-51");
     trainerManager.enemyPPO.LoadModel("models/ppo_policy40");
     DeathManager::Init(&player, &enemy);
 }
