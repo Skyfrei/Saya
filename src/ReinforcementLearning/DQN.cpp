@@ -61,9 +61,18 @@ actionT DQN::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
         int col = actionIndex % MAP_SIZE;
         int row = (actionIndex / MAP_SIZE) % MAP_SIZE;
         int unitIndex = (actionIndex / (MAP_SIZE * MAP_SIZE));
+
         if (unitIndex >= pl.units.size())
             return EmptyAction();
-        return MoveAction(pl.units[unitIndex].get(), Vec2(row, col));
+
+        Unit* actor = pl.units[unitIndex].get();
+        if (!actor)
+            return EmptyAction();
+
+        if (actor->coordinate == Vec2(row, col))
+            return EmptyAction();
+
+        return MoveAction(actor, Vec2(row, col));
     }
     else if (actionIndex < attackAction)
     {
@@ -71,28 +80,33 @@ actionT DQN::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
         int playerUnit = (offset / (MAX_STRUCTS + MAX_UNITS)) % MAX_UNITS;
         if (playerUnit >= pl.units.size())
             return EmptyAction();
+        Unit* actor = pl.units[playerUnit].get();
+        if (!actor)
+            return EmptyAction();
+        if (dynamic_cast<Peasant*>(actor))
+            return EmptyAction();
+
         int targetIndex = offset % (MAX_STRUCTS + MAX_UNITS);
         if (targetIndex <= MAX_STRUCTS - 1)
         {
             if (targetIndex >= en.structures.size())
                 return EmptyAction();
-            return AttackAction(pl.units[playerUnit].get(),
-                                en.structures[targetIndex].get());
+            return AttackAction(actor, en.structures[targetIndex].get());
         }
         else
         {
             if (targetIndex >= en.units.size())
                 return EmptyAction();
-            return AttackAction(pl.units[playerUnit].get(),
-                                en.units[targetIndex].get());
+            return AttackAction(actor, en.units[targetIndex].get());
         }
     }
     else if (actionIndex < buildAction)
     {
         int offset = actionIndex - attackAction;
         int unit = offset / (NR_OF_STRUCTS * MAP_SIZE * MAP_SIZE);
+
         StructureType struSelect = static_cast<StructureType>(
-            (offset / MAP_SIZE * MAP_SIZE) % NR_OF_STRUCTS);
+            (offset / (MAP_SIZE * MAP_SIZE)) % NR_OF_STRUCTS);
         int mapSelect = offset % (MAP_SIZE * MAP_SIZE);
         int col = mapSelect % MAP_SIZE;
         int row = mapSelect / MAP_SIZE;
@@ -102,6 +116,28 @@ actionT DQN::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
         }
         if (pl.units[unit]->is != PEASANT)
             return EmptyAction();
+
+        int diff = pl.food.y - pl.food.x;
+        if (diff >= 10 && struSelect == FARM){
+            return EmptyAction();
+        }
+        if (pl.food.y >= MAX_STRUCTS && struSelect == FARM){
+            return EmptyAction();
+        }
+        int hall_size = 0;
+        int barrack_size = 0;
+        for (auto& c : pl.structures){
+            if (c->is == HALL)
+                hall_size++;
+            else if (c->is == BARRACK)
+                barrack_size++;
+        }
+        if (struSelect == BARRACK && barrack_size >= BARRACK_INDEX_IN_STRUCTS)
+            return EmptyAction();
+        else if (struSelect == HALL && hall_size >= HALL_INDEX_IN_STRCTS)
+            return EmptyAction();
+        
+
         return BuildAction(pl.units[unit].get(), struSelect, Vec2(row, col));
     }
     else if (actionIndex < farmAction)
@@ -114,26 +150,51 @@ actionT DQN::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
         int row = mapSelect / MAP_SIZE;
         if (peasantIndex >= pl.units.size())
             return EmptyAction();
-        if (hallIndex >= pl.structures.size())
-            return EmptyAction();
         if (pl.units[peasantIndex]->is != PEASANT)
+            return EmptyAction();
+        if (hallIndex >= pl.structures.size())
             return EmptyAction();
         if (pl.structures[hallIndex]->is != HALL)
             return EmptyAction();
         return FarmGoldAction(
-            pl.units[peasantIndex].get(), Vec2(row, col),
+            pl.units[peasantIndex].get(),
+            Vec2(row, col),
             static_cast<TownHall *>(pl.structures[hallIndex].get()));
     }
     else if (actionIndex < recruitAction)
     {
         int offset = actionIndex - farmAction;
-        UnitType unitType = static_cast<UnitType>(offset / BARRACK_INDEX_IN_STRUCTS);
-        int barrackIndex = offset % BARRACK_INDEX_IN_STRUCTS;
-        if (barrackIndex >= pl.structures.size())
+        
+        int unitTypeInt = offset / MAX_STRUCTS;
+        int structureIndex = offset % MAX_STRUCTS;
+
+        if (unitTypeInt >= NR_OF_UNITS){
             return EmptyAction();
-        if (pl.structures[barrackIndex]->is != BARRACK)
+        }
+        if (structureIndex >= pl.structures.size()){
             return EmptyAction();
-        return RecruitAction(unitType, pl.structures[barrackIndex].get());
+        }
+
+        UnitType unitType = static_cast<UnitType>(unitTypeInt);
+        Structure* stru = pl.structures[structureIndex].get();
+
+        if (unitType == PEASANT) {
+            if (pl.gold < 55) return EmptyAction();
+            if (stru->is != HALL) return EmptyAction();
+            int p_count = 0;
+            for (auto& c : pl.units){
+                if (c.get()->is == PEASANT)
+                    p_count++;
+            }
+            if (p_count >= PEASANT_INDEX_IN_UNITS)
+                return EmptyAction();
+        } 
+        else if (unitType == FOOTMAN) {
+            if (pl.gold < 75) return EmptyAction();
+            if (stru->is != BARRACK) return EmptyAction();
+        }
+
+        return RecruitAction(unitType, stru);
     }
     return EmptyAction();
 }

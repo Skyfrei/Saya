@@ -30,6 +30,26 @@ std::string get_random_model(const std::string& directory) {
     return models[dist(gen)];
 }
 
+std::string get_latest_model(const std::string& directory_path) {
+    std::string latest_file = "";
+
+    for (const auto& entry : fs::directory_iterator(directory_path)) {
+        if (entry.is_regular_file()) {
+            std::string filename = entry.path().filename().string();
+            
+            if (filename.find("ppo_policy-") != std::string::npos && 
+                filename.find(".pt") != std::string::npos) {
+                if (filename > latest_file) {
+                    latest_file = filename;
+                }
+            }
+        }
+    }
+    latest_file = latest_file.substr(0, latest_file.find(".pt"));
+    std::string full_path = directory_path + latest_file;
+    return full_path;
+}
+
 RlManager::RlManager() : win(Vec2(1000, 1000)) {
 }
 actionT RlManager::GetActionPPO(Player& pl, Player& en, Map& map){
@@ -103,7 +123,10 @@ void RlManager::InitializePPO(Player &pl, Player &en, Map &map){
     State s = GetState(pl, en, map);
     ppoPolicy.Initialize(map, s);
     enemyPPO.Initialize(map, s);
-    enemyPPO.LoadModel(get_random_model("models/"));
+    if (pl.side == PLAYER)
+        enemyPPO.LoadModel(get_latest_model("models/enemy_models/"));
+    else
+        enemyPPO.LoadModel(get_latest_model("models/"));
 
     ppoValue.Initialize(ppoPolicy);
     torch::Device device(torch::kCPU);
@@ -180,6 +203,7 @@ bool RlManager::ShouldResetEnvironment(Player &pl, Player &en, Map &map) {
 
         if (!hasPeasant && !hasHall) return true;
         if (!hasPeasant && p.gold < 55) return true;
+        if (hasPeasant && p.gold < hallCost && !hasHall) return true;
     
         return false;
     };
@@ -314,8 +338,13 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
     torch::optim::AdamW value_optimizer(
         ppoValue.parameters(), torch::optim::AdamWOptions(3e-4).weight_decay(1e-4));
 
-    ppoPolicy.LoadModel("models/ppo_policy-03-03_19-38");
-    double start_lr = 8e-4; // A bit "bigger" to start
+    ppoPolicy.LoadModel("models/ppo_policy-03-05_17-28");
+    if (pl.side == PLAYER)
+        ppoPolicy.LoadModel(get_latest_model("models/"));
+    else
+        ppoPolicy.LoadModel(get_latest_model("models/enemy_models/"));
+
+    double start_lr = 6e-4; // A bit "bigger" to start
     double end_lr = 1e-4;
 
     std::random_device rd;
@@ -325,9 +354,16 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
     bool done = false;
     
     for (int i = 0; i < episodeNumber; i++){
-        if (i % 10 == 0 && i != 0){
-            ppoPolicy.SaveModel("models/ppo_policy-" + get_current_time());
-            enemyPPO.LoadModel(get_random_model("models/"));
+        if (i % 3 == 0 && i != 0){
+            if (pl.side == PLAYER)
+                enemyPPO.LoadModel(get_random_model("models/enemy_models/"));
+            else
+                enemyPPO.LoadModel(get_random_model("models/"));
+        }else if (i % 9 ==0 && i != 0 ){
+            if (pl.side == PLAYER)
+                ppoPolicy.SaveModel("models/ppo_policy-" + get_current_time());
+            else
+                ppoPolicy.SaveModel("models/enemy_models/ppo_policy-" + get_current_time());
         }
         // Updating optimizers
         double progress = static_cast<double>(i) / episodeNumber;
@@ -392,8 +428,13 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 done = envDone || timeDone;
 
                if (envDone) {
-                    const int hallCost = 580; 
-                    bool plLost = !pl.HasUnit(PEASANT) && (!pl.HasStructure(HALL) || pl.gold < 55);
+                    const int hallCost = 590; 
+                    bool plHasPeasant = pl.HasUnit(PEASANT);
+                    bool plHasHall = pl.HasStructure(HALL);
+                    bool plLost = (!plHasPeasant && !plHasHall) || 
+                                  (!plHasPeasant && pl.gold < 55) || 
+                                  (plHasPeasant && pl.gold < hallCost && !plHasHall);
+
                     bool enLost = (!en.HasUnit(PEASANT) && !en.HasStructure(HALL)); 
                 
                     if (plLost) {
@@ -491,7 +532,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 at::Tensor entropy = -(new_probs_dist * torch::log(new_probs_dist + 1e-10)).sum(-1).mean();
 
                 // H. Total Loss & Backprop
-                float entropy_coeff = std::max(0.02, 0.10 - (static_cast<double>(i) / episodeNumber) * (0.20 - 0.05));
+                float entropy_coeff = std::max(0.02, 0.05 - (static_cast<double>(i) / episodeNumber) * (0.05 - 0.02));
                 at::Tensor total_loss = policy_loss + value_loss - (entropy_coeff * entropy);
 
                 total_loss.backward();
@@ -512,7 +553,6 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
             }
         }
     }
-    ppoPolicy.SaveModel("ppo_policy");
 }
 
 void RlManager::ShowInMap(Player& pl, Player& en, Map& m, at::Tensor& tensor){

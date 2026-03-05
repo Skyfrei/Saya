@@ -257,10 +257,10 @@ void Window::RenderMap(Player& pl, Player& en, Map& map) {
     };
 
     // --- Draw everything ---
-    drawDots(pl.units, 0);       // Team 0 (Yellow)
-    drawDots(en.units, 1);       // Team 1 (Green/Purple)
-    drawDots(pl.structures, 0);
-    drawDots(en.structures, 1);
+    drawDots(pl.units, pl.side);       // Team 0 (Yellow)
+    drawDots(en.units, en.side);       // Team 1 (Green/Purple)
+    drawDots(pl.structures, pl.side);
+    drawDots(en.structures, en.side);
 }
 
 SDL_AppResult Window::Render(Player& pl, Player& en, Map& map, std::string dqn_action, std::string ppo_action) {

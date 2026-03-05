@@ -130,6 +130,10 @@ std::vector<Living*> Player::CheckUnitActions(float& reward){
     std::erase_if(units, [this, &reward, &deleted_ptr](const auto& un) {
         if (un->IsDead()) {
             reward -= 3.0f * (un->goldCost / 10.0);
+            Peasant* p = dynamic_cast<Peasant*>(un.get());
+            if (p){
+                reward -= 5.0f;
+            }
             food.x -= un->foodCost; 
             deleted_ptr.push_back(un.get());
             DeathManager::GetSingleton().RemoveFromAttackAction(un.get(), side);

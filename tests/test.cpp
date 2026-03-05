@@ -218,7 +218,7 @@ bool PPO_Test(){
     man.InitializePPO(player, enemy, map);
     DeathManager::Init(&player, &enemy);
 
-    man.TrainPPO(player, enemy, map);
+    man.TrainPPO(enemy,player, map);
     return true;
 }
 

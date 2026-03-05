@@ -83,6 +83,8 @@ actionT PPO::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
         Unit* actor = pl.units[playerUnit].get();
         if (!actor)
             return EmptyAction();
+        if (dynamic_cast<Peasant*>(actor))
+            return EmptyAction();
 
         int targetIndex = offset % (MAX_STRUCTS + MAX_UNITS);
         if (targetIndex <= MAX_STRUCTS - 1)
@@ -114,6 +116,28 @@ actionT PPO::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
         }
         if (pl.units[unit]->is != PEASANT)
             return EmptyAction();
+
+        int diff = pl.food.y - pl.food.x;
+        if (diff >= 10 && struSelect == FARM){
+            return EmptyAction();
+        }
+        if (pl.food.y >= MAX_STRUCTS && struSelect == FARM){
+            return EmptyAction();
+        }
+        int hall_size = 0;
+        int barrack_size = 0;
+        for (auto& c : pl.structures){
+            if (c->is == HALL)
+                hall_size++;
+            else if (c->is == BARRACK)
+                barrack_size++;
+        }
+        if (struSelect == BARRACK && barrack_size >= BARRACK_INDEX_IN_STRUCTS)
+            return EmptyAction();
+        else if (struSelect == HALL && hall_size >= HALL_INDEX_IN_STRCTS)
+            return EmptyAction();
+        
+
         return BuildAction(pl.units[unit].get(), struSelect, Vec2(row, col));
     }
     else if (actionIndex < farmAction)
@@ -157,6 +181,13 @@ actionT PPO::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
         if (unitType == PEASANT) {
             if (pl.gold < 55) return EmptyAction();
             if (stru->is != HALL) return EmptyAction();
+            int p_count = 0;
+            for (auto& c : pl.units){
+                if (c.get()->is == PEASANT)
+                    p_count++;
+            }
+            if (p_count >= PEASANT_INDEX_IN_UNITS)
+                return EmptyAction();
         } 
         else if (unitType == FOOTMAN) {
             if (pl.gold < 75) return EmptyAction();
@@ -167,4 +198,3 @@ actionT PPO::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
     }
     return EmptyAction();
 }
-

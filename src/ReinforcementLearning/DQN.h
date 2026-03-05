@@ -27,15 +27,13 @@ class DQN : public torch::nn::Module
                                           float epsilon); // gotta return an
     actionT SelectAction(State &state, Map &map, float epsilon);
     actionT MapIndexToAction(State &state, int actionIndex);
+    actionT MapIndexToAction(Player &pl, Player &en, int actionIndex);
     int GetRandomOutputIndex();
 
     void PrintWeight();
     void AttachAgent(Player &pl);
     void SaveModel();
     void LoadModel();
-
-  private:
-    actionT MapIndexToAction(Player &pl, Player &en, int actionIndex);
 
   public:
     int episodeNumber = 50;
@@ -59,9 +57,8 @@ class DQN : public torch::nn::Module
         buildAction + PEASANT_INDEX_IN_UNITS * MAP_SIZE * MAP_SIZE *
                           HALL_INDEX_IN_STRCTS; // town hall size multipled here as well
     int recruitAction =
-        farmAction + /*2 idk why 2 here wtf*/ NR_OF_UNITS * BARRACK_INDEX_IN_STRUCTS; // barrack size
-    //
-    
+        farmAction + (NR_OF_UNITS * MAX_STRUCTS);
+
     std::mt19937 gen;
     std::uniform_int_distribution<int> uniform_dist;
 };
