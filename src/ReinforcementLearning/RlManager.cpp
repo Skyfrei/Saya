@@ -359,11 +359,6 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 enemyPPO.LoadModel(get_random_model("models/enemy_models/"));
             else
                 enemyPPO.LoadModel(get_random_model("models/"));
-        }else if (i % 9 ==0 && i != 0 ){
-            if (pl.side == PLAYER)
-                ppoPolicy.SaveModel("models/ppo_policy-" + get_current_time());
-            else
-                ppoPolicy.SaveModel("models/enemy_models/ppo_policy-" + get_current_time());
         }
         // Updating optimizers
         double progress = static_cast<double>(i) / episodeNumber;
@@ -551,6 +546,12 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 pl.Reset(PLAYER);
                 en.Reset(ENEMY);
             }
+        }
+        if (i % 9 == 0 && i != 0 ){
+            if (pl.side == PLAYER)
+                ppoPolicy.SaveModel("models/ppo_policy-" + get_current_time());
+            else
+                ppoPolicy.SaveModel("models/enemy_models/ppo_policy-" + get_current_time());
         }
     }
 }
