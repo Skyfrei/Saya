@@ -122,9 +122,20 @@ void Window::RenderPlayerUI(Player& pl, Player& en) {
 
     SDL_Color color = {255, 255, 255, 255};
     
-    auto drawStatLine = [&](Player& p, float y, std::string label) {
+    auto drawStatLine = [&](Player& p) {
+        float y = 0.0f;
+        std::string label;
+        if (p.side == PLAYER){
+            y = 460.0f;
+            label = "Pl";
+        }else{
+            y =  500.0f;
+            label = "En";
+        }
+
         std::string s = label + "-> Gold: " + std::to_string(p.gold) + 
                         " | Food: " + std::to_string(p.food.x) + "/" + std::to_string(p.food.y);
+
         if (smallFont){
             SDL_Surface* surf = TTF_RenderText_Blended(smallFont, s.c_str(), 0, color);
             if (surf) {
@@ -143,8 +154,8 @@ void Window::RenderPlayerUI(Player& pl, Player& en) {
         }
     };
 
-    drawStatLine(pl, 460.0f, "Pl");
-    drawStatLine(en, 500.0f, "En");
+    drawStatLine(pl);
+    drawStatLine(en);
 }
 
 

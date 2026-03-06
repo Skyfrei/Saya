@@ -102,8 +102,8 @@ void Manager::MainLoop() {
 
     if(trainerManager.ShouldResetEnvironment(player, enemy, map)){
         map.Reset();
-        player.Reset(PLAYER);
-        enemy.Reset(ENEMY);
+        player.Reset(player.side);
+        enemy.Reset(enemy.side);
     }
 
 }

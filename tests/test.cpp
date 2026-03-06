@@ -218,7 +218,7 @@ bool PPO_Test(){
     man.InitializePPO(player, enemy, map);
     DeathManager::Init(&player, &enemy);
 
-    man.TrainPPO(enemy,player, map);
+    man.TrainPPO(player, enemy, map);
     return true;
 }
 
@@ -257,11 +257,11 @@ TEST_CASE("Testing DQN", "[DQN]"){
 }
 
 TEST_CASE("Testing PPO", "[PPO]"){
-    REQUIRE(PPO_Test());
+    //REQUIRE(PPO_Test());
 }
 
 TEST_CASE("PPO VS DQN", "[PPO vs DQN]"){
-    //REQUIRE(PPO_vs_DQN());
+    REQUIRE(PPO_vs_DQN());
 }
 
 int main(int argc, char* argv[]) {

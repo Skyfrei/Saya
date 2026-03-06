@@ -543,11 +543,11 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 }
             if (done) {
                 map.Reset();
-                pl.Reset(PLAYER);
-                en.Reset(ENEMY);
+                pl.Reset(pl.side);
+                en.Reset(en.side);
             }
         }
-        if (i % 9 == 0 && i != 0 ){
+        if ((i % 25 == 0 && i != 0) || i == episodeNumber - 1 ){
             if (pl.side == PLAYER)
                 ppoPolicy.SaveModel("models/ppo_policy-" + get_current_time());
             else
