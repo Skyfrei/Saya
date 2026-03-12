@@ -619,14 +619,16 @@ void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
             OptimizeDQN(map, optimizer);
             epsilon = std::max(0.05f, epsilon - epsilonDecay);
 
+            if (memory.size() >= 512) {
+                torch::NoGradGuard no_grad;
+                auto target_params = targetNet.parameters();
+                auto policy_params = policyNet.parameters();
+                for (size_t k = 0; k < target_params.size(); k++) {
+                    target_params[k].copy_(target_params[k] * (1.0 - tau) + policy_params[k] * tau);
+                }
+            }
             if (done)
                 break;
-        }
-        torch::NoGradGuard no_grad;
-        auto target_params = targetNet.parameters();
-        auto policy_params = policyNet.parameters();
-        for (size_t k = 0; k < target_params.size(); k++) {
-            target_params[k].copy_(target_params[k] * (1.0 - tau) + policy_params[k] * tau);
         }
     }
     SaveMemoryAsBinary();
@@ -642,8 +644,11 @@ void RlManager::OptimizeDQN(Map &map, torch::optim::AdamW& optimizer) {
     std::mt19937 rng(dev());
 
     std::deque<Transition> samples;
-    std::sample(memory.begin(), memory.end(), std::back_inserter(samples),
-                batch_size, rng);
+    std::uniform_int_distribution<size_t> dist(0, memory.size() - 1);
+
+    for (int i = 0; i < batch_size; ++i) {
+        samples.push_back(memory[dist(rng)]); // Instant lookup
+    }
 
     std::vector<torch::Tensor> state_batch;
     std::vector<torch::Tensor> state_action;
@@ -659,7 +664,7 @@ void RlManager::OptimizeDQN(Map &map, torch::optim::AdamW& optimizer) {
         TensorStruct z(trans.state, map);
         TensorStruct z1(trans.nextState, map);
         state_batch.push_back(z.GetTensor());
-        state_action.push_back(torch::tensor({trans.actionIndex}));
+        state_action.push_back(torch::tensor({static_cast<int64_t>(trans.actionIndex)}, torch::kInt64));
         reward_batch.push_back(torch::tensor({trans.reward}, torch::kFloat32));
         next_state_batch.push_back(z1.GetTensor());
         done_batch.push_back(torch::tensor({trans.done ? 0.0f : 1.0f}, torch::kFloat32));
@@ -677,9 +682,9 @@ void RlManager::OptimizeDQN(Map &map, torch::optim::AdamW& optimizer) {
     torch::Tensor q_next_values;
     {
         torch::NoGradGuard no_grad;
+        q_next_values = std::get<0>(targetNet.Forward(tensor_next_states).max(1)).unsqueeze(1);
         q_next_values = tensor_rewards + (gamma * q_next_values * tensor_dones);
     }
-    q_next_values = (q_next_values * gamma) + tensor_rewards;
 
     auto criterion = torch::nn::SmoothL1Loss();
     auto loss = criterion(q_values, q_next_values);
