@@ -210,7 +210,7 @@ void Window::RenderObjectLabel(objectType& t, float gui_x, float gui_y) {
 void Window::PickColor(objectType& t, int p) {
     if (p == 0) {
         // Player Team: Bright Yellow
-        SDL_SetRenderDrawColor(renderer, 255, 215, 0, 255);
+        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
     } else {
         // Enemy Team: Bright Red
         SDL_SetRenderDrawColor(renderer, 255, 50, 50, 255);

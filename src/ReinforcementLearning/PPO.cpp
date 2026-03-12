@@ -156,6 +156,9 @@ actionT PPO::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
             return EmptyAction();
         if (pl.structures[hallIndex]->is != HALL)
             return EmptyAction();
+        if (pl.gold > 590)
+            return EmptyAction();
+
         return FarmGoldAction(
             pl.units[peasantIndex].get(),
             Vec2(row, col),

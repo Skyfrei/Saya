@@ -52,6 +52,8 @@ float GetRewardFromAction(Args&&... args) {
             TownHall* hall = dynamic_cast<TownHall*>(attackAction.object);
             if (hall)
                 reward += 1.5f;
+            else
+                reward += 0.75f;
             if (attackAction.unit && attackAction.unit->coordinate == attackAction.object->coordinate) {
                 reward += attackAction.unit->attack * 0.4f;
             }

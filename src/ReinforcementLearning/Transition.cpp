@@ -9,8 +9,8 @@
 
 // #include <chrono>
 
-Transition::Transition(State s, actionT act, State n, int index, float r)
-    : state(s, act), nextState(n), action(act), actionIndex(index), reward(r) {
+Transition::Transition(State s, actionT act, State n, int index, float r, bool d)
+    : state(s, act), nextState(n), action(act), actionIndex(index), reward(r), done(d) {
 }
 
 Transition::Transition() {
@@ -54,6 +54,7 @@ std::string Transition::Serialize() {
     result += std::to_string(nextState.enemyStructs.size()) + ",";
     result += std::to_string(actionIndex) + ",";
     result += std::to_string(reward) + ",";
+    result += std::to_string(done) + ",";
 
     for (int i = 0; i < state.playerUnits.size(); i++)
         result += state.playerUnits[i]->Serialize() + ",";
@@ -118,6 +119,8 @@ Transition Transition::Deserialize(std::string &bin) {
     int nesSize = std::stoi(tokens[19]);
     int actionIndex = std::stoi(tokens[20]);
     float reward = std::stof(tokens[21]);
+    bool done = (tokens[22] == "1");
+
     
     state.playerUnits.resize(puSize);
     state.enemyUnits.resize(euSize);
@@ -180,8 +183,7 @@ Transition Transition::Deserialize(std::string &bin) {
 
     actionT deserAction = GetActionAsString(std::span(tokens.begin() + index, tokens.end()));
     
-    Transition trans(state, deserAction, nextState, actionIndex);
-    trans.reward = reward;
+    Transition trans(state, deserAction, nextState, actionIndex, reward, done);
     return trans;
 }
 
@@ -195,7 +197,7 @@ std::vector<binary> Transition::SerializeBinary() {
     int npsSize = nextState.playerStructs.size();
     int neuSize = nextState.enemyUnits.size();
     int nesSize = nextState.enemyStructs.size();
-    int byte_number = 22 + (puSize * 5) + (psSize * 4) + (euSize * 5) +
+    int byte_number = 23 + (puSize * 5) + (psSize * 4) + (euSize * 5) +
                       (esSize * 4) + (npuSize * 5) + (npsSize * 4) + (neuSize * 5) +
                       (nesSize * 4);
 
@@ -223,6 +225,7 @@ std::vector<binary> Transition::SerializeBinary() {
     binary_data.push_back(nesSize);
     binary_data.push_back(actionIndex);
     binary_data.push_back(reward);
+    binary_data.push_back(static_cast<int>(done));
 
     for (int i = 0; i < puSize; i++)
     {
@@ -310,6 +313,7 @@ Transition Transition::DeserializeBinary(std::vector<binary> &bin) {
     int nesSize = std::get<int>(bin[19]);
     int actionIndex = std::get<int>(bin[20]);
     float reward = std::get<float>(bin[21]);
+    bool done = (std::get<int>(bin[22]) != 0);
     state.playerUnits.resize(puSize);
     state.enemyUnits.resize(euSize);
     nextState.playerUnits.resize(npuSize);
@@ -369,8 +373,7 @@ Transition Transition::DeserializeBinary(std::vector<binary> &bin) {
     }
     actionT deserAction = GetAction(std::span(start, bin.end()));
 
-    Transition trans(state, deserAction, nextState, actionIndex);
-    trans.reward = reward;
+    Transition trans(state, deserAction, nextState, actionIndex, reward, done);
 
     return trans;
 }

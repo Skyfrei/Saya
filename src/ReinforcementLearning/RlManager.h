@@ -44,7 +44,7 @@ class RlManager
     State CreateCurrentState(Map &map, Player &player, Player &enemy);
     Transition CreateTransition(State s, actionT a, State rextS);
     State GetState(Player &pl, Player &en, Map &map);
-    void OptimizeDQN(Map &map);
+    void OptimizeDQN(Map &map, torch::optim::AdamW&);
     at::Tensor GetMask(Player&, Player&, int);
 
   private:
@@ -55,8 +55,8 @@ class RlManager
     const int maxSize = 10000;
     int memory_size = 100000;
 
-    const std::string memory_file = "dqn_memory.say";
-    const std::string memory_file_binary = "binary.bay";
+    const std::string memory_file = "models/player_dqn_experience/dqn_memory.say";
+    const std::string memory_file_binary = "models/player_dqn_experience/binary.bay";
     float ppoEpsilon = 0.2f;
     float epsilonDecay = 0;
     int episodeNumber = 50;

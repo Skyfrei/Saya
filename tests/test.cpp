@@ -58,10 +58,8 @@ std::string StringReplay(){
             s.enemyStructs.clear();
             continue;
         }
-        
-        Transition trans(s, act, s, action_index);
         float r = pl.TakeAction(act); 
-        trans.reward = r;
+        Transition trans(s, act, s, action_index, r, false);
         s.playerUnits.clear();
         s.enemyUnits.clear();
         s.playerStructs.clear();
@@ -119,10 +117,9 @@ std::string BinaryReplay(){
             s.enemyStructs.clear();
             continue;
         }
-        
-        Transition trans(s, act, s, action_index);
         float r = pl.TakeAction(act); 
-        trans.reward = r;
+        Transition trans(s, act, s, action_index, r, false);
+
         s.playerUnits.clear();
         s.enemyUnits.clear();
         s.playerStructs.clear();
@@ -218,7 +215,7 @@ bool PPO_Test(){
     man.InitializePPO(player, enemy, map);
     DeathManager::Init(&player, &enemy);
 
-    man.TrainPPO(player, enemy, map);
+    man.TrainPPO(enemy, player, map);
     return true;
 }
 

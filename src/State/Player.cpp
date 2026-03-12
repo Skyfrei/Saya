@@ -122,6 +122,8 @@ float Player::TakeAction(actionT &act) {
         EmptyAction act;
         reward += GetRewardFromAction(act); 
     }
+    if (gold >= 600)
+        reward -= 1.5f;
     return reward;
 }
 std::vector<Living*> Player::CheckUnitActions(float& reward){

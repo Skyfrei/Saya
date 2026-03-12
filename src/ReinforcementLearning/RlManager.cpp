@@ -30,22 +30,22 @@ std::string get_random_model(const std::string& directory) {
     return models[dist(gen)];
 }
 
-std::string get_latest_model(const std::string& directory_path) {
+std::string get_latest_model(const std::string& directory_path, std::string file_start, std::string ext) {
     std::string latest_file = "";
 
     for (const auto& entry : fs::directory_iterator(directory_path)) {
         if (entry.is_regular_file()) {
             std::string filename = entry.path().filename().string();
             
-            if (filename.find("ppo_policy-") != std::string::npos && 
-                filename.find(".pt") != std::string::npos) {
+            if (filename.find(file_start) != std::string::npos && 
+                filename.find(ext) != std::string::npos) {
                 if (filename > latest_file) {
                     latest_file = filename;
                 }
             }
         }
     }
-    latest_file = latest_file.substr(0, latest_file.find(".pt"));
+    latest_file = latest_file.substr(0, latest_file.find("." + ext));
     std::string full_path = directory_path + latest_file;
     return full_path;
 }
@@ -67,7 +67,7 @@ actionT RlManager::GetActionPPO(Player& pl, Player& en, Map& map){
     //actionT action = ppoPolicy.MapIndexToAction(pl, en, action_idx);
 
     ShowInMap(pl, en, map, probs);
-    int k = std::min(10, (int)probs.size(1));
+    int k = std::min(50, (int)probs.size(1));
     auto topk_res = probs.topk(k, 1);
     auto top_probs = std::get<0>(topk_res);  
     auto top_indices = std::get<1>(topk_res);
@@ -93,7 +93,7 @@ actionT RlManager::GetActionPPOEnemy(Player& en, Player& pl, Map& map){
     //int action_idx = probs.argmax(1).item<int>();
     //actionT action = enemyPPO.MapIndexToAction(en, pl, action_idx);
 
-    int k = std::min(10, (int)probs.size(1));
+    int k = std::min(50, (int)probs.size(1));
     auto topk_res = probs.topk(k, 1);
     auto top_probs = std::get<0>(topk_res);  
     auto top_indices = std::get<1>(topk_res);
@@ -124,9 +124,9 @@ void RlManager::InitializePPO(Player &pl, Player &en, Map &map){
     ppoPolicy.Initialize(map, s);
     enemyPPO.Initialize(map, s);
     if (pl.side == PLAYER)
-        enemyPPO.LoadModel(get_latest_model("models/enemy_models/"));
+        enemyPPO.LoadModel(get_latest_model("models/enemy_models_ppo/", "ppo_policy-", "pt"));
     else
-        enemyPPO.LoadModel(get_latest_model("models/"));
+        enemyPPO.LoadModel(get_latest_model("models/player_model_ppo/", "ppo_policy-", "pt"));
 
     ppoValue.Initialize(ppoPolicy);
     torch::Device device(torch::kCPU);
@@ -140,60 +140,7 @@ void RlManager::InitializePPO(Player &pl, Player &en, Map &map){
     }
 }
 
-void RlManager::OptimizeDQN(Map &map) {
-    int batch_size = 512;
-    torch::optim::AdamW optimizer(
-        policyNet.parameters(), torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
-    std::random_device dev;
-    std::mt19937 rng(dev());
 
-    std::deque<Transition> samples;
-    std::sample(memory.begin(), memory.end(), std::back_inserter(samples),
-                batch_size, rng);
-
-    std::vector<torch::Tensor> state_batch;
-    std::vector<torch::Tensor> state_action;
-    std::vector<torch::Tensor> next_state_batch;
-    std::vector<torch::Tensor> reward_batch;
-
-    state_batch.reserve(batch_size);
-    next_state_batch.reserve(batch_size);
-    for (auto &trans : samples)
-    {
-        TensorStruct z(trans.state, map);
-        TensorStruct z1(trans.nextState, map);
-        state_batch.push_back(z.GetTensor());
-        state_action.push_back(torch::tensor({trans.actionIndex}));
-        reward_batch.push_back(torch::tensor({trans.reward}, torch::kFloat32));
-        next_state_batch.push_back(z1.GetTensor());
-    }
-
-    torch::Tensor tensor_states = torch::cat(state_batch);
-    torch::Tensor tensor_actions = torch::cat(state_action).unsqueeze(1);
-    torch::Tensor tensor_rewards = torch::cat(reward_batch).unsqueeze(1);
-    torch::Tensor q_values =
-        policyNet.Forward(tensor_states).gather(1, tensor_actions);
-
-    torch::Tensor tensor_next_states = torch::cat(next_state_batch);
-    torch::Tensor q_next_values;
-    {
-        torch::NoGradGuard no_grad;
-        q_next_values =
-            std::get<0>(targetNet.Forward(tensor_next_states).max(1)).unsqueeze(1);
-    }
-    q_next_values = (q_next_values * gamma) + tensor_rewards;
-
-    auto criterion = torch::nn::SmoothL1Loss();
-    auto loss = criterion(q_values, q_next_values);
-
-    std::ofstream file("experiment_loss_dqn.txt", std::ios::app);
-    std::cout << "Loss: " << loss.item<float>() << std::endl;
-    file << loss.item<float>() << "\n";
-    optimizer.zero_grad();
-    loss.backward();
-    torch::nn::utils::clip_grad_value_(policyNet.parameters(), 100);
-    optimizer.step();
-}
 
 bool RlManager::ShouldResetEnvironment(Player &pl, Player &en, Map &map) {
     const int hallCost = 590;
@@ -338,14 +285,18 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
     torch::optim::AdamW value_optimizer(
         ppoValue.parameters(), torch::optim::AdamWOptions(3e-4).weight_decay(1e-4));
 
-    ppoPolicy.LoadModel("models/ppo_policy-03-05_17-28");
-    if (pl.side == PLAYER)
-        ppoPolicy.LoadModel(get_latest_model("models/"));
-    else
-        ppoPolicy.LoadModel(get_latest_model("models/enemy_models/"));
+    if (pl.side == PLAYER){
+        ppoPolicy.LoadModel(get_latest_model("models/player_model_ppo/", "ppo_policy-", "pt"));
+        ppoValue.LoadModel(get_latest_model("models/player_value/", "ppo_policy-", "pt"));
+    }
+    else{
+        ppoPolicy.LoadModel(get_latest_model("models/enemy_models_ppo/", "ppo_policy-", "pt"));
+        ppoValue.LoadModel(get_latest_model("models/enemy_value/", "ppo_policy-", "pt"));
+    }
 
     double start_lr = 6e-4; // A bit "bigger" to start
     double end_lr = 1e-4;
+
 
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -356,9 +307,9 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
     for (int i = 0; i < episodeNumber; i++){
         if (i % 3 == 0 && i != 0){
             if (pl.side == PLAYER)
-                enemyPPO.LoadModel(get_random_model("models/enemy_models/"));
+                enemyPPO.LoadModel(get_random_model("models/enemy_models_ppo/"));
             else
-                enemyPPO.LoadModel(get_random_model("models/"));
+                enemyPPO.LoadModel(get_random_model("models/player_model_ppo/"));
         }
         // Updating optimizers
         double progress = static_cast<double>(i) / episodeNumber;
@@ -397,10 +348,8 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 int action_index = action_tensor.item<int>();
                 actionT action = ppoPolicy.MapIndexToAction(pl, en, action_index);
                 count_action(action_count_map, action);
-                // Player move ends
-
-                // Enemy move
                 State s1 = GetState(en, pl, map);
+
                 TensorStruct input_tensor1(s1, map);
                 at::Tensor output1 = enemyPPO.Forward(input_tensor1.GetTensor()).clone().detach();
                 
@@ -416,6 +365,11 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
 
                 float reward = reward_tensor.item<float>() - 0.1f; // 0.1 here is a time penalty
                 episode_reward += reward;
+                /* doing this for dqn experiecne */ 
+                Transition trans(s, action, s1, reward, action_index, done);
+                AddExperience(trans);
+                /* doing this for dqn experiecne */ 
+
 
                 ShowInMap(pl, en, map, output_soft);
                 bool envDone = ShouldResetEnvironment(pl, en, map);
@@ -548,10 +502,15 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
             }
         }
         if ((i % 25 == 0 && i != 0) || i == episodeNumber - 1 ){
-            if (pl.side == PLAYER)
-                ppoPolicy.SaveModel("models/ppo_policy-" + get_current_time());
-            else
-                ppoPolicy.SaveModel("models/enemy_models/ppo_policy-" + get_current_time());
+            SaveMemoryAsBinary();
+            if (pl.side == PLAYER){
+                ppoPolicy.SaveModel("models/player_model_ppo/ppo_policy-" + get_current_time());
+                ppoValue.SaveModel("models/player_value/ppo_policy-" + get_current_time());
+            }
+            else{
+                ppoPolicy.SaveModel("models/enemy_models_ppo/ppo_policy-" + get_current_time());
+                ppoValue.SaveModel("models/enemy_value/ppo_policy-" + get_current_time());
+            }
         }
     }
 }
@@ -632,43 +591,104 @@ void RlManager::ShowInMap(Player& pl, Player& en, Map& m, at::Tensor& tensor){
 
 void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
     // float updateRate = 0.005;rlmana
+    float tau = 0.005; 
+    torch::optim::AdamW optimizer(
+        policyNet.parameters(), torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
 
+    LoadMemoryAsBinary();
     for (int i = 0; i < episodeNumber; i++)
     {
-        State currState = GetState(pl, en, map);
         for (int j = 0; j < 1000; j++)
         {
+            State currState = GetState(pl, en, map);
 
             auto selectedAction =
                 policyNet.SelectAction(pl, en, map, currState, epsilon);
+
             float reward = pl.TakeAction(std::get<0>(selectedAction));
             State nextState = GetState(pl, en, map);
-            if (ShouldResetEnvironment(pl, en, map))
-                break;
+            bool done = ShouldResetEnvironment(pl, en, map);
+
             Transition trans(currState, std::get<0>(selectedAction), nextState,
-                             reward, std::get<1>(selectedAction));
+                             reward, std::get<1>(selectedAction), done);
             AddExperience(trans);
-            selectedAction = policyNet.SelectAction(pl, en, map, nextState, epsilon);
-            reward = en.TakeAction(std::get<0>(selectedAction));
-            State nextNextState = GetState(pl, en, map);
-            if (ShouldResetEnvironment(en, pl, map)) // change order of pl, en to en, pl becasue en takes action here
+
+            selectedAction = policyNet.SelectAction(en, pl, map, nextState, epsilon);
+            en.TakeAction(std::get<0>(selectedAction));
+
+            OptimizeDQN(map, optimizer);
+            epsilon = std::max(0.05f, epsilon - epsilonDecay);
+
+            if (done)
                 break;
-            Transition trans1(nextState, std::get<0>(selectedAction), nextNextState,
-                              reward, std::get<1>(selectedAction));
-            AddExperience(trans1);
-            OptimizeDQN(map);
-            if (epsilon - epsilonDecay > 0)
-                epsilon -= epsilonDecay;
         }
-        // auto target_net_dict = targetNet.state_dict();
-        // for (auto [key, val] : target_net_disct){
-        //     target_net_dict = policyNet.state_dict()[key] * updateRate + (val * (1
-        //     - updateRate));
-        // }
-        // targetNet.load_state_dict(target_net_dict);
+        torch::NoGradGuard no_grad;
+        auto target_params = targetNet.parameters();
+        auto policy_params = policyNet.parameters();
+        for (size_t k = 0; k < target_params.size(); k++) {
+            target_params[k].copy_(target_params[k] * (1.0 - tau) + policy_params[k] * tau);
+        }
     }
     SaveMemoryAsBinary();
     policyNet.SaveModel();
+}
+
+void RlManager::OptimizeDQN(Map &map, torch::optim::AdamW& optimizer) {
+    int batch_size = 512;
+    if (memory.size() < batch_size)
+        return;
+
+    std::random_device dev;
+    std::mt19937 rng(dev());
+
+    std::deque<Transition> samples;
+    std::sample(memory.begin(), memory.end(), std::back_inserter(samples),
+                batch_size, rng);
+
+    std::vector<torch::Tensor> state_batch;
+    std::vector<torch::Tensor> state_action;
+    std::vector<torch::Tensor> next_state_batch;
+    std::vector<torch::Tensor> reward_batch;
+    std::vector<torch::Tensor> done_batch;
+    done_batch.reserve(batch_size);
+
+    state_batch.reserve(batch_size);
+    next_state_batch.reserve(batch_size);
+    for (auto &trans : samples)
+    {
+        TensorStruct z(trans.state, map);
+        TensorStruct z1(trans.nextState, map);
+        state_batch.push_back(z.GetTensor());
+        state_action.push_back(torch::tensor({trans.actionIndex}));
+        reward_batch.push_back(torch::tensor({trans.reward}, torch::kFloat32));
+        next_state_batch.push_back(z1.GetTensor());
+        done_batch.push_back(torch::tensor({trans.done ? 0.0f : 1.0f}, torch::kFloat32));
+    }
+
+    torch::Tensor tensor_states = torch::cat(state_batch);
+    torch::Tensor tensor_actions = torch::cat(state_action).unsqueeze(1);
+    torch::Tensor tensor_rewards = torch::cat(reward_batch).unsqueeze(1);
+    torch::Tensor tensor_dones = torch::cat(done_batch).unsqueeze(1);
+
+    torch::Tensor q_values =
+        policyNet.Forward(tensor_states).gather(1, tensor_actions);
+
+    torch::Tensor tensor_next_states = torch::cat(next_state_batch);
+    torch::Tensor q_next_values;
+    {
+        torch::NoGradGuard no_grad;
+        q_next_values = tensor_rewards + (gamma * q_next_values * tensor_dones);
+    }
+    q_next_values = (q_next_values * gamma) + tensor_rewards;
+
+    auto criterion = torch::nn::SmoothL1Loss();
+    auto loss = criterion(q_values, q_next_values);
+
+    std::cout << "Loss: " << loss.item<float>() << std::endl;
+    optimizer.zero_grad();
+    loss.backward();
+    torch::nn::utils::clip_grad_value_(policyNet.parameters(), 100);
+    optimizer.step();
 }
 
 State RlManager::GetState(Player &pl, Player &en, Map &map) {
@@ -736,6 +756,7 @@ void RlManager::LoadMemoryAsString() {
 }
 
 void RlManager::SaveMemoryAsBinary() {
+    std::string memory_file_binary = "models/player_dqn_experience/binary-" + get_current_time() + ".bay";
     std::vector<binary> data_to_save;
     std::ofstream file;
     file.open(memory_file_binary, std::ios::binary);

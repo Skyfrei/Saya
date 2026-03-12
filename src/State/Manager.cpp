@@ -3,14 +3,14 @@
 #include "../Race/Unit/Peasant.h"
 #include <iostream>
 
+extern std::string get_latest_model(const std::string& directory_path, std::string file_start, std::string ext);
 
 Manager::Manager() : player(map, PLAYER), enemy(map, ENEMY) {
-
     player.SetInitialCoordinates(Vec2(2, 2));
     enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 4, MAP_SIZE - 4));
     trainerManager.InitializePPO(player, enemy, map);
-    trainerManager.ppoPolicy.LoadModel("models/ppo_policy-03-04_10-55");
-    trainerManager.enemyPPO.LoadModel("models/ppo_policy40");
+    trainerManager.ppoPolicy.LoadModel(get_latest_model("models/player_model_ppo/", "ppo_policy-", "pt"));
+    trainerManager.enemyPPO.LoadModel(get_latest_model("models/enemy_models_ppo/", "ppo_policy-", "pt"));
     DeathManager::Init(&player, &enemy);
 }
 
@@ -91,6 +91,18 @@ void Manager::CheckForOwnership(Player &p, Living *l, actionT actionTaken) {
 }
 
 void Manager::MainLoop() {
+    const int hallCost = 590;
+    auto Reset = [&](Player& p){
+        bool hasPeasant = p.HasUnit(PEASANT);
+        bool hasHall = p.HasStructure(HALL);
+
+        if (!hasPeasant && !hasHall) return true;
+        if (!hasPeasant && p.gold < 55) return true;
+        if (hasPeasant && p.gold < hallCost && !hasHall) return true;
+    
+        return false;
+    };
+
     while (!trainerManager.ShouldResetEnvironment(player, enemy, map))
     {
         actionT action = trainerManager.GetActionPPO(player, enemy, map);
@@ -101,6 +113,11 @@ void Manager::MainLoop() {
     }
 
     if(trainerManager.ShouldResetEnvironment(player, enemy, map)){
+        if (Reset(player)){
+            std::cout<< "Enemy wins"<<std::endl;
+        }else{
+            std::cout<< "Player wins"<<std::endl;
+        }
         map.Reset();
         player.Reset(player.side);
         enemy.Reset(enemy.side);

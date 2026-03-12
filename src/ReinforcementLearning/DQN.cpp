@@ -27,30 +27,25 @@ torch::Tensor DQN::Forward(torch::Tensor x) {
 
 std::tuple<actionT, int> DQN::SelectAction(Player &pl, Player &en, Map &map,
                                            State &s, float epsilon) {
-    std::random_device dev;
-    std::mt19937 rng(dev());
-    std::uniform_real_distribution<float> dist1(0.0, 1.0);
-    float random_number = dist1(rng);
-
     torch::NoGradGuard no_grad;
+    float random_number = torch::rand({1}).item<float>();
+
+    TensorStruct dqn_input = TensorStruct(s, map);
+    at::Tensor output = Forward(dqn_input.GetTensor());
 
     if (random_number > epsilon)
     {
-        TensorStruct dqn_input = TensorStruct(s, map);
-        at::Tensor actionIndex = std::get<1>(Forward(dqn_input.GetTensor()).max(1));
+        at::Tensor actionIndex = std::get<1>(output.max(1));
         actionT action = MapIndexToAction(pl, en, actionIndex.item<int>());
         return {action, actionIndex.item<int>()};
     }
     else
     {
-        TensorStruct dqn_input = TensorStruct(s, map);
-        at::Tensor output = Forward(dqn_input.GetTensor());
-        int num_actions = output.size(1);
-        std::uniform_int_distribution<std::mt19937::result_type> dist(
-            0, num_actions - 1);
-        int random_action = dist(rng);
-        at::Tensor action = torch::tensor({{random_action}}, torch::kLong);
-        actionT result = MapIndexToAction(pl, en, action.item<int>());
+        at::Tensor probs = torch::softmax(output, 1);
+        at::Tensor actionIndex = torch::multinomial(probs, 1);
+        
+        int random_action = actionIndex.item<int>();
+        actionT result = MapIndexToAction(pl, en, random_action);
         return {result, random_action};
     }
 }
@@ -156,6 +151,9 @@ actionT DQN::MapIndexToAction(Player &pl, Player &en, int actionIndex) {
             return EmptyAction();
         if (pl.structures[hallIndex]->is != HALL)
             return EmptyAction();
+        if (pl.gold > 590)
+            return EmptyAction();
+
         return FarmGoldAction(
             pl.units[peasantIndex].get(),
             Vec2(row, col),
