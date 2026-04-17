@@ -1,57 +1,39 @@
 cmake_minimum_required(VERSION 3.16)
-project(Saya)
+project(Saya LANGUAGES CXX C)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
+# --- 1. Global Optimization ---
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_FLAGS_DEBUG "-g -O0") 
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -w")
 
-# 1. Gather Dependencies once
+# This speeds up dependency configuration significantly
+set(SDL_TEST OFF CACHE BOOL "" FORCE)
+set(CATCH_INSTALL_HELPERS OFF CACHE BOOL "" FORCE)
+
+# --- 2. Dependencies ---
 find_package(Torch REQUIRED)
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(SDL3 REQUIRED sdl3)
-pkg_check_modules(SDL3_TTF REQUIRED sdl3-ttf)
-pkg_check_modules(CATCH2 QUIET catch2-with-main)
+add_subdirectory(SDL EXCLUDE_FROM_ALL)
+add_subdirectory(SDL/SDL_ttf EXCLUDE_FROM_ALL)
+add_subdirectory(Catch2 EXCLUDE_FROM_ALL)
 
-# 2. Define Sources
-file(GLOB_RECURSE ALL_SRC CONFIGURE_DEPENDS "src/*.cpp")
+# --- 3. Modular Source Discovery ---
+# glob_recurse with configure_depends is slow. 
+# We'll create a library target once to avoid re-parsing everything for 'tester'
+file(GLOB_RECURSE SAYA_LIB_SRC "src/*.cpp")
+list(REMOVE_ITEM SAYA_LIB_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
 
-# 3. Build Main App
-add_executable(Saya ${ALL_SRC})
-target_link_libraries(Saya PRIVATE 
-    ${TORCH_LIBRARIES} 
-    ${SDL3_LIBRARIES} 
-    ${SDL3_TTF_LIBRARIES}
-)
-target_include_directories(Saya PRIVATE 
-    src/ 
-    src/ReinforcementLearning/
-    ${SDL3_INCLUDE_DIRS}
-    ${SDL3_TTF_INCLUDE_DIRS}
-)
+add_library(saya_core OBJECT ${SAYA_LIB_SRC})
+target_include_directories(saya_core PUBLIC src/ src/ReinforcementLearning/ SDL/include SDL/SDL_ttf/include)
 
-# 4. Build Tester
-set(TEST_SRC ${ALL_SRC})
-list(REMOVE_ITEM TEST_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
+# --- 4. Targets ---
+# Main App
+add_executable(Saya src/main.cpp)
+target_link_libraries(Saya PRIVATE saya_core ${TORCH_LIBRARIES} SDL3::SDL3 SDL3_ttf::SDL3_ttf)
 
-add_executable(tester tests/test.cpp ${TEST_SRC})
-target_link_libraries(tester PRIVATE 
-    ${TORCH_LIBRARIES} 
-    ${SDL3_LIBRARIES} 
-    ${SDL3_TTF_LIBRARIES}
-    ${CATCH2_LIBRARIES}
-)
-target_include_directories(tester PRIVATE 
-    src/ 
-    src/ReinforcementLearning/
-    ${SDL3_INCLUDE_DIRS}
-    ${SDL3_TTF_INCLUDE_DIRS}
-    ${CATCH2_INCLUDE_DIRS}
-)
+# Tester (links to the same object files, no double-compiling!)
+add_executable(tester tests/test.cpp)
+target_link_libraries(tester PRIVATE saya_core ${TORCH_LIBRARIES} SDL3::SDL3 SDL3_ttf::SDL3_ttf Catch2::Catch2WithMain)
 
-# 5. Speed Boost: Precompiled Headers
-# Note: switched tester to use SDL_ttf header in PCH to speed up gui/Window.cpp compilation
-target_precompile_headers(Saya PRIVATE <torch/torch.h> <SDL3/SDL.h>)
-target_precompile_headers(tester PRIVATE <catch2/catch_all.hpp> <torch/torch.h> <SDL3_ttf/SDL_ttf.h>)
+# --- 5. Optimized PCH ---
+# We only apply PCH to the core library to speed up everything at once
+target_precompile_headers(saya_core PRIVATE <torch/torch.h> <SDL3/SDL.h> <SDL3_ttf/SDL_ttf.h>)

@@ -31,24 +31,28 @@ std::string get_random_model(const std::string& directory) {
 }
 
 std::string get_latest_model(const std::string& directory_path, std::string file_start, std::string ext) {
-    std::string latest_file = "";
+    if (!fs::exists(directory_path)) {
+        fs::create_directories(directory_path);
+        return ""; 
+    }
 
+    std::string latest_file = "";
     for (const auto& entry : fs::directory_iterator(directory_path)) {
         if (entry.is_regular_file()) {
             std::string filename = entry.path().filename().string();
-            
             if (filename.find(file_start) != std::string::npos && 
                 filename.find(ext) != std::string::npos) {
-                if (filename > latest_file) {
-                    latest_file = filename;
-                }
+                if (filename > latest_file) latest_file = filename;
             }
         }
     }
+
+    if (latest_file.empty()) return "";
+
     latest_file = latest_file.substr(0, latest_file.find("." + ext));
-    std::string full_path = directory_path + latest_file;
-    return full_path;
+    return directory_path + latest_file;
 }
+
 
 RlManager::RlManager() : win(Vec2(1000, 1000)) {
 }
@@ -123,24 +127,18 @@ void RlManager::InitializePPO(Player &pl, Player &en, Map &map){
     State s = GetState(pl, en, map);
     ppoPolicy.Initialize(map, s);
     enemyPPO.Initialize(map, s);
-    if (pl.side == PLAYER)
-        enemyPPO.LoadModel(get_latest_model("models/enemy_models_ppo/", "ppo_policy-", "pt"));
-    else
-        enemyPPO.LoadModel(get_latest_model("models/player_model_ppo/", "ppo_policy-", "pt"));
 
-    ppoValue.Initialize(ppoPolicy);
-    torch::Device device(torch::kCPU);
+    std::string enemy_path = (pl.side == PLAYER) ? 
+        get_latest_model("models/enemy_models_ppo/", "ppo_policy-", "pt") : 
+        get_latest_model("models/player_model_ppo/", "ppo_policy-", "pt");
 
-    if (torch::cuda::is_available())
-    {
-        device = torch::Device(torch::DeviceType::CUDA);
-        episodeNumber = 200;
-        ppoPolicy.to(device);
-        ppoValue.to(device);
+    if (!enemy_path.empty()) {
+        enemyPPO.LoadModel(enemy_path);
+    } else {
+        std::cout << "No enemy model found. Training against random initialization." << std::endl;
     }
+    ppoValue.Initialize(ppoPolicy);
 }
-
-
 
 bool RlManager::ShouldResetEnvironment(Player &pl, Player &en, Map &map) {
     const int hallCost = 590;
@@ -285,14 +283,17 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
     torch::optim::AdamW value_optimizer(
         ppoValue.parameters(), torch::optim::AdamWOptions(3e-4).weight_decay(1e-4));
 
-    if (pl.side == PLAYER){
-        ppoPolicy.LoadModel(get_latest_model("models/player_model_ppo/", "ppo_policy-", "pt"));
-        ppoValue.LoadModel(get_latest_model("models/player_value/", "ppo_policy-", "pt"));
+    std::string policy_path, value_path;
+    if (pl.side == PLAYER) {
+        policy_path = get_latest_model("models/player_model_ppo/", "ppo_policy-", "pt");
+        value_path = get_latest_model("models/player_value/", "ppo_policy-", "pt");
+    } else {
+        policy_path = get_latest_model("models/enemy_models_ppo/", "ppo_policy-", "pt");
+        value_path = get_latest_model("models/enemy_value/", "ppo_policy-", "pt");
     }
-    else{
-        ppoPolicy.LoadModel(get_latest_model("models/enemy_models_ppo/", "ppo_policy-", "pt"));
-        ppoValue.LoadModel(get_latest_model("models/enemy_value/", "ppo_policy-", "pt"));
-    }
+
+    if (!policy_path.empty()) ppoPolicy.LoadModel(policy_path);
+    if (!value_path.empty()) ppoValue.LoadModel(value_path);
 
     double start_lr = 6e-4; // A bit "bigger" to start
     double end_lr = 1e-4;
@@ -363,7 +364,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 at::Tensor reward_tensor = torch::tensor(pl.TakeAction(action), torch::dtype(torch::kFloat32));
                 en.TakeAction(enemy_action);
 
-                float reward = reward_tensor.item<float>() - 0.1f; // 0.1 here is a time penalty
+                float reward = reward_tensor.item<float>() - 0.01f; // 0.1 here is a time penalty
                 episode_reward += reward;
                 /* doing this for dqn experiecne */ 
                 Transition trans(s, action, s1, reward, action_index, done);
@@ -467,6 +468,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 at::Tensor new_probs = new_probs_dist.gather(1, batch_actions.unsqueeze(1)).squeeze();
 
                 // D. Calculate Ratios
+                //at::Tensor ratio = torch::exp(torch::log(new_probs + 1e-10) - torch::log(batch_old_probs + 1e-10));
                 at::Tensor ratio = torch::exp(torch::log(new_probs + 1e-10) - torch::log(batch_old_probs + 1e-10));
 
                 // E. Policy Loss
@@ -746,6 +748,7 @@ void RlManager::SaveMemoryAsString() {
 }
 
 void RlManager::LoadMemoryAsString() {
+
     std::string memory_file = get_latest_model("models/player_dqn_experience", "memory_", "say");
     std::ifstream file(memory_file);
     if (!file.is_open()) {

@@ -1,0 +1,10 @@
+Index:
+  ExternalFiles: None
+  Background: Skip
+
+CompileFlags:
+  Remove: [-include*, -Winvalid-pch]
+  ExcludeArgs: 
+    - -isystem/usr/include/torch.*
+    - -I.*/SDL/.*
+    - -I.*/Catch2/.*
