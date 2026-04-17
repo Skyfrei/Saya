@@ -48,6 +48,12 @@ class RlManager
     at::Tensor GetMask(Player&, Player&, int);
 
   private:
+    int frameSkipCounter = 0;
+    const int frameSkipLimit = 4; // AI only "thinks" every 4 frames
+    actionT lastAction;
+    at::Tensor cachedMask;
+
+  private:
     const int batchSize = 32; // was 32
     float gamma = 0.98f;
     float epsilon = 0.9f;
@@ -57,7 +63,7 @@ class RlManager
 
     float ppoEpsilon = 0.2f;
     float epsilonDecay = 0;
-    int episodeNumber = 5;
+    int episodeNumber = 50;
     int forwardSteps = 256;
     Window win;
 };

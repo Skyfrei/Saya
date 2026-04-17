@@ -28,10 +28,9 @@ class Window
 {
   public:
     Window(Vec2 s);
-    SDL_AppResult Render(Player& pl, Player& en,Map& map,
-                         std::string dqn_Action,
-                         std::string ppo_action);
     void SDL_AppQuit();
+    void PollEvents(bool& is_paused);
+    SDL_AppResult Render(Player& pl, Player& en, Map& map, std::string dqn_action, std::string ppo_action);
 
   private:
     SDL_AppResult InitSdl();

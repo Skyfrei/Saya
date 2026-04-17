@@ -14,27 +14,15 @@
 #include "../Tools/Macro.h"
 #include "../Tools/Enums.h"
 
-struct TensorStruct
-{
+class TensorStruct {
+public:
     TensorStruct(State &state, Map &map);
-
-    torch::Tensor GetMapTensor(Map &map);
-    torch::Tensor GetVec(Vec2 food);
-    torch::Tensor GetUnitsTensor(std::vector<Unit *> &units);
-    torch::Tensor GetStructuresTensor(std::vector<Structure *> &structures);
     torch::Tensor GetTensor();
+
+private:
+    torch::Tensor finalTensor; // Holds the perfectly constructed tensor
     const int unitVar = 8;
     const int strucVar = 4;
 
-    torch::Tensor currentMap;
-    torch::Tensor playerGold;
-    torch::Tensor playerFood;
-    torch::Tensor playerUnits;
-    torch::Tensor playerStructs;
-    torch::Tensor enemyGold;
-    torch::Tensor enemyFood;
-    torch::Tensor enemyUnits;
-    torch::Tensor enemyStructs;
 };
-
 #endif

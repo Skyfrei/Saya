@@ -211,11 +211,13 @@ std::vector<Living*> Player::CheckUnitActions(float& reward){
                 {
                     AttackAction &action = std::get<AttackAction>(act);
                     if (action.object != nullptr && un->WithinDistance(action.object->coordinate)){
-                        Structure* hall = dynamic_cast<Structure*>(action.object);
+                        TownHall* hall = dynamic_cast<TownHall*>(action.object);
                         if (hall){
-                            if (!one_is_being_attacked){
-                                one_is_being_attacked = true;
-                                un->health -= 20;
+                            if (hall->CanAttack()){
+                                if (!one_is_being_attacked){
+                                  one_is_being_attacked = true;
+                                  un->health -= 20;
+                                }
                             }
                         }
                     }

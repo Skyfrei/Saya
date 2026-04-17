@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <iomanip>
 #include <filesystem>
+#include <ATen/Parallel.h>
 
 namespace fs = std::filesystem;
 
@@ -22,6 +23,11 @@ std::string get_random_model(const std::string& directory) {
                 models.push_back(pathWithoutExt);
             }
         }
+    }
+
+    // NEW PROTECTIVE GUARD:
+    if (models.empty()) {
+        return ""; 
     }
 
     static std::mt19937 gen(std::random_device{}()); 
@@ -55,6 +61,7 @@ std::string get_latest_model(const std::string& directory_path, std::string file
 
 
 RlManager::RlManager() : win(Vec2(1000, 1000)) {
+  at::set_num_threads(1);
 }
 actionT RlManager::GetActionPPO(Player& pl, Player& en, Map& map){
     torch::NoGradGuard no_grad; 
@@ -71,13 +78,10 @@ actionT RlManager::GetActionPPO(Player& pl, Player& en, Map& map){
     //actionT action = ppoPolicy.MapIndexToAction(pl, en, action_idx);
 
     ShowInMap(pl, en, map, probs);
-    int k = std::min(50, (int)probs.size(1));
+    int k = std::min(10, (int)probs.size(1));
     auto topk_res = probs.topk(k, 1);
-    auto top_probs = std::get<0>(topk_res);  
-    auto top_indices = std::get<1>(topk_res);
-
-    int sample_idx = torch::multinomial(top_probs, 1).item<int>();
-    int action_idx = top_indices[0][sample_idx].item<int>();
+    int sample_idx = torch::multinomial(std::get<0>(topk_res), 1).item<int>();
+    int action_idx = std::get<1>(topk_res)[0][sample_idx].item<int>();
     actionT action = ppoPolicy.MapIndexToAction(pl, en, action_idx);
 
     return action;
@@ -176,7 +180,8 @@ void count_action(std::unordered_map<std::string, int>& m, actionT& act){
 }
 
 at::Tensor RlManager::GetMask(Player &pl, Player& en, int outputSize){
-    auto mask = torch::ones({1, outputSize}, torch::kFloat32);
+    std::vector<float> maskData(outputSize, 0.0f);
+    
     int moveEnd = ppoPolicy.moveAction;
     int attackEnd = ppoPolicy.attackAction;
     int buildEnd = ppoPolicy.buildAction;
@@ -191,11 +196,12 @@ at::Tensor RlManager::GetMask(Player &pl, Player& en, int outputSize){
     for (int u = 0; u < MAX_UNITS; u++) {
         if (u < pl.units.size() && pl.units[u]->GetActionQueueSize() == 0) {
             int unitMoveStart = u * MAP_SIZE * MAP_SIZE;
-            mask.narrow(1, unitMoveStart, MAP_SIZE * MAP_SIZE).fill_(1.0f); 
-
+            for (int i = 0; i < MAP_SIZE * MAP_SIZE; i++) {
+                maskData[unitMoveStart + i] = 1.0f; // Enable all moves
+            }
             int curX = pl.units[u]->coordinate.x; 
             int curY = pl.units[u]->coordinate.y; 
-            mask[0][unitMoveStart + (curX * MAP_SIZE) + curY] = 0.0f;
+            maskData[unitMoveStart + (curX * MAP_SIZE) + curY] = 0.0f; // Disable moving to self
         }
     }
 
@@ -213,7 +219,7 @@ at::Tensor RlManager::GetMask(Player &pl, Player& en, int outputSize){
                 }
 
                 if (targetExists) {
-                    mask[0][unitAttackStart + t] = 1.0f; 
+                    maskData[unitAttackStart + t] = 1.0f; 
                 }
             }
         }
@@ -224,7 +230,9 @@ at::Tensor RlManager::GetMask(Player &pl, Player& en, int outputSize){
         for (int u = 0; u < PEASANT_INDEX_IN_UNITS; u++) {
             if (u < pl.units.size() && pl.units[u]->is == PEASANT && pl.units[u]->GetActionQueueSize() == 0) {
                 int startIdx = attackEnd + (u * buildStride);
-                mask.narrow(1, startIdx, buildStride).fill_(1.0f);
+                for (int i = 0; i < buildStride; i++) {
+                    maskData[startIdx + i] = 1.0f;
+                }
             }
         }
     }
@@ -238,7 +246,7 @@ at::Tensor RlManager::GetMask(Player &pl, Player& en, int outputSize){
                     for (int x = 0; x < MAP_SIZE; x++) {
                         for (int y = 0; y < MAP_SIZE; y++) {
                             if (pl.map.GetTerrainAtCoordinate(Vec2(x, y)).resourceLeft > 0) {
-                                mask[0][startIdx + (x * MAP_SIZE + y)] = 1.0f;
+                                maskData[startIdx + (x * MAP_SIZE + y)] = 1.0f;
                             }
                         }
                     }
@@ -246,6 +254,7 @@ at::Tensor RlManager::GetMask(Player &pl, Player& en, int outputSize){
             }
         }
     }
+    
     // Recruit
     for (int offset = 0; offset < (recruitEnd - farmEnd); offset++) {
         int unitTypeInt = offset / MAX_STRUCTS;
@@ -257,15 +266,17 @@ at::Tensor RlManager::GetMask(Player &pl, Player& en, int outputSize){
 
         if (unitType == PEASANT) {
             if (stru->is == HALL && pl.gold >= 55) 
-                mask[0][recruitStart + offset] = 1.0f;
+                maskData[recruitStart + offset] = 1.0f;
         }
         else if (unitType == FOOTMAN) {
             if (stru->is == BARRACK && pl.gold >= 75) 
-                mask[0][recruitStart + offset] = 1.0f;
+                maskData[recruitStart + offset] = 1.0f;
         }
     }    
-    return mask;
+
+    return torch::from_blob(maskData.data(), {1, outputSize}, torch::kFloat32).clone();
 }
+
 std::string get_current_time(){
     auto now = std::chrono::system_clock::now();
     std::time_t now_c = std::chrono::system_clock::to_time_t(now);
@@ -307,12 +318,14 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
     
     for (int i = 0; i < episodeNumber; i++){
         if (i % 3 == 0 && i != 0){
-            if (pl.side == PLAYER)
-                enemyPPO.LoadModel(get_random_model("models/enemy_models_ppo/"));
-            else
-                enemyPPO.LoadModel(get_random_model("models/player_model_ppo/"));
-        }
-        // Updating optimizers
+            std::string random_enemy_path = (pl.side == PLAYER) ?
+                get_random_model("models/enemy_models_ppo/") :
+                get_random_model("models/player_model_ppo/");
+
+            if (!random_enemy_path.empty()) {
+                enemyPPO.LoadModel(random_enemy_path);
+            }
+        }        // Updating optimizers
         double progress = static_cast<double>(i) / episodeNumber;
         double current_lr = start_lr + progress * (end_lr - start_lr);
 
@@ -326,9 +339,16 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
         done = false;
         double fullSteps = 0;
         std::unordered_map<std::string, int> action_count_map = {{"move", 0}, {"attack", 0}, {"build", 0}, {"farm", 0}, {"recruit", 0}};
+        static bool is_paused = false;
+
         while (!done){
             float episode_reward = 0.0f;
             std::vector<std::tuple<TensorStruct, int, float, at::Tensor, at::Tensor, bool, at::Tensor>> trajectory_buffer;
+            win.PollEvents(is_paused);
+            while (is_paused) {
+                win.PollEvents(is_paused);
+                SDL_Delay(10);
+            }
 
             for (int t= 0; t < forwardSteps; t++){
 
@@ -349,6 +369,8 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 int action_index = action_tensor.item<int>();
                 actionT action = ppoPolicy.MapIndexToAction(pl, en, action_index);
                 count_action(action_count_map, action);
+                float raw_reward = pl.TakeAction(action);
+
                 State s1 = GetState(en, pl, map);
 
                 TensorStruct input_tensor1(s1, map);
@@ -361,18 +383,17 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 int action_index1 = action_tensor1.item<int>();
                 actionT enemy_action = enemyPPO.MapIndexToAction(en, pl, action_index1);
 
-                at::Tensor reward_tensor = torch::tensor(pl.TakeAction(action), torch::dtype(torch::kFloat32));
                 en.TakeAction(enemy_action);
 
-                float reward = reward_tensor.item<float>() - 0.01f; // 0.1 here is a time penalty
+                float reward = raw_reward - 0.01f; // 0.1 here is a time penalty
                 episode_reward += reward;
                 /* doing this for dqn experiecne */ 
                 Transition trans(s, action, s1, reward, action_index, done);
-                AddExperience(trans);
                 /* doing this for dqn experiecne */ 
 
-
-                ShowInMap(pl, en, map, output_soft);
+                if (fullSteps == 0 || (int)fullSteps % 20 == 0){ 
+                  ShowInMap(pl, en, map, output_soft); 
+                }
                 bool envDone = ShouldResetEnvironment(pl, en, map);
                 bool timeDone = (fullSteps >= 5000);
                 done = envDone || timeDone;
@@ -388,9 +409,9 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                     bool enLost = (!en.HasUnit(PEASANT) && !en.HasStructure(HALL)); 
                 
                     if (plLost) {
-                        reward -= 500.0f;
+                        reward -= 5.0f;
                     } else if (enLost){
-                        reward += 500.0f;
+                        reward += 5.0f;
                     }
                 }
 
@@ -423,8 +444,9 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
             for (int t = trajectory_buffer.size() - 1; t >= 0; t--){
                 float reward = std::get<2>(trajectory_buffer[t]);
                 at::Tensor value = std::get<3>(trajectory_buffer[t]);
-                at::Tensor delta = reward + gamma * new_value - value; 
                 bool currDone = std::get<5>(trajectory_buffer[t]);
+
+                at::Tensor delta = reward + gamma * new_value * (1 - currDone) - value; 
                 new_value = value;
                 gae = delta + gamma * 0.95 * (1 - currDone) * gae;
                 advantages_buffer[t] = gae.clone().detach();
@@ -468,8 +490,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 at::Tensor new_probs = new_probs_dist.gather(1, batch_actions.unsqueeze(1)).squeeze();
 
                 // D. Calculate Ratios
-                //at::Tensor ratio = torch::exp(torch::log(new_probs + 1e-10) - torch::log(batch_old_probs + 1e-10));
-                at::Tensor ratio = torch::exp(torch::log(new_probs + 1e-10) - torch::log(batch_old_probs + 1e-10));
+                at::Tensor ratio = new_probs / (batch_old_probs + 1e-10);
 
                 // E. Policy Loss
                 at::Tensor surr1 = ratio * batch_advs;
@@ -477,7 +498,7 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
                 at::Tensor policy_loss = -torch::min(surr1, surr2).mean(); // Mean over the batch
 
                 // F. Value Loss
-                at::Tensor value_loss = torch::mse_loss(all_values, batch_returns);
+                at::Tensor value_loss = torch::nn::functional::smooth_l1_loss(all_values, batch_returns);
 
                 // G. Entropy
                 at::Tensor entropy = -(new_probs_dist * torch::log(new_probs_dist + 1e-10)).sum(-1).mean();

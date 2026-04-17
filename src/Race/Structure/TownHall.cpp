@@ -7,6 +7,8 @@ TownHall::TownHall(Vec2 coord) {
     goldCost = 590;
     is = HALL;
     buildTime = 180;
+    attackTime = std::chrono::high_resolution_clock::now();
+    attackCooldown = std::chrono::milliseconds(1000);
 }
 
 TownHall::TownHall(Vec2 coord, float hp) {
@@ -16,6 +18,8 @@ TownHall::TownHall(Vec2 coord, float hp) {
     goldCost = 590;
     is = HALL;
     buildTime = 180;
+    attackTime = std::chrono::high_resolution_clock::now();
+    attackCooldown = std::chrono::milliseconds(1000);
 }
 Structure *TownHall::Clone() const {
     return new TownHall(*this);
@@ -27,4 +31,15 @@ void TownHall::FinishBuilding() {
 }
 
 void TownHall::UpgradeEquipment(Upgrade &curr) {
+}
+
+bool TownHall::CanAttack() {
+    auto currentCd = std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::high_resolution_clock::now() - attackTime);
+        
+    if (currentCd >= attackCooldown) {
+        attackTime = std::chrono::high_resolution_clock::now(); // Reset the timer
+        return true;
+    }
+    return false;
 }

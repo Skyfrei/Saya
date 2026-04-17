@@ -2,133 +2,105 @@
 #include <algorithm>
 
 TensorStruct::TensorStruct(State &state, Map &map) {
-    currentMap = GetMapTensor(map);
+    int mapSize = MAP_SIZE * MAP_SIZE * 4;
+    int totalSize = mapSize + 1 + 2 + (MAX_UNITS * unitVar) + (MAX_STRUCTS * strucVar) + 
+                    1 + 2 + (MAX_UNITS * unitVar) + (MAX_STRUCTS * strucVar);
 
-    float pGold = static_cast<float>(state.playerGold) / MAX_GOLD;
-    playerGold = torch::tensor({pGold}).view({-1, 1});
-    playerFood = GetVec(state.playerFood);
-    playerStructs = GetStructuresTensor(state.playerStructs);
-    playerUnits = GetUnitsTensor(state.playerUnits);
+    std::vector<float> data(totalSize, 0.0f);
+    int offset = 0;
 
-    float eGold = static_cast<float>(state.enemyGold) / MAX_GOLD;
-    enemyGold = torch::tensor({eGold}).view({-1, 1});
-    enemyFood = GetVec(state.enemyFood);
-    enemyUnits = GetUnitsTensor(state.enemyUnits);
-    enemyStructs = GetStructuresTensor(state.enemyStructs);
-}
-
-torch::Tensor TensorStruct::GetMapTensor(Map &map) {
-    std::vector<float> data;
-    data.reserve(MAP_SIZE * MAP_SIZE * 4);
-
-    for (const auto &row : map.terrain)
-    {
-        for (const auto &terrain : row)
-        {
-            data.push_back(1.0f); //this is terrain type ground or water
-            data.push_back(static_cast<float>(terrain.resourceLeft) / MAX_MINE_GOLD);
-            data.push_back(static_cast<float>(terrain.coord.x) / MAP_SIZE);
-            data.push_back(static_cast<float>(terrain.coord.y) / MAP_SIZE);
+    // --- MAP TERRAIN ---
+    for (const auto &row : map.terrain) {
+        for (const auto &terrain : row) {
+            data[offset++] = 1.0f; // terrain type
+            data[offset++] = static_cast<float>(terrain.resourceLeft) / MAX_MINE_GOLD;
+            data[offset++] = static_cast<float>(terrain.coord.x) / MAP_SIZE;
+            data[offset++] = static_cast<float>(terrain.coord.y) / MAP_SIZE;
         }
     }
-    return torch::tensor(data).view({1, -1});
-}
-torch::Tensor TensorStruct::GetVec(Vec2 food) {
-    std::vector<float> data;
-    if (food.y <= 0)
-        data.push_back(0.0f);
-    else
-        data.push_back(static_cast<float>(food.x) / food.y);
-    data.push_back(static_cast<float>(food.y) / MAX_FOOD);
-    return torch::tensor(data).view({1, -1});
-}
 
-torch::Tensor TensorStruct::GetUnitsTensor(std::vector<Unit *> &units) {
-    std::vector<float> data;
-    data.reserve(units.size() * 8);
-    for (const auto &unit : units)
-    {
-        if (unit->maxHealth <= 0)
-            data.push_back(static_cast<float>(unit->health));
-        else
-            data.push_back(static_cast<float>(unit->health) / unit->maxHealth);
-        data.push_back(static_cast<float>(unit->coordinate.x) / MAP_SIZE);
-        data.push_back(static_cast<float>(unit->coordinate.y) / MAP_SIZE);
-        data.push_back(static_cast<float>(unit->is) / NR_OF_UNITS);
-        data.push_back(static_cast<float>(unit->attack) / 20.0f);
-        data.push_back(static_cast<float>(unit->GetActionQueueSize() / 2.0f));
+    // --- PLAYER STATS ---
+    data[offset++] = static_cast<float>(state.playerGold) / MAX_GOLD;
 
-        if (unit->maxMana <= 0)
-            data.push_back(0.0f);
-        else
-            data.push_back(static_cast<float>(unit->mana) / unit->maxMana);
+    if (state.playerFood.y <= 0) data[offset++] = 0.0f;
+    else data[offset++] = static_cast<float>(state.playerFood.x) / state.playerFood.y;
+    data[offset++] = static_cast<float>(state.playerFood.y) / MAX_FOOD;
 
+    // --- PLAYER UNITS ---
+    int pUnitCount = std::min(static_cast<int>(state.playerUnits.size()), MAX_UNITS);
+    for (int i = 0; i < pUnitCount; i++) {
+        auto unit = state.playerUnits[i];
+        data[offset++] = (unit->maxHealth <= 0) ? static_cast<float>(unit->health) : static_cast<float>(unit->health) / unit->maxHealth;
+        data[offset++] = static_cast<float>(unit->coordinate.x) / MAP_SIZE;
+        data[offset++] = static_cast<float>(unit->coordinate.y) / MAP_SIZE;
+        data[offset++] = static_cast<float>(unit->is) / NR_OF_UNITS;
+        data[offset++] = static_cast<float>(unit->attack) / 20.0f;
+        data[offset++] = static_cast<float>(unit->GetActionQueueSize()) / 2.0f;
+        data[offset++] = (unit->maxMana <= 0) ? 0.0f : static_cast<float>(unit->mana) / unit->maxMana;
 
         if (unit->is == UnitType::PEASANT) {
             Peasant* p = static_cast<Peasant*>(unit);
-            if (p->maxGoldInventory <= 0)
-                data.push_back(0.0f);
-            else
-                data.push_back(static_cast<float>(p->goldInventory) / p->maxGoldInventory);
+            data[offset++] = (p->maxGoldInventory <= 0) ? 0.0f : static_cast<float>(p->goldInventory) / p->maxGoldInventory;
         } else {
-            data.push_back(0.0f);
+            data[offset++] = 0.0f;
         }
     }
-    return torch::tensor(data).view({1, -1});
-}
+    // Skip the empty slots (they are already 0.0f!)
+    offset += (MAX_UNITS - pUnitCount) * unitVar;
 
-torch::Tensor TensorStruct::GetStructuresTensor(
-    std::vector<Structure *> &structures){
-
-    std::vector<float> structureData;
-    for (const auto &structure : structures)
-    {
-        if (structure->maxHealth <= 0)
-            structureData.push_back(static_cast<float>(structure->health));
-        else
-            structureData.push_back(static_cast<float>(structure->health) / structure->maxHealth);
-        structureData.push_back(static_cast<float>(structure->coordinate.x) / MAP_SIZE);
-        structureData.push_back(static_cast<float>(structure->coordinate.y) / MAP_SIZE);
-        structureData.push_back(static_cast<float>(structure->is) / NR_OF_STRUCTS);    
+    // --- PLAYER STRUCTURES ---
+    int pStrucCount = std::min(static_cast<int>(state.playerStructs.size()), MAX_STRUCTS);
+    for (int i = 0; i < pStrucCount; i++) {
+        auto structure = state.playerStructs[i];
+        data[offset++] = (structure->maxHealth <= 0) ? static_cast<float>(structure->health) : static_cast<float>(structure->health) / structure->maxHealth;
+        data[offset++] = static_cast<float>(structure->coordinate.x) / MAP_SIZE;
+        data[offset++] = static_cast<float>(structure->coordinate.y) / MAP_SIZE;
+        data[offset++] = static_cast<float>(structure->is) / NR_OF_STRUCTS;
     }
-    return torch::tensor(structureData).view({1, -1});
+    offset += (MAX_STRUCTS - pStrucCount) * strucVar;
+
+    // --- ENEMY STATS ---
+    data[offset++] = static_cast<float>(state.enemyGold) / MAX_GOLD;
+
+    if (state.enemyFood.y <= 0) data[offset++] = 0.0f;
+    else data[offset++] = static_cast<float>(state.enemyFood.x) / state.enemyFood.y;
+    data[offset++] = static_cast<float>(state.enemyFood.y) / MAX_FOOD;
+
+    // --- ENEMY UNITS ---
+    int eUnitCount = std::min(static_cast<int>(state.enemyUnits.size()), MAX_UNITS);
+    for (int i = 0; i < eUnitCount; i++) {
+        auto unit = state.enemyUnits[i];
+        data[offset++] = (unit->maxHealth <= 0) ? static_cast<float>(unit->health) : static_cast<float>(unit->health) / unit->maxHealth;
+        data[offset++] = static_cast<float>(unit->coordinate.x) / MAP_SIZE;
+        data[offset++] = static_cast<float>(unit->coordinate.y) / MAP_SIZE;
+        data[offset++] = static_cast<float>(unit->is) / NR_OF_UNITS;
+        data[offset++] = static_cast<float>(unit->attack) / 20.0f;
+        data[offset++] = static_cast<float>(unit->GetActionQueueSize()) / 2.0f;
+        data[offset++] = (unit->maxMana <= 0) ? 0.0f : static_cast<float>(unit->mana) / unit->maxMana;
+
+        if (unit->is == UnitType::PEASANT) {
+            Peasant* p = static_cast<Peasant*>(unit);
+            data[offset++] = (p->maxGoldInventory <= 0) ? 0.0f : static_cast<float>(p->goldInventory) / p->maxGoldInventory;
+        } else {
+            data[offset++] = 0.0f;
+        }
+    }
+    offset += (MAX_UNITS - eUnitCount) * unitVar;
+
+    // --- ENEMY STRUCTURES ---
+    int eStrucCount = std::min(static_cast<int>(state.enemyStructs.size()), MAX_STRUCTS);
+    for (int i = 0; i < eStrucCount; i++) {
+        auto structure = state.enemyStructs[i];
+        data[offset++] = (structure->maxHealth <= 0) ? static_cast<float>(structure->health) : static_cast<float>(structure->health) / structure->maxHealth;
+        data[offset++] = static_cast<float>(structure->coordinate.x) / MAP_SIZE;
+        data[offset++] = static_cast<float>(structure->coordinate.y) / MAP_SIZE;
+        data[offset++] = static_cast<float>(structure->is) / NR_OF_STRUCTS;
+    }
+
+    finalTensor = torch::from_blob(data.data(), {1, totalSize}, torch::kFloat32).clone();
 }
 
 torch::Tensor TensorStruct::GetTensor() {
-    auto options = torch::TensorOptions().dtype(torch::kFloat32);
-
-    torch::Tensor paddedUnits = torch::zeros({1, std::max((int64_t)0, MAX_UNITS - (playerUnits.size(1) / unitVar)) * unitVar});
-    torch::Tensor paddedStructs = torch::zeros({1, std::max((int64_t)0, MAX_STRUCTS - (playerStructs.size(1) / strucVar)) * strucVar});
-    torch::Tensor paddedUnitsEnemy = torch::zeros({1, std::max((int64_t)0, MAX_UNITS - (enemyUnits.size(1) / unitVar)) * unitVar});
-    torch::Tensor paddedStructsEnemy = torch::zeros({1, std::max((int64_t)0, MAX_STRUCTS - (enemyStructs.size(1) / strucVar)) * strucVar});
-
-    torch::Tensor finalPUnits = playerUnits.size(1) > (MAX_UNITS * unitVar) 
-        ? playerUnits.slice(1, 0, MAX_UNITS * unitVar) 
-        : torch::cat({playerUnits, paddedUnits}, 1);
-
-    torch::Tensor finalEUnits = enemyUnits.size(1) > (MAX_UNITS * unitVar) 
-        ? enemyUnits.slice(1, 0, MAX_UNITS * unitVar) 
-        : torch::cat({enemyUnits, paddedUnitsEnemy}, 1);
-
-    torch::Tensor finalPStructs = playerStructs.size(1) > (MAX_STRUCTS * strucVar) 
-        ? playerStructs.slice(1, 0, MAX_STRUCTS * strucVar) 
-        : torch::cat({playerStructs, paddedStructs}, 1);
-    
-    torch::Tensor finalEStructs = enemyStructs.size(1) > (MAX_STRUCTS * strucVar) 
-        ? enemyStructs.slice(1, 0, MAX_STRUCTS * strucVar) 
-        : torch::cat({enemyStructs, paddedStructsEnemy}, 1);
-
-    std::vector<torch::Tensor> tensors = {
-        currentMap, 
-        playerGold,   
-        playerFood,   
-        finalPUnits,  
-        finalPStructs,
-        enemyGold,    
-        enemyFood,
-        finalEUnits,    
-        finalEStructs   
-    };
-
-    return torch::cat(tensors, 1); // Total is now ALWAYS 926
+    return finalTensor;
 }
+

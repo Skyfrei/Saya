@@ -1,6 +1,7 @@
 #ifndef TOWNHALL_H
 #define TOWNHALL_H
 #include "Structure.h"
+#include <chrono>
 
 enum Upgrade
 {
@@ -23,6 +24,10 @@ class TownHall : public Structure
     void FinishBuilding() override;
     Structure *Clone() const override;
     std::string GetDescription() override;
+
+    bool CanAttack();
+    std::chrono::time_point<std::chrono::high_resolution_clock> attackTime;
+    std::chrono::milliseconds attackCooldown;
 };
 
 #endif

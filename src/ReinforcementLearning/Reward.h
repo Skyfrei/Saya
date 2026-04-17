@@ -40,13 +40,18 @@ float GetRewardFromAction(Args&&... args) {
                 reward -= 0.1f; // Walking away/sideways!
             }
         }
+        else if (moveAction.unit && moveAction.unit->is != PEASANT) {
+            if (moveAction.destCoord.x > moveAction.prevCoord.x || moveAction.destCoord.y > moveAction.prevCoord.y) {
+                reward += 0.02f;
+            }
+        }
     }
     else if (std::holds_alternative<AttackAction>(action))
     {
         const AttackAction &attackAction = std::get<AttackAction>(action);
         if (attackAction.object == nullptr){
             if (attackAction.finished){
-                reward += 20.0f;
+                reward += 30.0f;
             }
         }else{
             TownHall* hall = dynamic_cast<TownHall*>(attackAction.object);
@@ -54,7 +59,7 @@ float GetRewardFromAction(Args&&... args) {
                 reward += 1.5f;
             else
                 reward += 0.75f;
-            if (attackAction.unit && attackAction.unit->coordinate == attackAction.object->coordinate) {
+            if (attackAction.unit && attackAction.unit->WithinDistance(attackAction.object->coordinate)) {
                 reward += attackAction.unit->attack * 0.4f;
             }
         }

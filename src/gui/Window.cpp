@@ -274,28 +274,20 @@ void Window::RenderMap(Player& pl, Player& en, Map& map) {
     drawDots(en.structures, en.side);
 }
 
-SDL_AppResult Window::Render(Player& pl, Player& en, Map& map, std::string dqn_action, std::string ppo_action) {
+void Window::PollEvents(bool& is_paused) {
     SDL_Event event;
-    static bool is_paused = false;
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_EVENT_QUIT) {
-            return SDL_APP_SUCCESS; // Signal to stop
+            exit(0); // Safely exit the training loop
         }
         if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_SPACE) {
             is_paused = !is_paused; // Toggle the state
         }
-
-        while (is_paused) {
-            while (SDL_PollEvent(&event)) {
-                if (event.type == SDL_EVENT_QUIT) return SDL_APP_SUCCESS;
-                
-                if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_SPACE) {
-                    is_paused = false; // Resume game
-                }
-            }
-            SDL_Delay(10); 
-        }
     }
+}
+
+SDL_AppResult Window::Render(Player& pl, Player& en, Map& map, std::string dqn_action, std::string ppo_action) {
+    // ONLY drawing logic here, NO event polling!
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     RenderUI();
