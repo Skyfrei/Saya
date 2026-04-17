@@ -90,7 +90,7 @@ void Manager::CheckForOwnership(Player &p, Living *l, actionT actionTaken) {
     }
 }
 
-void Manager::MainLoop() {
+int Manager::MainLoop() {
     const int hallCost = 590;
     auto Reset = [&](Player& p){
         bool hasPeasant = p.HasUnit(PEASANT);
@@ -113,16 +113,70 @@ void Manager::MainLoop() {
     }
 
     if(trainerManager.ShouldResetEnvironment(player, enemy, map)){
+      int winner = 0;
         if (Reset(player)){
             std::cout<< "Enemy wins"<<std::endl;
+            winner = 2;
         }else{
             std::cout<< "Player wins"<<std::endl;
+            winner = 1;
         }
         map.Reset();
         player.Reset(player.side);
         enemy.Reset(enemy.side);
+        return winner;
+    }
+    return 0;
+}
+
+int Manager::MainLoopRandom() {
+    const int hallCost = 590;
+    auto Reset = [&](Player& p){
+        bool hasPeasant = p.HasUnit(PEASANT);
+        bool hasHall = p.HasStructure(HALL);
+
+        if (!hasPeasant && !hasHall) return true;
+        if (!hasPeasant && p.gold < 55) return true;
+        if (hasPeasant && p.gold < hallCost && !hasHall) return true;
+    
+        return false;
+    };
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dist(0, 1);
+
+    while (!trainerManager.ShouldResetEnvironment(player, enemy, map))
+    {
+        if (dist(gen) == 0) {
+            actionT action = trainerManager.GetActionPPO(player, enemy, map);
+            player.TakeAction(action);
+
+            actionT action2 = trainerManager.GetActionPPOEnemy(enemy, player, map);
+            enemy.TakeAction(action2);
+        } else {
+            actionT action2 = trainerManager.GetActionPPOEnemy(enemy, player, map);
+            enemy.TakeAction(action2);
+
+            actionT action = trainerManager.GetActionPPO(player, enemy, map);
+            player.TakeAction(action);
+        }
     }
 
+    if(trainerManager.ShouldResetEnvironment(player, enemy, map)){
+        int winner = 0;
+        if (Reset(player)){
+            winner = 2;
+        } else {
+            winner = 1;
+        }
+        
+        map.Reset();
+        player.Reset(player.side);
+        enemy.Reset(enemy.side);
+        return winner;
+    }
+    return 0; 
 }
 
 void Manager::CheckForMovement() {

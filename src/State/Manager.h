@@ -21,7 +21,8 @@ class Manager
 {
   public:
     Manager();
-    void MainLoop();
+    int MainLoop();
+    int MainLoopRandom();
     void ManageLiving(Player &pl);
     float GetTime();
     void CheckForMovement();

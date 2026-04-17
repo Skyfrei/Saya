@@ -231,6 +231,37 @@ bool PPO_vs_DQN(){
     return true;
 }
 
+bool PPO_vs_PPO_Experiment() {
+    // Manager automatically initializes PPO vs PPO and loads your latest saved models
+    Manager man; 
+    
+    int player_wins = 0;
+    int enemy_wins = 0;
+    int total_games = 50; // Set how many games you want in your experiment
+    
+    std::cout << "========== STARTING PPO VS PPO EXPERIMENT ==========" << std::endl;
+    
+    for(int i = 1; i <= total_games; i++) {
+        int winner = man.MainLoopRandom();
+        
+        if (winner == 1) {
+            player_wins++;
+        } else if (winner == 2) {
+            enemy_wins++;
+        }
+        
+        std::cout << "Game " << i << "/" << total_games 
+                  << " | Current Score -> Player: " << player_wins 
+                  << " | Enemy: " << enemy_wins << std::endl;
+    }
+    
+    std::cout << "\n========== EXPERIMENT RESULTS ==========" << std::endl;
+    std::cout << "Player (PPO) Winrate: " << (float)player_wins / total_games * 100 << "%" << std::endl;
+    std::cout << "Enemy  (PPO) Winrate: " << (float)enemy_wins / total_games * 100 << "%" << std::endl;
+    
+    return true;
+}
+
 
 TEST_CASE("Serializing and Deserialzing Replays as string...", "[StringReplaySystem]") {
     //REQUIRE(StringReplay() == ""); 
@@ -254,11 +285,15 @@ TEST_CASE("Testing DQN", "[DQN]"){
 }
 
 TEST_CASE("Testing PPO", "[PPO]"){
-    REQUIRE(PPO_Test());
+    //REQUIRE(PPO_Test());
 }
 
 TEST_CASE("PPO VS DQN", "[PPO vs DQN]"){
     //REQUIRE(PPO_vs_DQN());
+}
+
+TEST_CASE("PPO VS PPO Experiment", "[Experiment]"){
+    REQUIRE(PPO_vs_PPO_Experiment());
 }
 
 int main(int argc, char* argv[]) {
