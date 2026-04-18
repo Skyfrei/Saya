@@ -26,9 +26,12 @@ class RlManager
     void SaveMemoryAsBinary();
     void LoadMemoryAsBinary();
     actionT GetActionPPO(Player&, Player&, Map&);
-    void ShowInMap(Player& pl, Player& en, Map& m, at::Tensor& );
+    actionT GetActionDQNEnemy(Player& en, Player& pl, Map& map);
+    void ShowInMap(Player& pl, Player& en, Map& m, at::Tensor& tensor, std::string mode = "ppo");
     bool ShouldResetEnvironment(Player &pl, Player &en, Map &map);
     actionT GetActionPPOEnemy(Player& pl, Player& en, Map& map);
+
+    actionT GetActionDQN(Player& pl, Player& en, Map& map);
 
   public:
     std::deque<Transition> memory;
@@ -59,7 +62,7 @@ class RlManager
     float epsilon = 0.9f;
     bool calledMemOnce = false;
     const int maxSize = 10000;
-    int memory_size = 100000;
+    int memory_size = maxSize;
 
     float ppoEpsilon = 0.2f;
     float epsilonDecay = 0;

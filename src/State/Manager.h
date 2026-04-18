@@ -23,6 +23,10 @@ class Manager
     Manager();
     int MainLoop();
     int MainLoopRandom();
+    int MainLoopDQN();
+    int MainLoopDQNRandom();
+    int MainLoopPPOvsDQN();
+    int MainLoopPPOvsDQNRandom();
     void ManageLiving(Player &pl);
     float GetTime();
     void CheckForMovement();

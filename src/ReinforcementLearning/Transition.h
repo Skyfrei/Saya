@@ -32,27 +32,16 @@ struct State
     actionT action;
 };
 
-struct Transition
-{
-    Transition(State s, actionT act, State n, int index, float r, bool d);
-    Transition();
-    std::string Serialize();
-    Transition Deserialize(std::string &trans);
-    std::vector<binary> SerializeBinary();
-    Transition DeserializeBinary(std::vector<binary> &bin);
-    Unit *GetUnit(std::span<binary> bin);
-    Structure *GetStructure(std::span<binary> bin);
-    Unit *GetUnitFromString(std::span<const std::string> bin);
-    Structure *GetStructureFromString(std::span<const std::string> bin);
-    actionT GetAction(std::span<binary> bin);
-    actionT GetActionAsString(std::span<const std::string> bin);
-
-    State state;
-    State nextState;
-    actionT action;
+struct Transition {
+    at::Tensor state;
+    at::Tensor nextState;
     int actionIndex;
-    bool done = false;
-    float reward = 0.0f;
-};
+    float reward;
+    bool done;
 
+    Transition(torch::Tensor s, int act_idx, torch::Tensor ns, float r, bool d)
+        : state(s), actionIndex(act_idx), nextState(ns), reward(r), done(d) {}
+    
+    Transition() : actionIndex(0), reward(0.0f), done(false) {}
+};
 #endif // !TRANSITION_H

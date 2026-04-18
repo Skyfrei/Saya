@@ -59,7 +59,9 @@ std::string StringReplay(){
             continue;
         }
         float r = pl.TakeAction(act); 
-        Transition trans(s, act, s, action_index, r, false);
+        TensorStruct ts(s, m);
+        at::Tensor s_tensor = ts.GetTensor().clone();
+        Transition trans(s_tensor, action_index, s_tensor, r, false);
         s.playerUnits.clear();
         s.enemyUnits.clear();
         s.playerStructs.clear();
@@ -118,7 +120,9 @@ std::string BinaryReplay(){
             continue;
         }
         float r = pl.TakeAction(act); 
-        Transition trans(s, act, s, action_index, r, false);
+        TensorStruct ts(s, m);
+        at::Tensor s_tensor = ts.GetTensor().clone();
+        Transition trans(s_tensor, action_index, s_tensor, r, false);
 
         s.playerUnits.clear();
         s.enemyUnits.clear();
@@ -178,8 +182,10 @@ bool MapRender(){
     while(true){
         int b = rand() % 1000;
         Transition t = obj.memory[b];
-        std::string dqn_string = GetRenderStrings(t.action);
-        std::string ppo_string = GetRenderStrings(t.action);
+        actionT act = obj.targetNet.MapIndexToAction(pl, en, t.actionIndex);
+
+        std::string dqn_string = GetRenderStrings(act);
+        std::string ppo_string = GetRenderStrings(act);
         win.Render(pl, en, map, dqn_string, ppo_string);
         //std::cin>>a;
         //if (a == 0)
@@ -189,20 +195,25 @@ bool MapRender(){
     return true;
 }
 
-bool DQN_Test(){
+bool DQN_Training() {
     Map map;
     Player player(map, PLAYER);
     Player enemy(map, ENEMY);
+    
+    // Use the perfectly symmetrical spawns for unbiased training
     player.SetInitialCoordinates(Vec2(2, 2));
-    enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 2, MAP_SIZE - 2));
+    enemy.SetInitialCoordinates(Vec2(MAP_SIZE - 4, MAP_SIZE - 4));
+    
     RlManager man;
-    //man.LoadMemoryAsBinary();
-    man.InitializeDQN(player, enemy, map);
-    man.TrainDQN(player, enemy, map);
+    man.InitializeDQN(player, enemy, map); 
+    DeathManager::Init(&player, &enemy);
+    std::cout << "\n========== STARTING DQN TRAINING ==========" << std::endl;
+    man.TrainDQN(enemy, player, map); 
+    
     return true;
 }
 
-bool PPO_Test(){
+bool PPO_Training(){
     Map map;
     Player player(map, PLAYER);
     Player enemy(map, ENEMY);
@@ -218,19 +229,6 @@ bool PPO_Test(){
     man.TrainPPO(player, enemy, map);
     return true;
 }
-
-bool PPO_vs_DQN(){
-    Manager man;
-    int game_num = 100;
-    while(game_num >= 0){
-        man.MainLoop();
-        std::cout<<"Game: " << game_num<<std::endl; 
-        game_num--;
-    }
-
-    return true;
-}
-
 bool PPO_vs_PPO_Experiment() {
     // Manager automatically initializes PPO vs PPO and loads your latest saved models
     Manager man; 
@@ -255,9 +253,69 @@ bool PPO_vs_PPO_Experiment() {
                   << " | Enemy: " << enemy_wins << std::endl;
     }
     
-    std::cout << "\n========== EXPERIMENT RESULTS ==========" << std::endl;
+    std::cout << "\n========== PPO EXPERIMENT RESULTS ==========" << std::endl;
     std::cout << "Player (PPO) Winrate: " << (float)player_wins / total_games * 100 << "%" << std::endl;
     std::cout << "Enemy  (PPO) Winrate: " << (float)enemy_wins / total_games * 100 << "%" << std::endl;
+    
+    return true;
+}
+
+bool DQN_vs_DQN_Experiment() {
+    Manager man; 
+    
+    int player_wins = 0;
+    int enemy_wins = 0;
+    int total_games = 50; 
+    
+    std::cout << "========== STARTING DQN VS DQN EXPERIMENT ==========" << std::endl;
+    
+    for(int i = 1; i <= total_games; i++) {
+        int winner = man.MainLoopDQNRandom();
+        
+        if (winner == 1) {
+            player_wins++;
+        } else if (winner == 2) {
+            enemy_wins++;
+        }
+        
+        std::cout << "Game " << i << "/" << total_games 
+                  << " | Current Score -> Player: " << player_wins 
+                  << " | Enemy: " << enemy_wins << std::endl;
+    }
+    
+    std::cout << "\n========== DQN EXPERIMENT RESULTS ==========" << std::endl;
+    std::cout << "Player (DQN) Winrate: " << (float)player_wins / total_games * 100 << "%" << std::endl;
+    std::cout << "Enemy  (DQN) Winrate: " << (float)enemy_wins / total_games * 100 << "%" << std::endl;
+    
+    return true;
+}
+
+bool PPO_vs_DQN_Experiment(){
+    Manager man; 
+    
+    int player_wins = 0;
+    int enemy_wins = 0;
+    int total_games = 50; 
+    
+    std::cout << "========== STARTING PPO VS DQN EXPERIMENT ==========" << std::endl;
+    
+    for(int i = 1; i <= total_games; i++) {
+        int winner = man.MainLoopPPOvsDQNRandom();
+        
+        if (winner == 1) {
+            player_wins++;
+        } else if (winner == 2) {
+            enemy_wins++;
+        }
+        
+        std::cout << "Game " << i << "/" << total_games 
+                  << " | Current Score -> Player: " << player_wins 
+                  << " | Enemy: " << enemy_wins << std::endl;
+    }
+    
+    std::cout << "\n========== DQN EXPERIMENT RESULTS ==========" << std::endl;
+    std::cout << "Player (PPO) Winrate: " << (float)player_wins / total_games * 100 << "%" << std::endl;
+    std::cout << "Enemy  (DQN) Winrate: " << (float)enemy_wins / total_games * 100 << "%" << std::endl;
     
     return true;
 }
@@ -284,17 +342,27 @@ TEST_CASE("Testing DQN", "[DQN]"){
     //REQUIRE(DQN_Test());
 }
 
-TEST_CASE("Testing PPO", "[PPO]"){
-    //REQUIRE(PPO_Test());
-}
+// ------------------ Experiments and training ----------------
 
-TEST_CASE("PPO VS DQN", "[PPO vs DQN]"){
-    //REQUIRE(PPO_vs_DQN());
+TEST_CASE("Training PPO", "[PPO]"){
+    //REQUIRE(PPO_Training());
+}
+TEST_CASE("DQN Training", "[Training]"){
+    //REQUIRE(DQN_Training());
 }
 
 TEST_CASE("PPO VS PPO Experiment", "[Experiment]"){
-    REQUIRE(PPO_vs_PPO_Experiment());
+    //REQUIRE(PPO_vs_PPO_Experiment());
 }
+
+TEST_CASE("DQN VS DQN", "[Experiment]"){
+    //REQUIRE(DQN_vs_DQN_Experiment());
+}
+
+TEST_CASE("PPO VS DQN", "[Experiment]"){
+    REQUIRE(PPO_vs_DQN_Experiment());
+}
+
 
 int main(int argc, char* argv[]) {
     // Run Catch2 tests

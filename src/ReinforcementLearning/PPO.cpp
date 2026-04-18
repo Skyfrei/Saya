@@ -44,8 +44,8 @@ void PPO::SaveModel(std::string model_name){
     torch::serialize::OutputArchive archive;
     this->save(archive);
     archive.save_to(model_name);
-
 }
+
 void PPO::LoadModel(std::string model_name){
     model_name += ".pt";
     torch::serialize::InputArchive archive;

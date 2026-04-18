@@ -63,6 +63,7 @@ std::string get_latest_model(const std::string& directory_path, std::string file
 RlManager::RlManager() : win(Vec2(1000, 1000)) {
   at::set_num_threads(1);
 }
+
 actionT RlManager::GetActionPPO(Player& pl, Player& en, Map& map){
     torch::NoGradGuard no_grad; 
     State s = GetState(pl, en, map);
@@ -74,8 +75,6 @@ actionT RlManager::GetActionPPO(Player& pl, Player& en, Map& map){
 
     at::Tensor masked_output = output.masked_fill(mask == 0, -1e10);
     auto probs = torch::softmax(masked_output, 1);
-    //int action_idx = probs.argmax(1).item<int>();
-    //actionT action = ppoPolicy.MapIndexToAction(pl, en, action_idx);
 
     ShowInMap(pl, en, map, probs);
     int k = std::min(10, (int)probs.size(1));
@@ -85,6 +84,41 @@ actionT RlManager::GetActionPPO(Player& pl, Player& en, Map& map){
     actionT action = ppoPolicy.MapIndexToAction(pl, en, action_idx);
 
     return action;
+}
+
+actionT RlManager::GetActionDQN(Player& pl, Player& en, Map& map) {
+    torch::NoGradGuard no_grad;
+    State s = GetState(pl, en, map);
+    at::Tensor s_tensor = TensorStruct(s, map).GetTensor();
+    at::Tensor mask = GetMask(pl, en, policyNet.actionSize);
+    
+    at::Tensor q_values = policyNet.Forward(s_tensor);
+    at::Tensor masked_q = q_values.masked_fill(mask == 0, -1e10);
+
+    float temperature = 0.8f; 
+    at::Tensor probs = torch::softmax(masked_q / temperature, 1);
+    
+    int act_idx = torch::multinomial(probs, 1).item<int>();
+    
+    //ShowInMap(pl, en, map, probs, "dqn");
+    
+    return policyNet.MapIndexToAction(pl, en, act_idx);
+}
+
+actionT RlManager::GetActionDQNEnemy(Player& en, Player& pl, Map& map) {
+    torch::NoGradGuard no_grad; 
+    State s = GetState(en, pl, map);
+    at::Tensor s_tensor = TensorStruct(s, map).GetTensor();
+    
+    auto q_values = targetNet.Forward(s_tensor);
+    at::Tensor mask = GetMask(en, pl, targetNet.actionSize); 
+    at::Tensor masked_q = q_values.masked_fill(mask == 0, -1e10);
+
+    float temperature = 0.8f;
+    at::Tensor probs = torch::softmax(masked_q / temperature, 1);
+    int action_idx = torch::multinomial(probs, 1).item<int>();
+
+    return targetNet.MapIndexToAction(en, pl, action_idx);
 }
 
 actionT RlManager::GetActionPPOEnemy(Player& en, Player& pl, Map& map){
@@ -98,8 +132,6 @@ actionT RlManager::GetActionPPOEnemy(Player& en, Player& pl, Map& map){
 
     at::Tensor masked_output = output.masked_fill(mask == 0, -1e10);
     auto probs = torch::softmax(masked_output, 1);
-    //int action_idx = probs.argmax(1).item<int>();
-    //actionT action = enemyPPO.MapIndexToAction(en, pl, action_idx);
 
     int k = std::min(50, (int)probs.size(1));
     auto topk_res = probs.topk(k, 1);
@@ -116,15 +148,17 @@ void RlManager::InitializeDQN(Player &pl, Player &en, Map &map) {
     State s = GetState(pl, en, map);
     policyNet.Initialize(map, s);
     targetNet.Initialize(map, s);
-    torch::Device device(torch::kCPU);
 
-    if (torch::cuda::is_available())
-    {
-        device = torch::Device(torch::DeviceType::CUDA);
-        episodeNumber = 200;
-        policyNet.to(device);
-        targetNet.to(device);
+    std::string enemy_path = (pl.side == PLAYER) ? 
+        get_latest_model("models/enemy_models_dqn/", "dqn_policy-", "pt") : 
+        get_latest_model("models/player_models_dqn/", "dqn_policy-", "pt");
+
+    if (!enemy_path.empty()) {
+        targetNet.LoadModel(enemy_path);
+    } else {
+        std::cout << "No enemy model found. Training against random initialization." << std::endl;
     }
+
 }
 
 void RlManager::InitializePPO(Player &pl, Player &en, Map &map){
@@ -150,13 +184,13 @@ bool RlManager::ShouldResetEnvironment(Player &pl, Player &en, Map &map) {
         bool hasPeasant = p.HasUnit(PEASANT);
         bool hasHall = p.HasStructure(HALL);
 
+
         if (!hasPeasant && !hasHall) return true;
         if (!hasPeasant && p.gold < 55) return true;
         if (hasPeasant && p.gold < hallCost && !hasHall) return true;
     
         return false;
     };
-
     if (Reset(pl) || Reset(en)){
         return true;
     }
@@ -387,9 +421,6 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
 
                 float reward = raw_reward - 0.01f; // 0.1 here is a time penalty
                 episode_reward += reward;
-                /* doing this for dqn experiecne */ 
-                Transition trans(s, action, s1, reward, action_index, done);
-                /* doing this for dqn experiecne */ 
 
                 if (fullSteps == 0 || (int)fullSteps % 20 == 0){ 
                   ShowInMap(pl, en, map, output_soft); 
@@ -538,9 +569,8 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
     }
 }
 
-void RlManager::ShowInMap(Player& pl, Player& en, Map& m, at::Tensor& tensor){
-    std::string dqn_string = "yes";
-    std::string ppo_string = "";
+void RlManager::ShowInMap(Player& pl, Player& en, Map& m, at::Tensor& tensor, std::string mode) {
+    std::string ui_string = "";
 
     int k = std::min(10, (int)tensor.size(1));
     auto topk_res = tensor.topk(k, 1);
@@ -550,20 +580,23 @@ void RlManager::ShowInMap(Player& pl, Player& en, Map& m, at::Tensor& tensor){
     for (int i = 0; i < k; ++i) {
         int action_idx = top_indices[0][i].item<int>();
         float conf_value = top_values[0][i].item<float>(); 
-        actionT action = ppoPolicy.MapIndexToAction(pl, en, action_idx);
+        
+        // Check the string mode to map the action using the correct network
+        actionT action = (mode == "dqn") ? policyNet.MapIndexToAction(pl, en, action_idx) : ppoPolicy.MapIndexToAction(pl, en, action_idx);
+        
         char buf[16];
         snprintf(buf, sizeof(buf), "%.1f%%", conf_value * 100.0f);
-        ppo_string += std::to_string(i + 1) + ". [" + std::string(buf) + "] ";
+        ui_string += std::to_string(i + 1) + ". [" + std::string(buf) + "] ";
 
         if (std::holds_alternative<MoveAction>(action)) {
             auto& act = std::get<MoveAction>(action);
-            ppo_string += "Move unit (" + std::to_string(act.unit->coordinate.x) + ", "
+            ui_string += "Move unit (" + std::to_string(act.unit->coordinate.x) + ", "
                 + std::to_string(act.unit->coordinate.y) + ") to (" + 
                 std::to_string(act.destCoord.x) + ", " + std::to_string(act.destCoord.y) + ")";
             
         } else if (std::holds_alternative<FarmGoldAction>(action)) {
             auto& act = std::get<FarmGoldAction>(action);
-            ppo_string += "Farm with unit (" + std::to_string(act.peasant->coordinate.x) + "," +
+            ui_string += "Farm with unit (" + std::to_string(act.peasant->coordinate.x) + "," +
                 std::to_string(act.peasant->coordinate.y) + ") " + "at (" + std::to_string(act.destCoord.x)
                 + ", " + std::to_string(act.destCoord.y) + ")";
             
@@ -571,78 +604,162 @@ void RlManager::ShowInMap(Player& pl, Player& en, Map& m, at::Tensor& tensor){
             auto& act = std::get<BuildAction>(action);
             std::string bType = "";
             switch(act.struType){
-                 case HALL:
-                    bType = "Hall";
-                    break;
-                case BARRACK:
-                    bType = "Barrack";
-                    break;
-                case FARM:
-                    bType = "Farm";
-                    break;
-                default:
-                    break;
+                 case HALL: bType = "Hall"; break;
+                 case BARRACK: bType = "Barrack"; break;
+                 case FARM: bType = "Farm"; break;
+                 default: break;
             }
-            ppo_string += "Build at (" + std::to_string(act.coordinate.x) + ", " + std::to_string(act.coordinate.y) + ") "
-                        + bType;
+            ui_string += "Build at (" + std::to_string(act.coordinate.x) + ", " + std::to_string(act.coordinate.y) + ") " + bType;
             
         } else if (std::holds_alternative<AttackAction>(action)) {
             auto& act = std::get<AttackAction>(action);
-            ppo_string += "Attack (" + std::to_string(act.object->coordinate.x) + ", " + std::to_string(act.object->coordinate.y) + ")"; 
+            ui_string += "Attack (" + std::to_string(act.object->coordinate.x) + ", " + std::to_string(act.object->coordinate.y) + ")"; 
             
         } else if (std::holds_alternative<RecruitAction>(action)) {
             auto& act = std::get<RecruitAction>(action);
             std::string uType = "";
             switch(act.unitType){
-                case FOOTMAN:
-                    uType = "Footman";
-                    break;
-                case PEASANT:
-                    uType = "Peasant";
-                    break;
-                default:
-                    break;
+                case FOOTMAN: uType = "Footman"; break;
+                case PEASANT: uType = "Peasant"; break;
+                default: break;
             }
-            ppo_string += "Recruit type: " + uType; 
+            ui_string += "Recruit type: " + uType; 
         } else if (std::holds_alternative<EmptyAction>(action)) {
-            ppo_string += "Empty action";
+            ui_string += "Empty action";
         }
-        ppo_string += "\n";
+        ui_string += "\n";
     }
-    win.Render(pl, en, m, dqn_string, ppo_string);
+    
+    // Render on the left (DQN) or right (PPO) based on the string mode
+    if (mode == "dqn") {
+        win.Render(pl, en, m, ui_string, "");
+    } else {
+        win.Render(pl, en, m, "yes", ui_string);
+    }
 }
 
 void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
-    // float updateRate = 0.005;rlmana
     float tau = 0.005; 
     torch::optim::AdamW optimizer(
-        policyNet.parameters(), torch::optim::AdamWOptions(0.01).weight_decay(1e-4));
+        policyNet.parameters(), torch::optim::AdamWOptions(3e-4).weight_decay(1e-4));
+    std::string policy_path, target_path;
+    if (pl.side == PLAYER) {
+        policy_path = get_latest_model("models/player_models_dqn/", "dqn_policy-", "pt");
+        target_path = get_latest_model("models/enemy_models_dqn/", "dqn_policy-", "pt");
+    } else {
+        policy_path = get_latest_model("models/enemy_models_dqn/", "dqn_policy-", "pt");
+        target_path = get_latest_model("models/player_models_dqn/", "dqn_policy-", "pt");
+    }
+    if (!policy_path.empty()) {
+        policyNet.LoadModel(policy_path);
+        std::cout << ">>> Resumed Policy from: " << policy_path << std::endl;
+    }
+    if (!target_path.empty()) {
+        targetNet.LoadModel(target_path);
+        std::cout << ">>> Resumed Target/Enemy from: " << target_path << std::endl;
+    }
 
     LoadMemoryAsBinary();
-    for (int i = 0; i < episodeNumber; i++)
-    {
-        for (int j = 0; j < 1000; j++)
-        {
+    epsilonDecay = 0.95f / episodeNumber; 
+    epsilon = 1.0f;
+
+    for (int i = 0; i < episodeNumber; i++) {
+        std::unordered_map<std::string, int> action_count_map = {
+            {"move", 0}, {"attack", 0}, {"build", 0}, {"farm", 0}, {"recruit", 0}, {"empty", 0}
+        };
+        float total_reward = 0.0f;
+        int steps = 0;
+        bool done = false;
+        bool is_paused = false;
+
+        while (!done && steps < 5000) {
+            win.PollEvents(is_paused);
+            while (is_paused) { win.PollEvents(is_paused); SDL_Delay(10); }
+
             State currState = GetState(pl, en, map);
+            torch::Tensor s_tensor = TensorStruct(currState, map).GetTensor().clone();
+            at::Tensor mask = GetMask(pl, en, policyNet.actionSize); 
 
-            auto selectedAction =
-                policyNet.SelectAction(pl, en, map, currState, epsilon);
+            int act_idx;
+            at::Tensor q_values = policyNet.Forward(s_tensor);
 
-            float reward = pl.TakeAction(std::get<0>(selectedAction));
+            
+            if (torch::rand({1}).item<float>() > epsilon) {
+                at::Tensor masked_q = q_values.masked_fill(mask == 0, -1e10);
+                act_idx = masked_q.argmax(1).item<int>();
+            } else {
+                at::Tensor valid_indices = torch::nonzero(mask.flatten() == 1).flatten();
+                if (valid_indices.size(0) > 0) {
+                    // Uniformly sample from valid indices (same logic as the enemy)
+                    int sampled_pos = torch::randint(0, valid_indices.size(0), {}).item<long>();
+                    act_idx = valid_indices[sampled_pos].item<int>();
+                } else {
+                    act_idx = 0; // Fallback 
+                }
+            }
+            actionT p_act = policyNet.MapIndexToAction(pl, en, act_idx);
+            count_action(action_count_map, p_act);
+            float reward = pl.TakeAction(p_act);
+
+            State enState = GetState(en, pl, map);
+            at::Tensor en_s_tensor = TensorStruct(enState, map).GetTensor();
+            at::Tensor en_mask = GetMask(en, pl, targetNet.actionSize);
+            at::Tensor en_q = targetNet.Forward(en_s_tensor);
+            int en_act_idx;
+            
+            if (torch::rand({1}).item<float>() > 0.2f) {
+                en_act_idx = en_q.masked_fill(en_mask == 0, -1e10).argmax(1).item<int>();
+            } else {
+                at::Tensor en_valid = torch::nonzero(en_mask.flatten() == 1).flatten();
+                en_act_idx = (en_valid.size(0) > 0) ? en_valid[torch::randint(0, en_valid.size(0), {}).item<long>()].item<int>() : 0;
+            }
+            actionT en_act = targetNet.MapIndexToAction(en, pl, en_act_idx);
+            en.TakeAction(en_act);
+
+            steps++;
+            reward -= 0.01f;
+
+            if (steps % 256 == 0) {
+                at::Tensor masked_output = q_values.masked_fill(mask == 0, -1e10);
+                at::Tensor probs = torch::softmax(masked_output, 1);
+                ShowInMap(pl, en, map, probs, "dqn");
+
+                for (const auto& [action, count] : action_count_map) {
+                    std::cout << action << ": " << count << " | ";
+                }
+                std::cout << "p.gold: " << pl.gold << "|en.gold: " << en.gold 
+                          << "|pun: " << pl.units.size() << "|eun: " << en.units.size() 
+                          << " | Steps: " << steps << std::endl;
+            }
+
+            bool envDone = ShouldResetEnvironment(pl, en, map); 
+            done = envDone || (steps >= 5000);
+            if (envDone) {
+                 const int hallCost = 590; 
+                 bool plHasPeasant = pl.HasUnit(PEASANT);
+                 bool plHasHall = pl.HasStructure(HALL);
+                 bool plLost = (!plHasPeasant && !plHasHall) || 
+                               (!plHasPeasant && pl.gold < 55) || 
+                               (plHasPeasant && pl.gold < hallCost && !plHasHall);
+
+                 bool enLost = (!en.HasUnit(PEASANT) && !en.HasStructure(HALL)); 
+             
+                 if (plLost) {
+                     reward -= 5.0f;
+                 } else if (enLost){
+                     reward += 5.0f;
+                 }
+             }
+
+            total_reward += reward;
             State nextState = GetState(pl, en, map);
-            bool done = ShouldResetEnvironment(pl, en, map);
+            torch::Tensor ns_tensor = TensorStruct(nextState, map).GetTensor().clone();
 
-            Transition trans(currState, std::get<0>(selectedAction), nextState,
-                             reward, std::get<1>(selectedAction), done);
-            AddExperience(trans);
+            AddExperience(Transition(s_tensor, act_idx, ns_tensor, reward, done));
 
-            selectedAction = policyNet.SelectAction(en, pl, map, nextState, epsilon);
-            en.TakeAction(std::get<0>(selectedAction));
-
-            OptimizeDQN(map, optimizer);
-            epsilon = std::max(0.05f, epsilon - epsilonDecay);
-
-            if (memory.size() >= 512) {
+            if (steps % 64 == 0 && memory.size() >= 512) {
+                OptimizeDQN(map, optimizer); 
+                
                 torch::NoGradGuard no_grad;
                 auto target_params = targetNet.parameters();
                 auto policy_params = policyNet.parameters();
@@ -650,58 +767,56 @@ void RlManager::TrainDQN(Player &pl, Player &en, Map &map) {
                     target_params[k].copy_(target_params[k] * (1.0 - tau) + policy_params[k] * tau);
                 }
             }
-            if (done)
-                break;
+        }
+        
+        epsilon = std::max(0.05f, epsilon - epsilonDecay);
+        std::cout << "Episode: " << i << " | Steps: " << steps << " | Reward: " << total_reward << std::endl;
+        
+        map.Reset();
+        pl.Reset(pl.side);
+        en.Reset(en.side);
+
+        if ((i % 10 == 0 && i != 0) || i == episodeNumber - 1) {
+            SaveMemoryAsBinary(); 
+            std::string time_suffix = get_current_time();
+            if (pl.side == PLAYER) {
+                policyNet.SaveModel("models/player_models_dqn/dqn_policy-" + time_suffix); 
+                targetNet.SaveModel("models/enemy_models_dqn/dqn_policy-" + time_suffix);
+            } else {
+                policyNet.SaveModel("models/enemy_models_dqn/dqn_policy-" + time_suffix); 
+                targetNet.SaveModel("models/player_models_dqn/dqn_policy-" + time_suffix);
+            }
         }
     }
-    SaveMemoryAsBinary();
-    policyNet.SaveModel();
 }
 
 void RlManager::OptimizeDQN(Map &map, torch::optim::AdamW& optimizer) {
     int batch_size = 512;
-    if (memory.size() < batch_size)
-        return;
+    if (memory.size() < batch_size) return;
 
     std::random_device dev;
     std::mt19937 rng(dev());
-
-    std::deque<Transition> samples;
     std::uniform_int_distribution<size_t> dist(0, memory.size() - 1);
 
+    std::vector<torch::Tensor> states, actions, next_states, rewards, dones;
+
     for (int i = 0; i < batch_size; ++i) {
-        samples.push_back(memory[dist(rng)]); // Instant lookup
+        const auto& trans = memory[dist(rng)];
+        states.push_back(trans.state); // Instant access
+        next_states.push_back(trans.nextState);
+        actions.push_back(torch::tensor({(int64_t)trans.actionIndex}));
+        rewards.push_back(torch::tensor({std::clamp(trans.reward, -1.0f, 1.0f)}));
+        dones.push_back(torch::tensor({trans.done ? 0.0f : 1.0f}));
     }
 
-    std::vector<torch::Tensor> state_batch;
-    std::vector<torch::Tensor> state_action;
-    std::vector<torch::Tensor> next_state_batch;
-    std::vector<torch::Tensor> reward_batch;
-    std::vector<torch::Tensor> done_batch;
-    done_batch.reserve(batch_size);
+    auto tensor_states = torch::cat(states);
+    auto tensor_next_states = torch::cat(next_states);
+    auto tensor_actions = torch::cat(actions).unsqueeze(1);
+    auto tensor_rewards = torch::cat(rewards).unsqueeze(1);
+    auto tensor_dones = torch::cat(dones).unsqueeze(1);
 
-    state_batch.reserve(batch_size);
-    next_state_batch.reserve(batch_size);
-    for (auto &trans : samples)
-    {
-        TensorStruct z(trans.state, map);
-        TensorStruct z1(trans.nextState, map);
-        state_batch.push_back(z.GetTensor());
-        state_action.push_back(torch::tensor({static_cast<int64_t>(trans.actionIndex)}, torch::kInt64));
-        reward_batch.push_back(torch::tensor({trans.reward}, torch::kFloat32));
-        next_state_batch.push_back(z1.GetTensor());
-        done_batch.push_back(torch::tensor({trans.done ? 0.0f : 1.0f}, torch::kFloat32));
-    }
+    torch::Tensor q_values = policyNet.Forward(tensor_states).gather(1, tensor_actions);
 
-    torch::Tensor tensor_states = torch::cat(state_batch);
-    torch::Tensor tensor_actions = torch::cat(state_action).unsqueeze(1);
-    torch::Tensor tensor_rewards = torch::cat(reward_batch).unsqueeze(1);
-    torch::Tensor tensor_dones = torch::cat(done_batch).unsqueeze(1);
-
-    torch::Tensor q_values =
-        policyNet.Forward(tensor_states).gather(1, tensor_actions);
-
-    torch::Tensor tensor_next_states = torch::cat(next_state_batch);
     torch::Tensor q_next_values;
     {
         torch::NoGradGuard no_grad;
@@ -709,13 +824,10 @@ void RlManager::OptimizeDQN(Map &map, torch::optim::AdamW& optimizer) {
         q_next_values = tensor_rewards + (gamma * q_next_values * tensor_dones);
     }
 
-    auto criterion = torch::nn::SmoothL1Loss();
-    auto loss = criterion(q_values, q_next_values);
-
-    std::cout << "Loss: " << loss.item<float>() << std::endl;
+    auto loss = torch::nn::functional::smooth_l1_loss(q_values, q_next_values);
     optimizer.zero_grad();
     loss.backward();
-    torch::nn::utils::clip_grad_value_(policyNet.parameters(), 100);
+    torch::nn::utils::clip_grad_norm_(policyNet.parameters(), 1.0f);
     optimizer.step();
 }
 
@@ -756,88 +868,215 @@ void RlManager::AddExperience(Transition trans) {
 }
 
 void RlManager::SaveMemoryAsString() {
-    std::string data_to_save = "";
-    std::string memory_file = "models/player_dqn_experience/memory_" + get_current_time() + ".say";
-    for (int i = 0; i < memory.size(); i++)
-    {
-        data_to_save += memory[i].Serialize() + "\n";
+    std::ofstream file("memory_string.txt");
+    if (!file.is_open()) return;
+
+    for (const auto& trans : memory) {
+        // Format: ActionIndex,Reward,Done,InputSize|StateData|NextStateData
+        file << trans.actionIndex << "," << trans.reward << "," << (trans.done ? 1 : 0) << ",";
+        
+        int inputSize = trans.state.size(1);
+        file << inputSize << "|";
+
+        float* s_ptr = trans.state.data_ptr<float>();
+        for(int i = 0; i < inputSize; ++i) file << s_ptr[i] << (i == inputSize - 1 ? "" : ",");
+        
+        file << "|";
+
+        float* ns_ptr = trans.nextState.data_ptr<float>();
+        for(int i = 0; i < inputSize; ++i) file << ns_ptr[i] << (i == inputSize - 1 ? "" : ",");
+        
+        file << "\n";
     }
-    std::ofstream file;
-    file.open(memory_file);
-    file << data_to_save;
     file.close();
 }
 
 void RlManager::LoadMemoryAsString() {
+    std::ifstream file("memory_string.txt");
+    if (!file.is_open()) return;
 
-    std::string memory_file = get_latest_model("models/player_dqn_experience", "memory_", "say");
-    std::ifstream file(memory_file);
-    if (!file.is_open()) {
-        std::cout << "String replay file couldn't be opened.\n";
-        return;
+    memory.clear();
+    std::string line;
+    while (std::getline(file, line)) {
+        std::stringstream ss(line);
+        std::string segment;
+        
+        // 1. Metadata
+        std::getline(ss, segment, '|');
+        std::stringstream meta_ss(segment);
+        std::string val;
+        std::getline(meta_ss, val, ','); int act = std::stoi(val);
+        std::getline(meta_ss, val, ','); float rew = std::stof(val);
+        std::getline(meta_ss, val, ','); bool d = std::stoi(val) == 1;
+        std::getline(meta_ss, val, ','); int inSize = std::stoi(val);
+
+        // 2. State Tensor Data
+        std::vector<float> s_data(inSize);
+        std::getline(ss, segment, '|');
+        std::stringstream s_ss(segment);
+        for(int i = 0; i < inSize; ++i) {
+            std::getline(s_ss, val, ',');
+            s_data[i] = std::stof(val);
+        }
+
+        // 3. Next State Tensor Data
+        std::vector<float> ns_data(inSize);
+        std::getline(ss, segment, '|');
+        std::stringstream ns_ss(segment);
+        for(int i = 0; i < inSize; ++i) {
+            std::getline(ns_ss, val, ',');
+            ns_data[i] = std::stof(val);
+        }
+
+        torch::Tensor s = torch::from_blob(s_data.data(), {1, inSize}).clone();
+        torch::Tensor ns = torch::from_blob(ns_data.data(), {1, inSize}).clone();
+        memory.push_back(Transition(s, act, ns, rew, d));
     }
-
-    std::string fileContents((std::istreambuf_iterator<char>(file)),
-                             std::istreambuf_iterator<char>());
-
-    file.close();
-    Transition trans;
-    trans = trans.Deserialize(fileContents);
-    AddExperience(trans);
 }
 
 void RlManager::SaveMemoryAsBinary() {
-    std::string memory_file_binary = "models/player_dqn_experience/memory_" + get_current_time() + ".bay";
-    std::vector<binary> data_to_save;
-    std::ofstream file;
-    file.open(memory_file_binary, std::ios::binary);
-    data_to_save.reserve(memory.size() * 1024);
+    std::ofstream file("binary.bay", std::ios::binary);
+    if (!file.is_open()) return;
 
-    // Accumulate all serialized vectors
-    for (int i = 0; i < memory.size(); i++) {
-        std::vector<binary> data = memory[i].SerializeBinary();
-        data_to_save.insert(data_to_save.end(), data.begin(), data.end());
+    size_t memSize = memory.size();
+    file.write(reinterpret_cast<char*>(&memSize), sizeof(memSize));
+
+    for (const auto& trans : memory) {
+        // Save metadata
+        file.write(reinterpret_cast<const char*>(&trans.actionIndex), sizeof(int));
+        file.write(reinterpret_cast<const char*>(&trans.reward), sizeof(float));
+        file.write(reinterpret_cast<const char*>(&trans.done), sizeof(bool));
+
+        // Save Tensors (Flatten to float arrays)
+        int inputSize = trans.state.size(1);
+        file.write(reinterpret_cast<const char*>(&inputSize), sizeof(int));
+        
+        file.write(reinterpret_cast<const char*>(trans.state.data_ptr<float>()), inputSize * sizeof(float));
+        file.write(reinterpret_cast<const char*>(trans.nextState.data_ptr<float>()), inputSize * sizeof(float));
     }
-    file.write(reinterpret_cast<char*>(data_to_save.data()), data_to_save.size() * sizeof(binary));
-
     file.close();
 }
-// 0-11 first bytes,
+
 void RlManager::LoadMemoryAsBinary() {
-    std::string memory_file_binary = get_latest_model("models/player_dqn_experience", "memory_", "bay");
-    std::ifstream file(memory_file_binary, std::ios::binary);
-    std::vector<binary> binaryData;
-    int expectedBytes = 0;
-    binary temp;
-    int count = 0;
+    std::ifstream file("binary.bay", std::ios::binary);
+    if (!file.is_open()) return;
 
-    if (!file.is_open())
-    {
-        std::cout << "Binary replay file couldn't be opened.";
-        return;
+    size_t memSize;
+    file.read(reinterpret_cast<char*>(&memSize), sizeof(memSize));
+    memory.clear();
+
+    for (size_t i = 0; i < memSize; ++i) {
+        int act; float rew; bool d; int inSize;
+        file.read(reinterpret_cast<char*>(&act), sizeof(int));
+        file.read(reinterpret_cast<char*>(&rew), sizeof(float));
+        file.read(reinterpret_cast<char*>(&d), sizeof(bool));
+        file.read(reinterpret_cast<char*>(&inSize), sizeof(int));
+
+        std::vector<float> s_data(inSize), ns_data(inSize);
+        file.read(reinterpret_cast<char*>(s_data.data()), inSize * sizeof(float));
+        file.read(reinterpret_cast<char*>(ns_data.data()), inSize * sizeof(float));
+
+        // Reconstruct Tensors from raw bytes
+        torch::Tensor s = torch::from_blob(s_data.data(), {1, inSize}).clone();
+        torch::Tensor ns = torch::from_blob(ns_data.data(), {1, inSize}).clone();
+
+        memory.push_back(Transition(s, act, ns, rew, d));
     }
-
-    while (file.read(reinterpret_cast<char *>(&temp), sizeof(binary)))
-    {
-        if (binaryData.size() == 0)
-        {
-            expectedBytes = std::get<int>(temp);
-            binaryData.resize(expectedBytes);
-            // std::cout<<expectedBytes<<" ";
-            continue;
-        }
-        binaryData[count] = temp;
-
-        if (count == expectedBytes - 1)
-        {
-            Transition trans;
-            trans = trans.DeserializeBinary(binaryData);
-            AddExperience(trans);
-            binaryData.clear();
-            count = 0;
-            continue;
-        }
-        count++;
-    }
+    std::cout<<"DQN memory loaded"<<std::endl;
     file.close();
 }
+
+
+
+// OLD WITH STATE BUT ERROR PRONE BECAUSE OF DANGLING POITNERS CHANGED TO JUST PLAIN TENSORS
+
+
+//void RlManager::SaveMemoryAsBinary() {
+//    std::string memory_file_binary = "models/player_dqn_experience/memory_" + get_current_time() + ".bay";
+//    std::vector<binary> data_to_save;
+//    std::ofstream file;
+//    file.open(memory_file_binary, std::ios::binary);
+//    data_to_save.reserve(memory.size() * 1024);
+//
+//    // Accumulate all serialized vectors
+//    for (int i = 0; i < memory.size(); i++) {
+//        std::vector<binary> data = memory[i].SerializeBinary();
+//        data_to_save.insert(data_to_save.end(), data.begin(), data.end());
+//    }
+//    file.write(reinterpret_cast<char*>(data_to_save.data()), data_to_save.size() * sizeof(binary));
+//
+//    file.close();
+//}
+//
+//
+//// 0-11 first bytes,
+//void RlManager::LoadMemoryAsBinary() {
+//    std::string memory_file_binary = get_latest_model("models/player_dqn_experience", "memory_", "bay");
+//    std::ifstream file(memory_file_binary, std::ios::binary);
+//    std::vector<binary> binaryData;
+//    int expectedBytes = 0;
+//    binary temp;
+//    int count = 0;
+//
+//    if (!file.is_open())
+//    {
+//        std::cout << "Binary replay file couldn't be opened.";
+//        return;
+//    }
+//
+//    while (file.read(reinterpret_cast<char *>(&temp), sizeof(binary)))
+//    {
+//        if (binaryData.size() == 0)
+//        {
+//            expectedBytes = std::get<int>(temp);
+//            binaryData.resize(expectedBytes);
+//            // std::cout<<expectedBytes<<" ";
+//            continue;
+//        }
+//        binaryData[count] = temp;
+//
+//        if (count == expectedBytes - 1)
+//        {
+//            Transition trans;
+//            trans = trans.DeserializeBinary(binaryData);
+//            AddExperience(trans);
+//            binaryData.clear();
+//            count = 0;
+//            continue;
+//        }
+//        count++;
+//    }
+//    file.close();
+//}
+//
+//void RlManager::SaveMemoryAsString() {
+//    std::string data_to_save = "";
+//    std::string memory_file = "models/player_dqn_experience/memory_" + get_current_time() + ".say";
+//    for (int i = 0; i < memory.size(); i++)
+//    {
+//        data_to_save += memory[i].Serialize() + "\n";
+//    }
+//    std::ofstream file;
+//    file.open(memory_file);
+//    file << data_to_save;
+//    file.close();
+//}
+//
+//
+//void RlManager::LoadMemoryAsString() {
+//
+//    std::string memory_file = get_latest_model("models/player_dqn_experience", "memory_", "say");
+//    std::ifstream file(memory_file);
+//    if (!file.is_open()) {
+//        std::cout << "String replay file couldn't be opened.\n";
+//        return;
+//    }
+//
+//    std::string fileContents((std::istreambuf_iterator<char>(file)),
+//                             std::istreambuf_iterator<char>());
+//
+//    file.close();
+//    Transition trans;
+//    trans = trans.Deserialize(fileContents);
+//    AddExperience(trans);
+//}

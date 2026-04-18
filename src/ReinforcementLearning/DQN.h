@@ -32,8 +32,8 @@ class DQN : public torch::nn::Module
 
     void PrintWeight();
     void AttachAgent(Player &pl);
-    void SaveModel();
-    void LoadModel();
+    void SaveModel(std::string model_name);
+    void LoadModel(std::string model_name);
 
   public:
     int episodeNumber = 50;
@@ -41,6 +41,8 @@ class DQN : public torch::nn::Module
     int actionSize = 0;
     int inputSize = 0;
     torch::nn::Linear layer1{nullptr}, layer2{nullptr}, layer3{nullptr};
+    torch::nn::Tanh tanh;
+
 
 
     int memory_size = 1000;

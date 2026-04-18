@@ -16,12 +16,14 @@ void DQN::Initialize(Map &map, State &s) {
     layer1 = register_module("layer1", torch::nn::Linear(inputSize, 128));
     layer2 = register_module("layer2", torch::nn::Linear(128, 128));
     layer3 = register_module("layer3", torch::nn::Linear(128, actionSize));
+    tanh = register_module("tanh", torch::nn::Tanh());
+
 }
 
 torch::Tensor DQN::Forward(torch::Tensor x) {
-    x = torch::relu(layer1->forward(x));
-    x = torch::relu(layer2->forward(x));
-    x = layer3->forward(x);
+    x = tanh(layer1(x));
+    x = tanh(layer2(x));
+    x = layer3(x);
     return x;
 }
 
@@ -41,10 +43,7 @@ std::tuple<actionT, int> DQN::SelectAction(Player &pl, Player &en, Map &map,
     }
     else
     {
-        at::Tensor probs = torch::softmax(output, 1);
-        at::Tensor actionIndex = torch::multinomial(probs, 1);
-        
-        int random_action = actionIndex.item<int>();
+        int random_action = GetRandomOutputIndex(); 
         actionT result = MapIndexToAction(pl, en, random_action);
         return {result, random_action};
     }
@@ -316,16 +315,19 @@ void DQN::PrintWeight() {
     std::cout << this->layer1->weight[0][0] << std::endl;
 }
 
-void DQN::SaveModel() {
+void DQN::SaveModel(std::string model_name){
+    model_name += ".pt";
     torch::serialize::OutputArchive archive;
     this->save(archive);
-    archive.save_to(model_file);
+    archive.save_to(model_name);
 }
 
-void DQN::LoadModel() {
+void DQN::LoadModel(std::string model_name){
+    model_name += ".pt";
     torch::serialize::InputArchive archive;
-    archive.load_from(model_file);
+    archive.load_from(model_name);
     this->load(archive);
+    this->eval();
 }
 
 
