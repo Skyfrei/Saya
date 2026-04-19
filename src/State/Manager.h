@@ -27,6 +27,7 @@ class Manager
     int MainLoopDQNRandom();
     int MainLoopPPOvsDQN();
     int MainLoopPPOvsDQNRandom();
+    int BothMap();
     void ManageLiving(Player &pl);
     float GetTime();
     void CheckForMovement();

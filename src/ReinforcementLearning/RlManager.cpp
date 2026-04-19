@@ -63,6 +63,34 @@ std::string get_latest_model(const std::string& directory_path, std::string file
 RlManager::RlManager() : win(Vec2(1000, 1000)) {
   at::set_num_threads(1);
 }
+at::Tensor RlManager::GetPPOTensor(Player& pl, Player& en, Map& map){
+    torch::NoGradGuard no_grad; 
+    State s = GetState(pl, en, map);
+
+    TensorStruct tensorStruct(s, map);
+    
+    auto output = ppoPolicy.Forward(tensorStruct.GetTensor());
+    torch::Tensor mask = GetMask(pl, en, ppoPolicy.GetOutputSize()); 
+
+    at::Tensor masked_output = output.masked_fill(mask == 0, -1e10);
+    auto probs = torch::softmax(masked_output, 1);
+    return probs;
+}
+
+at::Tensor RlManager::GetDQNTensor(Player& pl, Player& en, Map& map){
+    torch::NoGradGuard no_grad;
+    State s = GetState(pl, en, map);
+    at::Tensor s_tensor = TensorStruct(s, map).GetTensor();
+    at::Tensor mask = GetMask(pl, en, policyNet.actionSize);
+    
+    at::Tensor q_values = policyNet.Forward(s_tensor);
+    at::Tensor masked_q = q_values.masked_fill(mask == 0, -1e10);
+
+    float temperature = 0.8f; 
+    at::Tensor probs = torch::softmax(masked_q / temperature, 1);
+    return probs;
+}
+
 
 actionT RlManager::GetActionPPO(Player& pl, Player& en, Map& map){
     torch::NoGradGuard no_grad; 
@@ -76,7 +104,7 @@ actionT RlManager::GetActionPPO(Player& pl, Player& en, Map& map){
     at::Tensor masked_output = output.masked_fill(mask == 0, -1e10);
     auto probs = torch::softmax(masked_output, 1);
 
-    ShowInMap(pl, en, map, probs);
+    //ShowInMap(pl, en, map, probs);
     int k = std::min(10, (int)probs.size(1));
     auto topk_res = probs.topk(k, 1);
     int sample_idx = torch::multinomial(std::get<0>(topk_res), 1).item<int>();
@@ -116,6 +144,7 @@ actionT RlManager::GetActionDQNEnemy(Player& en, Player& pl, Map& map) {
 
     float temperature = 0.8f;
     at::Tensor probs = torch::softmax(masked_q / temperature, 1);
+    //ShowInMap(pl, en, map, probs, "dqn");
     int action_idx = torch::multinomial(probs, 1).item<int>();
 
     return targetNet.MapIndexToAction(en, pl, action_idx);
@@ -567,6 +596,76 @@ void RlManager::TrainPPO(Player &pl, Player &en, Map &map){
             }
         }
     }
+}
+void RlManager::ShowInMap(Player& pl, Player& en, Map& m, at::Tensor& tensor, at::Tensor& tensor_en) {
+    auto build_ui_string = [&](at::Tensor& t, const std::string& mode) {
+        std::string ui_string = "";
+        int k = std::min(10, (int)t.size(1));
+        auto topk_res = t.topk(k, 1);
+        auto top_values = std::get<0>(topk_res);
+        auto top_indices = std::get<1>(topk_res);
+
+        for (int i = 0; i < k; ++i) {
+            int action_idx = top_indices[0][i].item<int>();
+            float conf_value = top_values[0][i].item<float>(); 
+            
+            actionT action = (mode == "dqn") ? policyNet.MapIndexToAction(pl, en, action_idx) 
+                                             : ppoPolicy.MapIndexToAction(pl, en, action_idx);
+            
+            char buf[16];
+            snprintf(buf, sizeof(buf), "%.1f%%", conf_value * 100.0f);
+            ui_string += std::to_string(i + 1) + ". [" + std::string(buf) + "] ";
+
+            if (std::holds_alternative<MoveAction>(action)) {
+                auto& act = std::get<MoveAction>(action);
+                ui_string += "Move unit (" + std::to_string(act.unit->coordinate.x) + ", "
+                    + std::to_string(act.unit->coordinate.y) + ") to (" + 
+                    std::to_string(act.destCoord.x) + ", " + std::to_string(act.destCoord.y) + ")";
+                
+            } else if (std::holds_alternative<FarmGoldAction>(action)) {
+                auto& act = std::get<FarmGoldAction>(action);
+                ui_string += "Farm with unit (" + std::to_string(act.peasant->coordinate.x) + "," +
+                    std::to_string(act.peasant->coordinate.y) + ") " + "at (" + std::to_string(act.destCoord.x)
+                    + ", " + std::to_string(act.destCoord.y) + ")";
+                
+            } else if (std::holds_alternative<BuildAction>(action)) {
+                auto& act = std::get<BuildAction>(action);
+                std::string bType = "";
+                switch(act.struType){
+                     case HALL: bType = "Hall"; break;
+                     case BARRACK: bType = "Barrack"; break;
+                     case FARM: bType = "Farm"; break;
+                     default: break;
+                }
+                ui_string += "Build at (" + std::to_string(act.coordinate.x) + ", " + std::to_string(act.coordinate.y) + ") " + bType;
+                
+            } else if (std::holds_alternative<AttackAction>(action)) {
+                auto& act = std::get<AttackAction>(action);
+                ui_string += "Attack (" + std::to_string(act.object->coordinate.x) + ", " + std::to_string(act.object->coordinate.y) + ")"; 
+                
+            } else if (std::holds_alternative<RecruitAction>(action)) {
+                auto& act = std::get<RecruitAction>(action);
+                std::string uType = "";
+                switch(act.unitType){
+                    case FOOTMAN: uType = "Footman"; break;
+                    case PEASANT: uType = "Peasant"; break;
+                    default: break;
+                }
+                ui_string += "Recruit type: " + uType; 
+            } else if (std::holds_alternative<EmptyAction>(action)) {
+                ui_string += "Empty action";
+            }
+            ui_string += "\n";
+        }
+        return ui_string;
+    };
+
+    // Generate strings for both networks
+    std::string dqn_string = build_ui_string(tensor_en, "dqn");
+    std::string ppo_string = build_ui_string(tensor, "ppo");
+
+    // Render both strings at the same time (DQN on the left, PPO on the right)
+    win.Render(pl, en, m, dqn_string, ppo_string);
 }
 
 void RlManager::ShowInMap(Player& pl, Player& en, Map& m, at::Tensor& tensor, std::string mode) {

@@ -300,7 +300,7 @@ bool PPO_vs_DQN_Experiment(){
     std::cout << "========== STARTING PPO VS DQN EXPERIMENT ==========" << std::endl;
     
     for(int i = 1; i <= total_games; i++) {
-        int winner = man.MainLoopPPOvsDQNRandom();
+        int winner = man.BothMap();
         
         if (winner == 1) {
             player_wins++;
@@ -362,7 +362,6 @@ TEST_CASE("DQN VS DQN", "[Experiment]"){
 TEST_CASE("PPO VS DQN", "[Experiment]"){
     REQUIRE(PPO_vs_DQN_Experiment());
 }
-
 
 int main(int argc, char* argv[]) {
     // Run Catch2 tests

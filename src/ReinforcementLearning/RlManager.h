@@ -27,7 +27,11 @@ class RlManager
     void LoadMemoryAsBinary();
     actionT GetActionPPO(Player&, Player&, Map&);
     actionT GetActionDQNEnemy(Player& en, Player& pl, Map& map);
+    at::Tensor GetPPOTensor(Player&, Player&, Map&);
+    at::Tensor GetDQNTensor(Player&, Player&, Map&);
+
     void ShowInMap(Player& pl, Player& en, Map& m, at::Tensor& tensor, std::string mode = "ppo");
+    void ShowInMap(Player& pl, Player& en, Map& m, at::Tensor& tensor, at::Tensor& tensordqn);
     bool ShouldResetEnvironment(Player &pl, Player &en, Map &map);
     actionT GetActionPPOEnemy(Player& pl, Player& en, Map& map);
 

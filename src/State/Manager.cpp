@@ -362,6 +362,60 @@ int Manager::MainLoopPPOvsDQNRandom(){
     }
     return 0; 
 }
+int Manager::BothMap(){
+    const int hallCost = 590;
+    auto Reset = [&](Player& p){
+        bool hasPeasant = p.HasUnit(PEASANT);
+        bool hasHall = p.HasStructure(HALL);
+
+        if (!hasPeasant && !hasHall) return true;
+        if (!hasPeasant && p.gold < 55) return true;
+        if (hasPeasant && p.gold < hallCost && !hasHall) return true;
+    
+        return false;
+    };
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dist(0, 1);
+
+    while (!trainerManager.ShouldResetEnvironment(player, enemy, map))
+    {
+        at::Tensor ppo_tensor = trainerManager.GetPPOTensor(player, enemy, map);
+        at::Tensor dqn_tensor = trainerManager.GetDQNTensor(enemy, player, map); 
+
+        trainerManager.ShowInMap(player, enemy, map, ppo_tensor, dqn_tensor);
+
+        if (dist(gen) == 0) {
+            actionT action = trainerManager.GetActionPPO(player, enemy, map);
+            player.TakeAction(action);
+
+            actionT action2 = trainerManager.GetActionDQN(enemy, player, map);
+            enemy.TakeAction(action2);
+        } else {
+            actionT action2 = trainerManager.GetActionDQN(enemy, player, map);
+            enemy.TakeAction(action2);
+
+            actionT action = trainerManager.GetActionPPO(player, enemy, map);
+            player.TakeAction(action);
+        }
+    }
+
+    if(trainerManager.ShouldResetEnvironment(player, enemy, map)){
+        int winner = 0;
+        if (Reset(player)){
+            winner = 2;
+        } else {
+            winner = 1;
+        }
+        
+        map.Reset();
+        player.Reset(player.side);
+        enemy.Reset(enemy.side);
+        return winner;
+    }
+    return 0;
+}
 
 void Manager::CheckForMovement() {
 }
