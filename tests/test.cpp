@@ -319,6 +319,13 @@ bool PPO_vs_DQN_Experiment(){
     
     return true;
 }
+bool Play(){
+    Manager man; 
+    std::cout << "========== STARTING PPO VS DQN EXPERIMENT ==========" << std::endl;
+    
+    int winner = man.Play();
+    return true;
+}
 
 
 TEST_CASE("Serializing and Deserialzing Replays as string...", "[StringReplaySystem]") {
@@ -361,6 +368,9 @@ TEST_CASE("DQN VS DQN", "[Experiment]"){
 
 TEST_CASE("PPO VS DQN", "[Experiment]"){
     REQUIRE(PPO_vs_DQN_Experiment());
+}
+TEST_CASE("Play", "[Experiment]"){
+    //REQUIRE(Play());
 }
 
 int main(int argc, char* argv[]) {

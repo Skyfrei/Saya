@@ -416,6 +416,76 @@ int Manager::BothMap(){
     }
     return 0;
 }
+int Manager::Play(){
+    const int hallCost = 590;
+    auto Reset = [&](Player& p){
+        bool hasPeasant = p.HasUnit(PEASANT);
+        bool hasHall = p.HasStructure(HALL);
+
+        if (!hasPeasant && !hasHall) return true;
+        if (!hasPeasant && p.gold < 55) return true;
+        if (hasPeasant && p.gold < hallCost && !hasHall) return true;
+    
+        return false;
+    };
+
+    while (!trainerManager.ShouldResetEnvironment(player, enemy, map))
+    {
+        int actionInput = -1;
+        bool actionSelected = false;
+        at::Tensor tensor = trainerManager.GetPPOTensor(player, enemy, map);
+        trainerManager.ShowInMap(player, enemy, map, tensor, "ppo");
+
+        SDL_Event event;
+        while (!actionSelected && SDL_WaitEvent(&event)) {
+            if (event.type == SDL_EVENT_QUIT) {
+                return 0;
+            }
+            if (event.type == SDL_EVENT_KEY_DOWN) {
+                SDL_Keycode key = event.key.key;
+                
+                if (key >= SDLK_0 && key <= SDLK_9) {
+                    actionInput = (key == SDLK_0) ? 10 : (key - SDLK_0);
+                    actionSelected = true;
+                }
+                else if (key >= SDLK_KP_0 && key <= SDLK_KP_9) {
+                    actionInput = (key == SDLK_KP_0) ? 10 : (key - SDLK_KP_0);
+                    actionSelected = true;
+                }
+            }
+        }
+        int arrayIndex = actionInput - 1;
+        int k = std::min(10, (int)tensor.size(1));
+        auto top_indices = std::get<1>(tensor.topk(k, 1));
+
+        if (arrayIndex >= k) {
+            arrayIndex = k - 1; 
+        }
+        int globalActionIndex = top_indices[0][arrayIndex].item<int>();
+
+        actionT action = trainerManager.ppoPolicy.MapIndexToAction(player, enemy, globalActionIndex); 
+        player.TakeAction(action);
+
+        actionT action2 = trainerManager.GetActionDQNEnemy(enemy, player, map);
+        enemy.TakeAction(action2);
+    }
+
+    if(trainerManager.ShouldResetEnvironment(player, enemy, map)){
+        int winner = 0;
+        if (Reset(player)){
+            std::cout<< "Enemy wins"<<std::endl;
+            winner = 2;
+        }else{
+            std::cout<< "Player wins"<<std::endl;
+            winner = 1;
+        }
+        map.Reset();
+        player.Reset(player.side);
+        enemy.Reset(enemy.side);
+        return winner;
+    }
+    return 0;
+}
 
 void Manager::CheckForMovement() {
 }
