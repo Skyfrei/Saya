@@ -9,24 +9,21 @@ TensorStruct::TensorStruct(State &state, Map &map) {
     std::vector<float> data(totalSize, 0.0f);
     int offset = 0;
 
-    // --- MAP TERRAIN ---
     for (const auto &row : map.terrain) {
         for (const auto &terrain : row) {
-            data[offset++] = 1.0f; // terrain type
+            data[offset++] = 1.0f;
             data[offset++] = static_cast<float>(terrain.resourceLeft) / MAX_MINE_GOLD;
             data[offset++] = static_cast<float>(terrain.coord.x) / MAP_SIZE;
             data[offset++] = static_cast<float>(terrain.coord.y) / MAP_SIZE;
         }
     }
 
-    // --- PLAYER STATS ---
     data[offset++] = static_cast<float>(state.playerGold) / MAX_GOLD;
 
     if (state.playerFood.y <= 0) data[offset++] = 0.0f;
     else data[offset++] = static_cast<float>(state.playerFood.x) / state.playerFood.y;
     data[offset++] = static_cast<float>(state.playerFood.y) / MAX_FOOD;
 
-    // --- PLAYER UNITS ---
     int pUnitCount = std::min(static_cast<int>(state.playerUnits.size()), MAX_UNITS);
     for (int i = 0; i < pUnitCount; i++) {
         auto unit = state.playerUnits[i];
@@ -45,10 +42,8 @@ TensorStruct::TensorStruct(State &state, Map &map) {
             data[offset++] = 0.0f;
         }
     }
-    // Skip the empty slots (they are already 0.0f!)
     offset += (MAX_UNITS - pUnitCount) * unitVar;
 
-    // --- PLAYER STRUCTURES ---
     int pStrucCount = std::min(static_cast<int>(state.playerStructs.size()), MAX_STRUCTS);
     for (int i = 0; i < pStrucCount; i++) {
         auto structure = state.playerStructs[i];
@@ -59,14 +54,12 @@ TensorStruct::TensorStruct(State &state, Map &map) {
     }
     offset += (MAX_STRUCTS - pStrucCount) * strucVar;
 
-    // --- ENEMY STATS ---
     data[offset++] = static_cast<float>(state.enemyGold) / MAX_GOLD;
 
     if (state.enemyFood.y <= 0) data[offset++] = 0.0f;
     else data[offset++] = static_cast<float>(state.enemyFood.x) / state.enemyFood.y;
     data[offset++] = static_cast<float>(state.enemyFood.y) / MAX_FOOD;
 
-    // --- ENEMY UNITS ---
     int eUnitCount = std::min(static_cast<int>(state.enemyUnits.size()), MAX_UNITS);
     for (int i = 0; i < eUnitCount; i++) {
         auto unit = state.enemyUnits[i];
@@ -87,7 +80,6 @@ TensorStruct::TensorStruct(State &state, Map &map) {
     }
     offset += (MAX_UNITS - eUnitCount) * unitVar;
 
-    // --- ENEMY STRUCTURES ---
     int eStrucCount = std::min(static_cast<int>(state.enemyStructs.size()), MAX_STRUCTS);
     for (int i = 0; i < eStrucCount; i++) {
         auto structure = state.enemyStructs[i];
